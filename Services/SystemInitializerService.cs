@@ -1,10 +1,9 @@
-﻿#region Namespaces
+#region Namespaces
 
 using System;
 using System.Configuration;
 using System.IO;
 using System.Threading.Tasks;
-using VisualInspectionTrainingSystem.Services;
 
 #endregion
 
@@ -44,10 +43,6 @@ namespace VisualInspectionTrainingSystem.Services
         {
             ApplicationSettings settings;
 
-            // -----------------------------
-            // Load Configuration
-            // -----------------------------
-
             ReportProgress(10, "Loading configuration...");
             await Task.Delay(400);
 
@@ -57,10 +52,6 @@ namespace VisualInspectionTrainingSystem.Services
 
                 return;
             }
-
-            // -----------------------------
-            // Database
-            // -----------------------------
 
             ReportProgress(30, "Checking MySQL connection...");
             await Task.Delay(300);
@@ -78,10 +69,6 @@ namespace VisualInspectionTrainingSystem.Services
                 return;
             }
 
-            // -----------------------------
-            // Image Folder
-            // -----------------------------
-
             ReportProgress(60, "Checking quiz image folder...");
             await Task.Delay(300);
 
@@ -93,10 +80,6 @@ namespace VisualInspectionTrainingSystem.Services
                 $"Found {imageCount} image(s).");
 
             await Task.Delay(300);
-
-            // -----------------------------
-            // Ready
-            // -----------------------------
 
             ReportProgress(100, "System Ready");
 
@@ -194,7 +177,9 @@ namespace VisualInspectionTrainingSystem.Services
         private int CheckImageFolder(string folder)
         {
             if (!Directory.Exists(folder))
+            {
                 return 0;
+            }
 
             string[] files =
                 Directory.GetFiles(

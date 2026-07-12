@@ -32,4 +32,4 @@ In Progress:
 - Stabilization
 
 Next Task:
-- Add real workstation values to `DatabaseSettings.local.config`, verify MySQL login manually, then continue the next stabilization issue.
+- Add real workstation values to `DatabaseSettings.local.config`, verify MySQL login manually, rotate any previously committed MySQL password, then continue the next stabilization issue.

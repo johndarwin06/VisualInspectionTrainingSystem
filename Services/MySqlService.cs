@@ -1,4 +1,4 @@
-﻿#region Namespaces
+#region Namespaces
 
 using MySql.Data.MySqlClient;
 using System;
@@ -43,10 +43,14 @@ namespace VisualInspectionTrainingSystem.Services
         public void OpenConnection()
         {
             if (_connection == null)
+            {
                 _connection = new MySqlConnection(_connectionString);
+            }
 
             if (_connection.State != ConnectionState.Open)
+            {
                 _connection.Open();
+            }
         }
 
         /// <summary>
@@ -85,7 +89,9 @@ namespace VisualInspectionTrainingSystem.Services
             using (MySqlCommand command = new MySqlCommand(sql, _connection))
             {
                 if (parameters != null)
+                {
                     command.Parameters.AddRange(parameters);
+                }
 
                 return command.ExecuteNonQuery();
             }
@@ -103,7 +109,9 @@ namespace VisualInspectionTrainingSystem.Services
             using (MySqlCommand command = new MySqlCommand(sql, _connection))
             {
                 if (parameters != null)
+                {
                     command.Parameters.AddRange(parameters);
+                }
 
                 return command.ExecuteScalar();
             }
@@ -121,7 +129,9 @@ namespace VisualInspectionTrainingSystem.Services
             using (MySqlCommand command = new MySqlCommand(sql, _connection))
             {
                 if (parameters != null)
+                {
                     command.Parameters.AddRange(parameters);
+                }
 
                 using (MySqlDataAdapter adapter = new MySqlDataAdapter(command))
                 {
@@ -147,7 +157,9 @@ namespace VisualInspectionTrainingSystem.Services
             MySqlCommand command = new MySqlCommand(sql, _connection);
 
             if (parameters != null)
+            {
                 command.Parameters.AddRange(parameters);
+            }
 
             return command.ExecuteReader();
         }
@@ -216,6 +228,5 @@ namespace VisualInspectionTrainingSystem.Services
         }
 
         #endregion
-
     }
 }
