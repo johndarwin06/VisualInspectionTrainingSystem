@@ -1,10 +1,10 @@
 # Sprint 1
 
-- [ ] QuizEngine
-- [ ] QuizViewModel
-- [ ] QuizWindow
-- [ ] ResultViewModel
-- [ ] ResultWindow
+- [x] QuizEngine
+- [x] QuizViewModel
+- [x] QuizWindow
+- [x] ResultViewModel
+- [x] ResultWindow
 
 # Sprint 2
 
