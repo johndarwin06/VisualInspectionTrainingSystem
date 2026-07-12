@@ -12,7 +12,7 @@ Last Build: 2026-07-12
 
 Build Warnings: 1
 
-Current Module: Stabilization Audit
+Current Module: Repository Cleanup
 
 Completed:
 - Login
@@ -27,6 +27,7 @@ Completed:
 - Reports
 - CSV report export
 - Cleanup of debug popup and previous compile warnings
+- Repository cleanup for generated Visual Studio and build artifacts
 
 In Progress:
 - Version 0.9 stabilization remediation
@@ -36,9 +37,11 @@ Latest Audit:
 
 Critical Issues:
 - Committed database credentials in `App.config`
-- Tracked `.vs`, `bin`, and `obj` artifacts
+
+Repository Hygiene:
+- `.vs`, `bin`, and `obj` are ignored and removed from Git tracking.
 
 Next Task:
-- Remove committed secrets and generated artifacts from Git tracking.
+- Move committed database credentials out of `App.config`.
 
-Overall Progress: 85%
+Overall Progress: 86%

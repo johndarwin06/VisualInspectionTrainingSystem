@@ -1,0 +1,20 @@
+# Visual Studio workspace files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# Build outputs
+[Bb]in/
+[Oo]bj/
+
+# Test and diagnostic output
+TestResults/
+*.cache
+*.log
+
+# Local machine configuration
+*.local
+*.local.config
