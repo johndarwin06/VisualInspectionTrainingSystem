@@ -1,4 +1,4 @@
-﻿#region Namespaces
+#region Namespaces
 
 using System;
 using System.Collections.Generic;
@@ -10,13 +10,17 @@ namespace VisualInspectionTrainingSystem.Services
 {
     /// <summary>
     /// Handles the quiz business logic.
-    /// This class contains NO UI code and NO database code.
+    /// This class contains no UI code and no database code.
     /// </summary>
     public class QuizEngine
     {
         #region Fields
 
         private readonly TrainingSession _session;
+
+        private DateTime _questionStarted;
+
+        private bool _sessionFinished;
 
         #endregion
 
@@ -35,12 +39,11 @@ namespace VisualInspectionTrainingSystem.Services
             if (images == null)
                 throw new ArgumentNullException(nameof(images));
 
-            _session = new TrainingSession
-            {
-                User = user
-            };
+            _session = CreateSession(user, images);
 
-            _session.Images.AddRange(images);
+            _questionStarted = DateTime.Now;
+
+            FinishIfCompleted();
         }
 
         #endregion
@@ -82,6 +85,28 @@ namespace VisualInspectionTrainingSystem.Services
             }
         }
 
+        /// <summary>
+        /// Returns the number of questions in the session.
+        /// </summary>
+        public int TotalQuestions
+        {
+            get
+            {
+                return _session.TotalQuestions;
+            }
+        }
+
+        /// <summary>
+        /// Returns the current question number.
+        /// </summary>
+        public int CurrentQuestion
+        {
+            get
+            {
+                return _session.CurrentQuestion;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -91,12 +116,74 @@ namespace VisualInspectionTrainingSystem.Services
         /// </summary>
         public void SubmitAnswer(QuizAnswerType answer)
         {
-            if (_session.IsCompleted())
+            ValidateAnswer(answer);
+
+            if (IsCompleted())
                 return;
 
-            QuizImage image = _session.CurrentImage;
+            QuizImage image = CurrentImage;
 
-            QuizAnswer quizAnswer = new QuizAnswer
+            if (image == null)
+            {
+                FinishIfCompleted();
+                return;
+            }
+
+            _session.AddAnswer(CreateAnswer(image, answer));
+
+            _session.MoveNext();
+
+            if (!FinishIfCompleted())
+            {
+                _questionStarted = DateTime.Now;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if quiz has ended.
+        /// </summary>
+        public bool IsCompleted()
+        {
+            return _session.IsCompleted();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Creates the training session owned by this engine.
+        /// </summary>
+        private static TrainingSession CreateSession(
+            User user,
+            IEnumerable<QuizImage> images)
+        {
+            TrainingSession session = new TrainingSession
+            {
+                User = user
+            };
+
+            foreach (QuizImage image in images)
+            {
+                if (image != null)
+                {
+                    session.Images.Add(image);
+                }
+            }
+
+            return session;
+        }
+
+        /// <summary>
+        /// Creates an answer record for the current image.
+        /// </summary>
+        private QuizAnswer CreateAnswer(
+            QuizImage image,
+            QuizAnswerType answer)
+        {
+            DateTime answeredAt = DateTime.Now;
+
+            return new QuizAnswer
             {
                 Sequence = _session.CurrentQuestion,
 
@@ -108,33 +195,48 @@ namespace VisualInspectionTrainingSystem.Services
 
                 UserAnswer = answer,
 
-                // Filled later by Admin
                 CorrectAnswer = null,
 
-                // Unknown until review
                 IsCorrect = false,
 
-                AnswerTime = DateTime.Now,
+                AnswerTime = answeredAt,
 
-                ElapsedSeconds = 0
+                ElapsedSeconds = Math.Round(
+                    (answeredAt - _questionStarted).TotalSeconds,
+                    2)
             };
-
-            _session.AddAnswer(quizAnswer);
-
-            _session.MoveNext();
-
-            if (_session.IsCompleted())
-            {
-                _session.Finish();
-            }
         }
 
         /// <summary>
-        /// Returns true if quiz has ended.
+        /// Finishes the session once, when all questions are complete.
         /// </summary>
-        public bool IsCompleted()
+        private bool FinishIfCompleted()
         {
-            return _session.IsCompleted();
+            if (!IsCompleted())
+                return false;
+
+            if (!_sessionFinished)
+            {
+                _session.Finish();
+
+                _sessionFinished = true;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Validates the selected answer.
+        /// </summary>
+        private static void ValidateAnswer(QuizAnswerType answer)
+        {
+            if (!Enum.IsDefined(typeof(QuizAnswerType), answer))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(answer),
+                    answer,
+                    "Unsupported quiz answer.");
+            }
         }
 
         #endregion
