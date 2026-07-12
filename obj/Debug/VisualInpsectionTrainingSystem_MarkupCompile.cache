@@ -10,11 +10,11 @@ none
 false
 DEBUG;TRACE
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\App.xaml
-29-75466577
+311781911749
 
-52-346926890
-41-1059950090
-Controls\Buttons\ModernButton.xaml;Controls\Cards\ModernCard.xaml;Controls\Inputs\ModernPasswordBox.xaml;Controls\Inputs\ModernTextBox.xaml;Controls\Panels\ModernInfoPanel.xaml;Controls\Progress\ModernProgressBar.xaml;Controls\Status\ModernStatusIndicator.xaml;MainWindow.xaml;Resources\DesignTokems\Brushes.xaml;Resources\DesignTokems\Colors.xaml;Resources\DesignTokems\CornerRadius.xaml;Resources\DesignTokems\Shadows.xaml;Resources\DesignTokems\Spacing.xaml;Resources\Styles\Button\BaseButton.xaml;Resources\Styles\Button\FilledButton.xaml;Resources\Styles\Button\PrimaryButton.xaml;Resources\Styles\TextBlock\Typography.xaml;Resources\Styles\Border\Cards.xaml;Resources\Styles\ProgressBar\ProgressBars.xaml;Resources\Styles\TextBox\TextBoxes.xaml;Resources\Themes\DarkTheme.xaml;Resources\Themes\LightTheme.xaml;Views\Admin\AdminWindow.xaml;Views\Home\HomeWindow.xaml;Views\LoadingWindow.xaml;Views\Login\LoginWindow.xaml;Views\Quiz\QuizWindow.xaml;Views\Result\ResultWindow.xaml;Views\Splash\SplashWindow.xaml;
+62930516725
+41-529055149
+Controls\Buttons\ModernButton.xaml;Controls\Cards\ModernCard.xaml;Controls\Inputs\ModernPasswordBox.xaml;Controls\Inputs\ModernTextBox.xaml;Controls\Panels\ModernInfoPanel.xaml;Controls\Progress\ModernProgressBar.xaml;Controls\Status\ModernStatusIndicator.xaml;MainWindow.xaml;Resources\DesignTokems\Brushes.xaml;Resources\DesignTokems\Colors.xaml;Resources\DesignTokems\CornerRadius.xaml;Resources\DesignTokems\Shadows.xaml;Resources\DesignTokems\Spacing.xaml;Resources\Styles\Button\BaseButton.xaml;Resources\Styles\Button\FilledButton.xaml;Resources\Styles\Button\PrimaryButton.xaml;Resources\Styles\TextBlock\Typography.xaml;Resources\Styles\Border\Cards.xaml;Resources\Styles\ProgressBar\ProgressBars.xaml;Resources\Styles\TextBox\TextBoxes.xaml;Resources\Themes\DarkTheme.xaml;Resources\Themes\LightTheme.xaml;Views\Admin\AdminWindow.xaml;Views\Dashboard\DashboardWindow.xaml;Views\Home\HomeWindow.xaml;Views\LoadingWindow.xaml;Views\Login\LoginWindow.xaml;Views\Quiz\QuizWindow.xaml;Views\Reports\ReportsWindow.xaml;Views\Result\ResultWindow.xaml;Views\Splash\SplashWindow.xaml;
 
 False
 

@@ -160,8 +160,12 @@ D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\ob
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Resources\Styles\TextBox\TextBoxes.baml
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Resources\Themes\DarkTheme.baml
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Resources\Themes\LightTheme.baml
+D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Admin\AdminWindow.baml
+D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Dashboard\DashboardWindow.baml
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Home\HomeWindow.baml
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Quiz\QuizWindow.baml
+D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Reports\ReportsWindow.baml
+D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Result\ResultWindow.baml
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Splash\SplashWindow.baml
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Controls\Buttons\ModernButton.g.cs
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Controls\Cards\ModernCard.g.cs
@@ -172,10 +176,12 @@ D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\ob
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Controls\Status\ModernStatusIndicator.g.cs
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\MainWindow.g.cs
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Admin\AdminWindow.g.cs
+D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Dashboard\DashboardWindow.g.cs
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Home\HomeWindow.g.cs
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\LoadingWindow.g.cs
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Login\LoginWindow.g.cs
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Quiz\QuizWindow.g.cs
+D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Reports\ReportsWindow.g.cs
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Result\ResultWindow.g.cs
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Splash\SplashWindow.g.cs
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\App.g.cs
@@ -190,10 +196,8 @@ D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\ob
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Controls\Progress\ModernProgressBar.baml
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Controls\Status\ModernStatusIndicator.baml
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\MainWindow.baml
-D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Admin\AdminWindow.baml
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\LoadingWindow.baml
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Login\LoginWindow.baml
-D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Result\ResultWindow.baml
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\VisualInpsectionTrainingSystem.g.resources
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\VisualInpsectionTrainingSystem.Properties.Resources.resources
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\VisualInspectionTrainingSystem.csproj.GenerateResource.cache
