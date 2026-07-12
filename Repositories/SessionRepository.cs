@@ -11,7 +11,7 @@ namespace VisualInspectionTrainingSystem.Repositories
 {
     /// <summary>
     /// Provides database access for completed training sessions.
-    /// Matches the existing tbl_training_session schema.
+    /// Matches the tbl_training_session schema that uses EmployeeNo.
     /// </summary>
     public class SessionRepository
     {
@@ -53,8 +53,8 @@ namespace VisualInspectionTrainingSystem.Repositories
             if (session.User == null)
                 throw new InvalidOperationException("Training session has no user.");
 
-            if (session.User.UserID <= 0)
-                throw new InvalidOperationException("Training session user has no database UserID.");
+            if (string.IsNullOrWhiteSpace(session.User.EmployeeNo))
+                throw new InvalidOperationException("Training session user has no EmployeeNo.");
 
             using (MySqlTransaction transaction = _database.BeginTransaction())
             {
@@ -115,15 +115,15 @@ namespace VisualInspectionTrainingSystem.Repositories
 CREATE TABLE IF NOT EXISTS tbl_training_session
 (
     SessionID INT AUTO_INCREMENT PRIMARY KEY,
-    UserID INT NOT NULL,
+    EmployeeNo VARCHAR(20) NOT NULL,
     StartTime DATETIME NOT NULL,
     EndTime DATETIME NULL,
     TotalQuestions INT DEFAULT 0,
     CorrectAnswers INT DEFAULT 0,
     WrongAnswers INT DEFAULT 0,
     Accuracy DECIMAL(5,2) DEFAULT 0,
-    FOREIGN KEY(UserID)
-        REFERENCES tbl_users(UserID)
+    FOREIGN KEY(EmployeeNo)
+        REFERENCES tbl_users(EmployeeNo)
 );";
 
             using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS tbl_training_session
             string sql = $@"
 INSERT INTO {TableName}
 (
-    UserID,
+    EmployeeNo,
     StartTime,
     EndTime,
     TotalQuestions,
@@ -153,7 +153,7 @@ INSERT INTO {TableName}
 )
 VALUES
 (
-    @UserID,
+    @EmployeeNo,
     @StartTime,
     @EndTime,
     @TotalQuestions,
@@ -164,7 +164,7 @@ VALUES
 
             using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
             {
-                command.Parameters.AddWithValue("@UserID", session.User.UserID);
+                command.Parameters.AddWithValue("@EmployeeNo", session.User.EmployeeNo);
                 command.Parameters.AddWithValue("@StartTime", session.Started);
                 command.Parameters.AddWithValue("@EndTime", GetEndTimeValue(session));
                 command.Parameters.AddWithValue("@TotalQuestions", session.TotalQuestions);
