@@ -14,6 +14,7 @@ using VisualInspectionTrainingSystem.Services;
 using VisualInspectionTrainingSystem.Views.Admin;
 using VisualInspectionTrainingSystem.Views.Dashboard;
 using VisualInspectionTrainingSystem.Views.Login;
+using VisualInspectionTrainingSystem.Views.Reports;
 
 #endregion
 
@@ -51,6 +52,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
         private readonly RelayCommand _showReviewedCommand;
 
         private readonly RelayCommand _openDashboardCommand;
+
+        private readonly RelayCommand _openReportsCommand;
 
         private readonly RelayCommand _logoutCommand;
 
@@ -110,6 +113,10 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 OpenDashboard,
                 CanRunCommand);
 
+            _openReportsCommand = new RelayCommand(
+                OpenReports,
+                CanRunCommand);
+
             _logoutCommand = new RelayCommand(
                 Logout,
                 CanRunCommand);
@@ -131,6 +138,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
             ShowReviewedCommand = _showReviewedCommand;
 
             OpenDashboardCommand = _openDashboardCommand;
+
+            OpenReportsCommand = _openReportsCommand;
 
             LogoutCommand = _logoutCommand;
 
@@ -393,6 +402,11 @@ namespace VisualInspectionTrainingSystem.ViewModels
             get;
         }
 
+        public ICommand OpenReportsCommand
+        {
+            get;
+        }
+
         public ICommand LogoutCommand
         {
             get;
@@ -618,6 +632,13 @@ namespace VisualInspectionTrainingSystem.ViewModels
             window.Show();
         }
 
+        private void OpenReports()
+        {
+            ReportsWindow window = new ReportsWindow();
+
+            window.Show();
+        }
+
         private void Logout()
         {
             SessionService.Logout();
@@ -627,6 +648,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
             window.Show();
 
             CloseWindow<DashboardWindow>();
+
+            CloseWindow<ReportsWindow>();
 
             CloseWindow<AdminWindow>();
         }
@@ -805,6 +828,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
             _showReviewedCommand.RaiseCanExecuteChanged();
 
             _openDashboardCommand.RaiseCanExecuteChanged();
+
+            _openReportsCommand.RaiseCanExecuteChanged();
 
             _logoutCommand.RaiseCanExecuteChanged();
 

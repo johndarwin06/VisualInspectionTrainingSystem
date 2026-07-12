@@ -18,5 +18,5 @@
 
 # Sprint 4
 
-- [ ] Dashboard - started
-- [ ] Reports
+- [x] Dashboard
+- [x] Reports

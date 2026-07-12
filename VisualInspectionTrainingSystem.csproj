@@ -156,6 +156,8 @@
     <Compile Include="Models\QuizImage.cs" />
     <Compile Include="Models\QuizSession.cs" />
     <Compile Include="Models\QuizState.cs" />
+    <Compile Include="Models\ReportSessionRow.cs" />
+    <Compile Include="Models\ReportSummary.cs" />
     <Compile Include="Models\TrainingSession.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserRoles.cs" />
@@ -163,6 +165,7 @@
     <Compile Include="Repositories\DashboardRepository.cs" />
     <Compile Include="Repositories\ImageRepository.cs" />
     <Compile Include="Repositories\QuizRepository.cs" />
+    <Compile Include="Repositories\ReportRepository.cs" />
     <Compile Include="Repositories\SessionRepository.cs" />
     <Compile Include="Repositories\UserRepository.cs" />
     <Compile Include="Services\AuthenticationService.cs" />
@@ -181,6 +184,7 @@
     <Compile Include="ViewModels\HomeViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\QuizViewModel.cs" />
+    <Compile Include="ViewModels\ReportsViewModel.cs" />
     <Compile Include="ViewModels\ResultViewModel.cs" />
     <Compile Include="ViewModels\SplashViewModel.cs" />
     <Compile Include="Views\Admin\AdminWindow.xaml.cs">
@@ -200,6 +204,9 @@
     </Compile>
     <Compile Include="Views\Quiz\QuizWindow.xaml.cs">
       <DependentUpon>QuizWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Reports\ReportsWindow.xaml.cs">
+      <DependentUpon>ReportsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Result\ResultWindow.xaml.cs">
       <DependentUpon>ResultWindow.xaml</DependentUpon>
@@ -325,6 +332,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Quiz\QuizWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Reports\ReportsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
