@@ -1,6 +1,7 @@
 ﻿#region Namespaces
 
 using System;
+using System.Configuration;
 using System.IO;
 using System.Threading.Tasks;
 using VisualInspectionTrainingSystem.Services;
@@ -14,6 +15,12 @@ namespace VisualInspectionTrainingSystem.Services
     /// </summary>
     public class SystemInitializerService
     {
+        #region Fields
+
+        private string _databaseErrorMessage;
+
+        #endregion
+
         #region Events
 
         /// <summary>
@@ -53,7 +60,12 @@ namespace VisualInspectionTrainingSystem.Services
 
             if (!databaseConnected)
             {
-                ReportProgress(30, "Unable to connect to MySQL.");
+                ReportProgress(
+                    30,
+                    string.IsNullOrWhiteSpace(_databaseErrorMessage)
+                        ? "Unable to connect to MySQL."
+                        : _databaseErrorMessage);
+
                 return;
             }
 
@@ -110,12 +122,30 @@ namespace VisualInspectionTrainingSystem.Services
         {
             try
             {
-                MySqlService database = new MySqlService();
+                using (MySqlService database = new MySqlService())
+                {
+                    bool connected = database.TestConnection();
 
-                return database.TestConnection();
+                    if (!connected)
+                    {
+                        _databaseErrorMessage =
+                            "Unable to connect to MySQL. Check the local database configuration.";
+                    }
+
+                    return connected;
+                }
+            }
+            catch (ConfigurationErrorsException ex)
+            {
+                _databaseErrorMessage = ex.Message;
+
+                return false;
             }
             catch
             {
+                _databaseErrorMessage =
+                    "Unable to connect to MySQL. Check the local database configuration.";
+
                 return false;
             }
         }

@@ -24,3 +24,4 @@
 # Sprint 5
 
 - [x] User Password Hashing and Migration
+- [x] Secure Configuration

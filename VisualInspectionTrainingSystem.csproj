@@ -401,6 +401,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="DatabaseSettings.example.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Database\" />
