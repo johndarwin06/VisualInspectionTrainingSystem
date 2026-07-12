@@ -149,6 +149,8 @@
       <DependentUpon>ModernStatusIndicator.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helpers\PasswordBoxHelper.cs" />
+    <Compile Include="Models\DashboardMetrics.cs" />
+    <Compile Include="Models\DashboardSessionSummary.cs" />
     <Compile Include="Models\QuizAnswer.cs" />
     <Compile Include="Models\QuizAnswerType.cs" />
     <Compile Include="Models\QuizImage.cs" />
@@ -158,6 +160,7 @@
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserRoles.cs" />
     <Compile Include="Repositories\AnswerRepository.cs" />
+    <Compile Include="Repositories\DashboardRepository.cs" />
     <Compile Include="Repositories\ImageRepository.cs" />
     <Compile Include="Repositories\QuizRepository.cs" />
     <Compile Include="Repositories\SessionRepository.cs" />
@@ -174,6 +177,7 @@
     <Compile Include="Services\SystemInitializerService.cs" />
     <Compile Include="ViewModels\AdminViewModel.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
+    <Compile Include="ViewModels\DashboardViewModel.cs" />
     <Compile Include="ViewModels\HomeViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\QuizViewModel.cs" />
@@ -181,6 +185,9 @@
     <Compile Include="ViewModels\SplashViewModel.cs" />
     <Compile Include="Views\Admin\AdminWindow.xaml.cs">
       <DependentUpon>AdminWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Dashboard\DashboardWindow.xaml.cs">
+      <DependentUpon>DashboardWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Home\HomeWindow.xaml.cs">
       <DependentUpon>HomeWindow.xaml</DependentUpon>
@@ -298,6 +305,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Admin\AdminWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Dashboard\DashboardWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

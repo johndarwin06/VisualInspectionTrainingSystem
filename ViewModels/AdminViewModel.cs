@@ -11,6 +11,9 @@ using VisualInspectionTrainingSystem.Commands;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Repositories;
 using VisualInspectionTrainingSystem.Services;
+using VisualInspectionTrainingSystem.Views.Admin;
+using VisualInspectionTrainingSystem.Views.Dashboard;
+using VisualInspectionTrainingSystem.Views.Login;
 
 #endregion
 
@@ -46,6 +49,10 @@ namespace VisualInspectionTrainingSystem.ViewModels
         private readonly RelayCommand _showPendingCommand;
 
         private readonly RelayCommand _showReviewedCommand;
+
+        private readonly RelayCommand _openDashboardCommand;
+
+        private readonly RelayCommand _logoutCommand;
 
         private readonly RelayCommand _markGoodCommand;
 
@@ -99,6 +106,14 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 ShowReviewed,
                 CanRunCommand);
 
+            _openDashboardCommand = new RelayCommand(
+                OpenDashboard,
+                CanRunCommand);
+
+            _logoutCommand = new RelayCommand(
+                Logout,
+                CanRunCommand);
+
             _markGoodCommand = new RelayCommand(
                 MarkSelectedGood,
                 CanReviewSelectedAnswer);
@@ -114,6 +129,10 @@ namespace VisualInspectionTrainingSystem.ViewModels
             ShowPendingCommand = _showPendingCommand;
 
             ShowReviewedCommand = _showReviewedCommand;
+
+            OpenDashboardCommand = _openDashboardCommand;
+
+            LogoutCommand = _logoutCommand;
 
             MarkGoodCommand = _markGoodCommand;
 
@@ -369,6 +388,16 @@ namespace VisualInspectionTrainingSystem.ViewModels
             get;
         }
 
+        public ICommand OpenDashboardCommand
+        {
+            get;
+        }
+
+        public ICommand LogoutCommand
+        {
+            get;
+        }
+
         public ICommand MarkGoodCommand
         {
             get;
@@ -580,6 +609,30 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         #endregion
 
+        #region Navigation
+
+        private void OpenDashboard()
+        {
+            DashboardWindow window = new DashboardWindow();
+
+            window.Show();
+        }
+
+        private void Logout()
+        {
+            SessionService.Logout();
+
+            LoginWindow window = new LoginWindow();
+
+            window.Show();
+
+            CloseWindow<DashboardWindow>();
+
+            CloseWindow<AdminWindow>();
+        }
+
+        #endregion
+
         #region Review
 
         /// <summary>
@@ -751,6 +804,10 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
             _showReviewedCommand.RaiseCanExecuteChanged();
 
+            _openDashboardCommand.RaiseCanExecuteChanged();
+
+            _logoutCommand.RaiseCanExecuteChanged();
+
             _markGoodCommand.RaiseCanExecuteChanged();
 
             _markNgCommand.RaiseCanExecuteChanged();
@@ -802,6 +859,20 @@ namespace VisualInspectionTrainingSystem.ViewModels
         private static string FormatAnswer(QuizAnswerType answer)
         {
             return answer.ToString().ToUpperInvariant();
+        }
+
+        private static void CloseWindow<T>()
+            where T : Window
+        {
+            for (int index = Application.Current.Windows.Count - 1; index >= 0; index--)
+            {
+                Window window = Application.Current.Windows[index];
+
+                if (window is T)
+                {
+                    window.Close();
+                }
+            }
         }
 
         #endregion

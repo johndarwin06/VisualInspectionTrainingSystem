@@ -14,9 +14,9 @@
 
 # Sprint 3
 
-- [ ] Admin Module
+- [x] Admin Module
 
 # Sprint 4
 
-- [ ] Dashboard
+- [ ] Dashboard - started
 - [ ] Reports

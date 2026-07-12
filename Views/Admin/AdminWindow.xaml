@@ -35,7 +35,11 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="180" />
+                    <ColumnDefinition Width="140" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="140" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="140" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel VerticalAlignment="Center">
@@ -53,15 +57,41 @@
 
                 <Button
                     Grid.Column="1"
-                    Width="150"
                     Height="46"
-                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Background="#1F2937"
+                    BorderBrush="#4B5563"
+                    BorderThickness="1"
+                    Command="{Binding OpenDashboardCommand}"
+                    Content="Dashboard"
+                    Cursor="Hand"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Foreground="#FFFFFF" />
+
+                <Button
+                    Grid.Column="3"
+                    Height="46"
                     VerticalAlignment="Center"
                     Background="#2563EB"
                     BorderBrush="#60A5FA"
                     BorderThickness="1"
                     Command="{Binding RefreshCommand}"
                     Content="Refresh"
+                    Cursor="Hand"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Foreground="#FFFFFF" />
+
+                <Button
+                    Grid.Column="5"
+                    Height="46"
+                    VerticalAlignment="Center"
+                    Background="#7F1D1D"
+                    BorderBrush="#EF4444"
+                    BorderThickness="1"
+                    Command="{Binding LogoutCommand}"
+                    Content="Logout"
                     Cursor="Hand"
                     FontSize="16"
                     FontWeight="SemiBold"
