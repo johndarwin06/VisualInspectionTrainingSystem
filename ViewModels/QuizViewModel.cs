@@ -7,6 +7,7 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using VisualInspectionTrainingSystem.Commands;
 using VisualInspectionTrainingSystem.Models;
+using VisualInspectionTrainingSystem.Repositories;
 using VisualInspectionTrainingSystem.Services;
 using VisualInspectionTrainingSystem.Views.Result;
 
@@ -22,6 +23,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #region Fields
 
         private readonly ImageService _imageService;
+
+        private readonly SessionRepository _sessionRepository;
 
         private readonly RelayCommand _goodCommand;
 
@@ -44,6 +47,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
         public QuizViewModel()
         {
             _imageService = new ImageService();
+
+            _sessionRepository = new SessionRepository();
 
             _goodCommand = new RelayCommand(
                 OnGood,
@@ -317,6 +322,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
             RefreshCommands();
 
+            SaveCompletedSession();
+
             ShowResultWindow();
 
             CloseQuizWindow();
@@ -364,6 +371,38 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     new List<QuizAnswer>(_quizEngine.Session.Answers));
 
             resultWindow.Show();
+        }
+
+        /// <summary>
+        /// Saves the completed session and its answers.
+        /// </summary>
+        private void SaveCompletedSession()
+        {
+            if (_quizEngine == null)
+                return;
+
+            TrainingSession session = _quizEngine.Session;
+
+            if (session == null ||
+                session.SessionID > 0 ||
+                session.Answers.Count == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                _sessionRepository.Save(session);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Training completed, but the result could not be saved to MySQL.\n\n" +
+                    ex.Message,
+                    "Save Result Warning",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
         }
 
         #endregion
