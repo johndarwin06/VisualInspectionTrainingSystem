@@ -8,6 +8,7 @@ using System.Windows.Media.Imaging;
 using VisualInspectionTrainingSystem.Commands;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Services;
+using VisualInspectionTrainingSystem.Views.Result;
 
 #endregion
 
@@ -316,11 +317,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
             RefreshCommands();
 
-            MessageBox.Show(
-                "Training Completed!",
-                "Quiz",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            ShowResultWindow();
 
             CloseQuizWindow();
         }
@@ -352,6 +349,21 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Opens the result window for the completed quiz.
+        /// </summary>
+        private void ShowResultWindow()
+        {
+            if (_quizEngine == null)
+                return;
+
+            ResultWindow resultWindow =
+                new ResultWindow(
+                    new List<QuizAnswer>(_quizEngine.Session.Answers));
+
+            resultWindow.Show();
         }
 
         #endregion
