@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using VisualInspectionTrainingSystem.Models;
 
 #endregion
@@ -9,18 +10,22 @@ using VisualInspectionTrainingSystem.Models;
 namespace VisualInspectionTrainingSystem.Services
 {
     /// <summary>
-    /// Handles the quiz business logic.
-    /// This class contains no UI code and no database code.
+    /// Handles quiz flow and answer recording.
+    /// This class contains no UI, navigation, database, or WPF code.
     /// </summary>
     public class QuizEngine
     {
         #region Fields
 
+        private readonly object _syncRoot;
+
         private readonly TrainingSession _session;
 
-        private DateTime _questionStarted;
+        private readonly HashSet<int> _submittedSequences;
 
-        private bool _sessionFinished;
+        private readonly Stopwatch _questionTimer;
+
+        private bool _isCompleted;
 
         #endregion
 
@@ -39,11 +44,22 @@ namespace VisualInspectionTrainingSystem.Services
             if (images == null)
                 throw new ArgumentNullException(nameof(images));
 
+            _syncRoot = new object();
+
+            _submittedSequences = new HashSet<int>();
+
+            _questionTimer = new Stopwatch();
+
             _session = CreateSession(user, images);
 
-            _questionStarted = DateTime.Now;
-
-            FinishIfCompleted();
+            if (_session.IsCompleted())
+            {
+                CompleteSession();
+            }
+            else
+            {
+                StartQuestionTimer();
+            }
         }
 
         #endregion
@@ -86,7 +102,7 @@ namespace VisualInspectionTrainingSystem.Services
         }
 
         /// <summary>
-        /// Returns the number of questions in the session.
+        /// Total number of questions.
         /// </summary>
         public int TotalQuestions
         {
@@ -97,7 +113,7 @@ namespace VisualInspectionTrainingSystem.Services
         }
 
         /// <summary>
-        /// Returns the current question number.
+        /// Current question number.
         /// </summary>
         public int CurrentQuestion
         {
@@ -107,35 +123,71 @@ namespace VisualInspectionTrainingSystem.Services
             }
         }
 
+        /// <summary>
+        /// Returns true when the current question can accept an answer.
+        /// </summary>
+        public bool CanSubmitAnswer
+        {
+            get
+            {
+                lock (_syncRoot)
+                {
+                    return CanSubmitAnswerCore();
+                }
+            }
+        }
+
         #endregion
 
         #region Public Methods
 
         /// <summary>
         /// Records the selected answer.
+        /// Duplicate submissions and submissions after completion are ignored.
         /// </summary>
         public void SubmitAnswer(QuizAnswerType answer)
         {
+            TrySubmitAnswer(answer);
+        }
+
+        /// <summary>
+        /// Attempts to record the selected answer.
+        /// Returns false when the quiz is complete or the current question was already answered.
+        /// </summary>
+        public bool TrySubmitAnswer(QuizAnswerType answer)
+        {
             ValidateAnswer(answer);
 
-            if (IsCompleted())
-                return;
-
-            QuizImage image = CurrentImage;
-
-            if (image == null)
+            lock (_syncRoot)
             {
-                FinishIfCompleted();
-                return;
-            }
+                if (!CanSubmitAnswerCore())
+                    return false;
 
-            _session.AddAnswer(CreateAnswer(image, answer));
+                QuizImage image = _session.CurrentImage;
 
-            _session.MoveNext();
+                int sequence = _session.CurrentQuestion;
 
-            if (!FinishIfCompleted())
-            {
-                _questionStarted = DateTime.Now;
+                QuizAnswer quizAnswer = CreateAnswer(
+                    sequence,
+                    image,
+                    answer);
+
+                _session.AddAnswer(quizAnswer);
+
+                _submittedSequences.Add(sequence);
+
+                _session.MoveNext();
+
+                if (_session.IsCompleted())
+                {
+                    CompleteSession();
+                }
+                else
+                {
+                    StartQuestionTimer();
+                }
+
+                return true;
             }
         }
 
@@ -144,7 +196,10 @@ namespace VisualInspectionTrainingSystem.Services
         /// </summary>
         public bool IsCompleted()
         {
-            return _session.IsCompleted();
+            lock (_syncRoot)
+            {
+                return _isCompleted || _session.IsCompleted();
+            }
         }
 
         #endregion
@@ -175,17 +230,16 @@ namespace VisualInspectionTrainingSystem.Services
         }
 
         /// <summary>
-        /// Creates an answer record for the current image.
+        /// Creates an answer for the current question.
         /// </summary>
         private QuizAnswer CreateAnswer(
+            int sequence,
             QuizImage image,
             QuizAnswerType answer)
         {
-            DateTime answeredAt = DateTime.Now;
-
             return new QuizAnswer
             {
-                Sequence = _session.CurrentQuestion,
+                Sequence = sequence,
 
                 ImageID = image.ImageID,
 
@@ -199,30 +253,89 @@ namespace VisualInspectionTrainingSystem.Services
 
                 IsCorrect = false,
 
-                AnswerTime = answeredAt,
+                AnswerTime = DateTime.Now,
 
-                ElapsedSeconds = Math.Round(
-                    (answeredAt - _questionStarted).TotalSeconds,
-                    2)
+                ElapsedSeconds = GetElapsedSeconds()
             };
         }
 
         /// <summary>
-        /// Finishes the session once, when all questions are complete.
+        /// Returns true when an answer may be recorded for the current question.
         /// </summary>
-        private bool FinishIfCompleted()
+        private bool CanSubmitAnswerCore()
         {
-            if (!IsCompleted())
+            if (_isCompleted)
                 return false;
 
-            if (!_sessionFinished)
-            {
-                _session.Finish();
+            if (_session.IsCompleted())
+                return false;
 
-                _sessionFinished = true;
+            if (_session.CurrentImage == null)
+                return false;
+
+            return !HasAnswerForCurrentQuestion();
+        }
+
+        /// <summary>
+        /// Returns true when the current question already has an answer.
+        /// </summary>
+        private bool HasAnswerForCurrentQuestion()
+        {
+            int sequence = _session.CurrentQuestion;
+
+            if (_submittedSequences.Contains(sequence))
+                return true;
+
+            foreach (QuizAnswer answer in _session.Answers)
+            {
+                if (answer != null &&
+                    answer.Sequence == sequence)
+                {
+                    return true;
+                }
             }
 
-            return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Starts timing the active question.
+        /// </summary>
+        private void StartQuestionTimer()
+        {
+            _questionTimer.Reset();
+
+            _questionTimer.Start();
+        }
+
+        /// <summary>
+        /// Returns elapsed seconds for the active question.
+        /// </summary>
+        private double GetElapsedSeconds()
+        {
+            TimeSpan elapsed = _questionTimer.Elapsed;
+
+            if (elapsed.TotalSeconds < 0)
+                return 0;
+
+            return Math.Round(
+                elapsed.TotalSeconds,
+                2);
+        }
+
+        /// <summary>
+        /// Marks the session complete once.
+        /// </summary>
+        private void CompleteSession()
+        {
+            if (_isCompleted)
+                return;
+
+            _questionTimer.Stop();
+
+            _session.Finish();
+
+            _isCompleted = true;
         }
 
         /// <summary>
