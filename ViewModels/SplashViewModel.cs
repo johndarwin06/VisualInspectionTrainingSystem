@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using VisualInspectionTrainingSystem.Services;
 using VisualInspectionTrainingSystem.ViewModels;
-using VisualInspectionTrainingSystem.Services;
 
 #endregion
 

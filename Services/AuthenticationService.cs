@@ -16,6 +16,8 @@ namespace VisualInspectionTrainingSystem.Services
 
         private readonly UserRepository _repository;
 
+        private readonly PasswordHashService _passwordHashService;
+
         #endregion
 
         #region Constructor
@@ -23,6 +25,8 @@ namespace VisualInspectionTrainingSystem.Services
         public AuthenticationService()
         {
             _repository = new UserRepository();
+
+            _passwordHashService = new PasswordHashService();
         }
 
         #endregion
@@ -41,16 +45,60 @@ namespace VisualInspectionTrainingSystem.Services
             if (!user.IsActive)
                 return null;
 
-            // Sprint 1
-            // Plain text comparison.
-            // Sprint 4 -> BCrypt
-
-            if (user.PasswordHash != password)
+            if (!IsPasswordValid(
+                user,
+                password))
+            {
                 return null;
+            }
 
             SessionService.Login(user);
 
             return user;
+        }
+
+        #endregion
+
+        #region Password Verification
+
+        private bool IsPasswordValid(
+            User user,
+            string password)
+        {
+            if (user == null ||
+                string.IsNullOrEmpty(password))
+            {
+                return false;
+            }
+
+            if (_passwordHashService.IsHashedPassword(user.PasswordHash))
+            {
+                return _passwordHashService.VerifyPassword(
+                    password,
+                    user.PasswordHash);
+            }
+
+            if (user.PasswordHash != password)
+                return false;
+
+            UpgradePlainTextPassword(
+                user,
+                password);
+
+            return true;
+        }
+
+        private void UpgradePlainTextPassword(
+            User user,
+            string password)
+        {
+            string passwordHash = _passwordHashService.HashPassword(password);
+
+            _repository.UpdatePasswordHash(
+                user.EmployeeNo,
+                passwordHash);
+
+            user.PasswordHash = passwordHash;
         }
 
         #endregion

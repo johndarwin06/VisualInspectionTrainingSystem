@@ -51,26 +51,58 @@ FROM tbl_users
 WHERE EmployeeNo = @EmployeeNo
 LIMIT 1;";
 
-            DataTable table = _database.ExecuteDataTable(
-                sql,
-                new MySqlParameter("@EmployeeNo", employeeNo));
-
-            if (table.Rows.Count == 0)
-                return null;
-
-            DataRow row = table.Rows[0];
-
-            return new User
+            try
             {
-                UserID = Convert.ToInt32(row["UserID"]),
-                EmployeeNo = row["EmployeeNo"].ToString(),
-                FullName = row["FullName"].ToString(),
-                PasswordHash = row["PasswordHash"].ToString(),
-                Role = row["Role"].ToString(),
-                Department = row["Department"].ToString(),
-                IsActive = Convert.ToBoolean(row["IsActive"]),
-                CreatedDate = Convert.ToDateTime(row["CreatedDate"])
-            };
+                DataTable table = _database.ExecuteDataTable(
+                    sql,
+                    new MySqlParameter("@EmployeeNo", employeeNo));
+
+                if (table.Rows.Count == 0)
+                    return null;
+
+                DataRow row = table.Rows[0];
+
+                return new User
+                {
+                    UserID = Convert.ToInt32(row["UserID"]),
+                    EmployeeNo = row["EmployeeNo"].ToString(),
+                    FullName = row["FullName"].ToString(),
+                    PasswordHash = row["PasswordHash"].ToString(),
+                    Role = row["Role"].ToString(),
+                    Department = row["Department"].ToString(),
+                    IsActive = Convert.ToBoolean(row["IsActive"]),
+                    CreatedDate = Convert.ToDateTime(row["CreatedDate"])
+                };
+            }
+            finally
+            {
+                _database.CloseConnection();
+            }
+        }
+
+        /// <summary>
+        /// Updates the stored password hash for one user.
+        /// </summary>
+        public void UpdatePasswordHash(
+            string employeeNo,
+            string passwordHash)
+        {
+            const string sql = @"
+UPDATE tbl_users
+SET PasswordHash = @PasswordHash
+WHERE EmployeeNo = @EmployeeNo;";
+
+            try
+            {
+                _database.ExecuteNonQuery(
+                    sql,
+                    new MySqlParameter("@PasswordHash", passwordHash),
+                    new MySqlParameter("@EmployeeNo", employeeNo));
+            }
+            finally
+            {
+                _database.CloseConnection();
+            }
         }
 
         #endregion

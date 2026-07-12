@@ -173,6 +173,7 @@
     <Compile Include="Services\ImageService.cs" />
     <Compile Include="Services\MySqlService.cs" />
     <Compile Include="Services\NavigationService.cs" />
+    <Compile Include="Services\PasswordHashService.cs" />
     <Compile Include="Services\QuizEngine.cs" />
     <Compile Include="Services\QuizService.cs" />
     <Compile Include="Services\SessionService.cs" />

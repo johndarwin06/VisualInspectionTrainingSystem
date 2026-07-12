@@ -202,3 +202,7 @@ D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\ob
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\VisualIn.7C0DB26F.Up2Date
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\VisualInpsectionTrainingSystem.exe
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\VisualInpsectionTrainingSystem.pdb
+D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Dashboard\DashboardWindow.baml
+D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Reports\ReportsWindow.baml
+D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Dashboard\DashboardWindow.g.cs
+D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\Views\Reports\ReportsWindow.g.cs

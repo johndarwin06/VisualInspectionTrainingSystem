@@ -20,7 +20,6 @@ namespace VisualInspectionTrainingSystem.ViewModels
     public class HomeViewModel : BaseViewModel
     {
         #region Constructor
-        public event Action StartTrainingRequested;
 
         public HomeViewModel()
         {
@@ -75,11 +74,6 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 QuizWindow window = new QuizWindow();
 
                 window.Show();
-
-                MessageBox.Show(
-                    "Quiz Is Visible = " + window.IsVisible +
-                    "\nLoaded = " + window.IsLoaded +
-                    "\nState = " + window.WindowState);
             }
             catch (Exception ex)
             {
