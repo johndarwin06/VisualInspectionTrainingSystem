@@ -1,10 +1,9 @@
-﻿#region Namespaces
+#region Namespaces
 
 using System;
 using System.Configuration;
 using System.IO;
 using System.Threading.Tasks;
-using VisualInspectionTrainingSystem.Services;
 
 #endregion
 
@@ -17,7 +16,7 @@ namespace VisualInspectionTrainingSystem.Services
     {
         #region Fields
 
-        private string _databaseErrorMessage;
+        private string _startupErrorMessage;
 
         #endregion
 
@@ -42,16 +41,17 @@ namespace VisualInspectionTrainingSystem.Services
         /// </summary>
         public async Task InitializeAsync()
         {
-            // -----------------------------
-            // Load Configuration
-            // -----------------------------
+            ApplicationSettings settings;
 
             ReportProgress(10, "Loading configuration...");
             await Task.Delay(400);
 
-            // -----------------------------
-            // Database
-            // -----------------------------
+            if (!TryLoadConfiguration(out settings))
+            {
+                ReportProgress(10, _startupErrorMessage);
+
+                return;
+            }
 
             ReportProgress(30, "Checking MySQL connection...");
             await Task.Delay(300);
@@ -62,31 +62,24 @@ namespace VisualInspectionTrainingSystem.Services
             {
                 ReportProgress(
                     30,
-                    string.IsNullOrWhiteSpace(_databaseErrorMessage)
+                    string.IsNullOrWhiteSpace(_startupErrorMessage)
                         ? "Unable to connect to MySQL."
-                        : _databaseErrorMessage);
+                        : _startupErrorMessage);
 
                 return;
             }
 
-            // -----------------------------
-            // Image Folder
-            // -----------------------------
-
             ReportProgress(60, "Checking quiz image folder...");
             await Task.Delay(300);
 
-            int imageCount = CheckImageFolder();
+            int imageCount = CheckImageFolder(
+                settings.Paths.QuizImageFolder);
 
             ReportProgress(
                 80,
                 $"Found {imageCount} image(s).");
 
             await Task.Delay(300);
-
-            // -----------------------------
-            // Ready
-            // -----------------------------
 
             ReportProgress(100, "System Ready");
 
@@ -116,6 +109,34 @@ namespace VisualInspectionTrainingSystem.Services
         }
 
         /// <summary>
+        /// Loads and validates application configuration.
+        /// </summary>
+        private bool TryLoadConfiguration(out ApplicationSettings settings)
+        {
+            settings = null;
+
+            try
+            {
+                settings = ConfigurationService.GetApplicationSettings();
+
+                return true;
+            }
+            catch (ConfigurationErrorsException ex)
+            {
+                _startupErrorMessage = ex.Message;
+
+                return false;
+            }
+            catch
+            {
+                _startupErrorMessage =
+                    "Application configuration could not be loaded.";
+
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Checks the MySQL connection.
         /// </summary>
         private bool CheckDatabase()
@@ -128,7 +149,7 @@ namespace VisualInspectionTrainingSystem.Services
 
                     if (!connected)
                     {
-                        _databaseErrorMessage =
+                        _startupErrorMessage =
                             "Unable to connect to MySQL. Check the local database configuration.";
                     }
 
@@ -137,13 +158,13 @@ namespace VisualInspectionTrainingSystem.Services
             }
             catch (ConfigurationErrorsException ex)
             {
-                _databaseErrorMessage = ex.Message;
+                _startupErrorMessage = ex.Message;
 
                 return false;
             }
             catch
             {
-                _databaseErrorMessage =
+                _startupErrorMessage =
                     "Unable to connect to MySQL. Check the local database configuration.";
 
                 return false;
@@ -153,13 +174,12 @@ namespace VisualInspectionTrainingSystem.Services
         /// <summary>
         /// Counts BMP images.
         /// </summary>
-        private int CheckImageFolder()
+        private int CheckImageFolder(string folder)
         {
-            const string folder =
-                @"D:\QuizImages";
-
             if (!Directory.Exists(folder))
+            {
                 return 0;
+            }
 
             string[] files =
                 Directory.GetFiles(

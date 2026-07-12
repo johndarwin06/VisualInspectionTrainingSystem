@@ -60,9 +60,9 @@ namespace VisualInspectionTrainingSystem.Models
         public string FileName { get; set; }
 
         /// <summary>
-        /// Absolute image path.
+        /// Configured image path.
         /// Example:
-        /// D:\QuizImages\CL43B104.bmp
+        /// QuizImages\CL43B104.bmp
         /// </summary>
         public string FilePath { get; set; }
 

@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Configuration
+
+- Added a unified local XML configuration system for database and application path settings.
+- Added strongly typed application, database, and path settings.
+- Removed hardcoded quiz image folder usage from source code.
+- Added configurable log, export, and report folders.
+- Report CSV export now uses the configured export folder.
+- Removed the unused JSON settings file.
+
 ### Security
 
 - Removed MySQL credentials and connection details from `App.config`.

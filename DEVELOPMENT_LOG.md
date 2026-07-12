@@ -2,6 +2,23 @@
 
 ## 2026-07-13
 
+### Configuration System
+
+- Replaced the empty `ConfigurationService` with a strongly typed XML configuration loader.
+- Added `ApplicationSettings`, `DatabaseSettings`, and `PathSettings` models.
+- Removed MySQL connection settings from `App.config`.
+- Added `DatabaseSettings.example.config` as the safe tracked template.
+- Kept the real local file name as `DatabaseSettings.local.config` and ensured it remains ignored by Git.
+- Removed the unused `Configuration\Settings.json` file to avoid a second unrelated configuration system.
+- Replaced hardcoded quiz image folder access with configured path access.
+- Updated startup validation to load application settings and validate configured directories before continuing.
+- Required the quiz image folder to exist.
+- Automatically creates the configured log, export, and report folders when safe.
+- Updated report CSV export to start in the configured export folder.
+- Built `VisualInpsectionTrainingSystem.slnx` in Debug.
+- Final build succeeded with 0 errors and 1 warning.
+- Verified valid path configuration, quiz image loading, output directory creation, missing quiz folder handling, invalid path handling, and WPF startup launch with a temporary ignored local configuration.
+
 ### Secure Configuration
 
 - Removed MySQL connection details from `App.config`.

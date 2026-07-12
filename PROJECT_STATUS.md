@@ -4,7 +4,7 @@ Project: Visual Inspection Training System
 
 Current Version: 0.8 Beta
 
-Current Module: Secure Configuration
+Current Module: Configuration System
 
 Build Status: Successful
 
@@ -26,9 +26,10 @@ Completed:
 - Reports
 - User Password Hashing and Migration
 - Secure Configuration
+- Configuration System
 
 In Progress:
 - Stabilization
 
 Next Task:
-- Add a valid `DatabaseSettings.local.config`, verify login, rotate any previously committed MySQL password, then continue stabilization cleanup.
+- Add real workstation values to `DatabaseSettings.local.config`, verify MySQL login manually, rotate any previously committed MySQL password, then continue the next stabilization issue.

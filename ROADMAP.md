@@ -25,3 +25,4 @@
 
 - [x] User Password Hashing and Migration
 - [x] Secure Configuration
+- [x] Configuration System
