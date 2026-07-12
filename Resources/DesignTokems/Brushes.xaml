@@ -1,0 +1,53 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+
+        <ResourceDictionary Source="Colors.xaml" />
+
+    </ResourceDictionary.MergedDictionaries>
+
+    <!--  =====================================================  -->
+    <!--  WINDOW  -->
+    <!--  =====================================================  -->
+
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource Color.Window}" />
+
+    <!--  =====================================================  -->
+    <!--  CARD  -->
+    <!--  =====================================================  -->
+
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource Color.Surface}" />
+
+    <SolidColorBrush x:Key="CardBorderBrush" Color="{StaticResource Color.Gray.300}" />
+
+    <!--  =====================================================  -->
+    <!--  TEXT  -->
+    <!--  =====================================================  -->
+
+    <SolidColorBrush x:Key="PrimaryTextBrush" Color="{StaticResource Color.Gray.900}" />
+
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="{StaticResource Color.Gray.700}" />
+
+    <!--  =====================================================  -->
+    <!--  BUTTON  -->
+    <!--  =====================================================  -->
+
+    <SolidColorBrush x:Key="PrimaryButtonBackgroundBrush" Color="{StaticResource Color.Blue.800}" />
+
+    <SolidColorBrush x:Key="PrimaryButtonHoverBrush" Color="{StaticResource Color.Blue.700}" />
+
+    <SolidColorBrush x:Key="PrimaryButtonPressedBrush" Color="{StaticResource Color.Blue.900}" />
+
+    <SolidColorBrush x:Key="PrimaryButtonForegroundBrush" Color="White" />
+
+    <!--  =====================================================  -->
+    <!--  STATUS  -->
+    <!--  =====================================================  -->
+
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource Color.Green.500}" />
+
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource Color.Orange.500}" />
+
+    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource Color.Red.500}" />
+
+</ResourceDictionary>

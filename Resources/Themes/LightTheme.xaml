@@ -1,0 +1,33 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+
+        <!-- ====================================================== -->
+        <!-- DESIGN TOKENS -->
+        <!-- ====================================================== -->
+
+        <ResourceDictionary Source="/Resources/DesignTokens/Colors.xaml"/>
+
+        <ResourceDictionary Source="/Resources/DesignTokens/Brushes.xaml"/>
+
+        <ResourceDictionary Source="/Resources/DesignTokens/Spacing.xaml"/>
+
+        <ResourceDictionary Source="/Resources/DesignTokens/CornerRadius.xaml"/>
+
+        <ResourceDictionary Source="/Resources/DesignTokens/Shadows.xaml"/>
+
+        <ResourceDictionary Source="/Resources/DesignTokens/Typography.xaml"/>
+
+        <!-- ====================================================== -->
+        <!-- STYLES -->
+        <!-- ====================================================== -->
+
+        <ResourceDictionary Source="/Resources/Styles/Border/Cards.xaml"/>
+
+        <ResourceDictionary Source="/Resources/Styles/Button/PrimaryButton.xaml"/>
+
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

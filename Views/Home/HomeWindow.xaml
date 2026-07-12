@@ -1,0 +1,79 @@
+﻿<Window
+    x:Class="VisualInspectionTrainingSystem.Views.Home.HomeWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Home"
+    Width="900"
+    Height="600"
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterScreen">
+
+    <Grid Margin="30">
+
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto" />
+
+            <RowDefinition Height="30" />
+
+            <RowDefinition Height="Auto" />
+
+            <RowDefinition Height="15" />
+
+            <RowDefinition Height="Auto" />
+
+            <RowDefinition Height="15" />
+
+            <RowDefinition Height="Auto" />
+
+            <RowDefinition Height="15" />
+
+            <RowDefinition Height="Auto" />
+
+            <RowDefinition Height="*" />
+
+        </Grid.RowDefinitions>
+
+        <!--  Welcome  -->
+
+        <TextBlock
+            FontSize="28"
+            FontWeight="Bold"
+            Text="{Binding WelcomeMessage}" />
+
+        <!--  Start Quiz  -->
+
+        <Button
+            Grid.Row="2"
+            Height="50"
+            Command="{Binding StartTrainingCommand}"
+            Content="Start Training" />
+
+        <!--  History  -->
+
+        <Button
+            Grid.Row="4"
+            Height="50"
+            Command="{Binding HistoryCommand}"
+            Content="Training History" />
+
+        <!--  Admin  -->
+
+        <Button
+            Grid.Row="6"
+            Height="50"
+            Command="{Binding AdminCommand}"
+            Content="Administration"
+            Visibility="{Binding AdminVisibility}" />
+
+        <!--  Logout  -->
+
+        <Button
+            Grid.Row="8"
+            Height="50"
+            Command="{Binding LogoutCommand}"
+            Content="Logout" />
+
+    </Grid>
+
+</Window>

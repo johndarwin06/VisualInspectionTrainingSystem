@@ -1,0 +1,63 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  =====================================================  -->
+    <!--  TITLE  -->
+    <!--  =====================================================  -->
+
+    <Style x:Key="Text.Title" TargetType="TextBlock">
+
+        <Setter Property="FontFamily" Value="Segoe UI" />
+
+        <Setter Property="FontSize" Value="30" />
+
+        <Setter Property="FontWeight" Value="Bold" />
+
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+
+    </Style>
+
+    <!--  =====================================================  -->
+    <!--  SUBTITLE  -->
+    <!--  =====================================================  -->
+
+    <Style x:Key="Text.Subtitle" TargetType="TextBlock">
+
+        <Setter Property="FontFamily" Value="Segoe UI" />
+
+        <Setter Property="FontSize" Value="22" />
+
+        <Setter Property="FontWeight" Value="SemiBold" />
+
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+
+    </Style>
+
+    <!--  =====================================================  -->
+    <!--  BODY  -->
+    <!--  =====================================================  -->
+
+    <Style x:Key="Text.Body" TargetType="TextBlock">
+
+        <Setter Property="FontFamily" Value="Segoe UI" />
+
+        <Setter Property="FontSize" Value="14" />
+
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+
+    </Style>
+
+    <!--  =====================================================  -->
+    <!--  CAPTION  -->
+    <!--  =====================================================  -->
+
+    <Style x:Key="Text.Caption" TargetType="TextBlock">
+
+        <Setter Property="FontFamily" Value="Segoe UI" />
+
+        <Setter Property="FontSize" Value="12" />
+
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+
+    </Style>
+
+</ResourceDictionary>

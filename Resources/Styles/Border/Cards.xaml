@@ -1,0 +1,80 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ===================================================== -->
+    <!-- Elevated Card -->
+    <!-- ===================================================== -->
+
+    <Style x:Key="ElevatedCardStyle"
+           TargetType="Border">
+
+        <Setter Property="Background"
+                Value="{DynamicResource CardBackgroundBrush}" />
+
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource CardBorderBrush}" />
+
+        <Setter Property="BorderThickness"
+                Value="1" />
+
+        <Setter Property="CornerRadius"
+                Value="{DynamicResource Radius.Large}" />
+
+        <Setter Property="Padding"
+                Value="20" />
+
+        <Setter Property="Effect"
+                Value="{DynamicResource Shadow.Medium}" />
+
+        <Setter Property="SnapsToDevicePixels"
+                Value="True"/>
+
+    </Style>
+
+    <!-- ===================================================== -->
+    <!-- Flat Card -->
+    <!-- ===================================================== -->
+
+    <Style x:Key="FlatCardStyle"
+           TargetType="Border"
+           BasedOn="{StaticResource ElevatedCardStyle}">
+
+        <Setter Property="Effect"
+                Value="{x:Null}" />
+
+        <Setter Property="BorderThickness"
+                Value="0" />
+
+    </Style>
+
+    <!-- ===================================================== -->
+    <!-- Status Card -->
+    <!-- ===================================================== -->
+
+    <Style x:Key="StatusCardStyle"
+           TargetType="Border"
+           BasedOn="{StaticResource ElevatedCardStyle}">
+
+        <Setter Property="Padding"
+                Value="12"/>
+
+        <Setter Property="CornerRadius"
+                Value="{DynamicResource Radius.Medium}" />
+
+    </Style>
+
+    <!-- ===================================================== -->
+    <!-- Image Card -->
+    <!-- ===================================================== -->
+
+    <Style x:Key="ImageCardStyle"
+           TargetType="Border"
+           BasedOn="{StaticResource ElevatedCardStyle}">
+
+        <Setter Property="Padding"
+                Value="8"/>
+
+    </Style>
+
+</ResourceDictionary>
