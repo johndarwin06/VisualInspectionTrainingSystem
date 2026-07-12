@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <connectionStrings>
+    <add name="MySqlConnection"
+         connectionString="Server=localhost;Port=3306;Database=visualinspectionquiz;Uid=visualinspection_user;Pwd=YOUR_LOCAL_PASSWORD;SslMode=Disabled;"
+         providerName="MySql.Data.MySqlClient" />
+  </connectionStrings>
+</configuration>

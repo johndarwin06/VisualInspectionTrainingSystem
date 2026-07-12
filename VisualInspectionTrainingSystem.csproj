@@ -398,6 +398,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="App.local.config.example" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Database\" />

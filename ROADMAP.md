@@ -28,6 +28,8 @@
 
 # \- \[ ] Full Regression Test
 
+# \- \[x] Secure Configuration
+
 # \- \[ ] Remove Dead Code
 
 # \- \[ ] Fix Compiler Warnings
@@ -235,4 +237,3 @@
 # \- \[ ] Database Validation
 
 # 
-

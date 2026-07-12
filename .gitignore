@@ -16,5 +16,6 @@ TestResults/
 *.log
 
 # Local machine configuration
+App.local.config
 *.local
 *.local.config

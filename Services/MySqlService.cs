@@ -2,7 +2,6 @@
 
 using MySql.Data.MySqlClient;
 using System;
-using System.Configuration;
 using System.Data;
 using System.Windows;
 
@@ -29,17 +28,7 @@ namespace VisualInspectionTrainingSystem.Services
         /// </summary>
         public MySqlService()
         {
-            var settings = ConfigurationManager.ConnectionStrings["MySqlConnection"];
-
-            if (settings == null)
-            {
-                throw new Exception(
-                    "Connection string 'MySqlConnection' was not found in App.config.");
-            }
-
-            _connectionString = settings.ConnectionString;
-
-            //MessageBox.Show(_connectionString, "Connection String");
+            _connectionString = ConfigurationService.GetMySqlConnectionString();
 
             _connection = new MySqlConnection(_connectionString);
         }
