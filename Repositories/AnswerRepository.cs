@@ -12,12 +12,13 @@ namespace VisualInspectionTrainingSystem.Repositories
 {
     /// <summary>
     /// Provides database access for saved quiz answers.
+    /// Matches the existing tbl_quiz_answer schema.
     /// </summary>
     public class AnswerRepository
     {
         #region Constants
 
-        private const string TableName = "tbl_training_answers";
+        private const string TableName = "tbl_quiz_answer";
 
         #endregion
 
@@ -97,23 +98,17 @@ namespace VisualInspectionTrainingSystem.Repositories
             MySqlTransaction transaction)
         {
             const string sql = @"
-CREATE TABLE IF NOT EXISTS tbl_training_answers
+CREATE TABLE IF NOT EXISTS tbl_quiz_answer
 (
-    AnswerID INT NOT NULL AUTO_INCREMENT,
+    AnswerID INT AUTO_INCREMENT PRIMARY KEY,
     SessionID INT NOT NULL,
-    Sequence INT NOT NULL,
     ImageID INT NOT NULL,
-    FileName VARCHAR(255) NULL,
-    FilePath VARCHAR(1000) NULL,
-    UserAnswer VARCHAR(20) NOT NULL,
-    CorrectAnswer VARCHAR(20) NULL,
-    IsCorrect BIT NOT NULL DEFAULT 0,
-    AnswerTime DATETIME NOT NULL,
-    ElapsedSeconds DOUBLE NOT NULL DEFAULT 0,
-    CreatedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (AnswerID),
-    INDEX IX_TrainingAnswers_SessionID (SessionID),
-    INDEX IX_TrainingAnswers_ImageID (ImageID)
+    UserAnswer VARCHAR(10),
+    CorrectAnswer VARCHAR(10),
+    IsCorrect BIT,
+    AnswerTime DATETIME,
+    FOREIGN KEY(SessionID)
+        REFERENCES tbl_training_session(SessionID)
 );";
 
             using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
@@ -164,56 +159,33 @@ CREATE TABLE IF NOT EXISTS tbl_training_answers
 INSERT INTO {TableName}
 (
     SessionID,
-    Sequence,
     ImageID,
-    FileName,
-    FilePath,
     UserAnswer,
     CorrectAnswer,
     IsCorrect,
-    AnswerTime,
-    ElapsedSeconds
+    AnswerTime
 )
 VALUES
 (
     @SessionID,
-    @Sequence,
     @ImageID,
-    @FileName,
-    @FilePath,
     @UserAnswer,
     @CorrectAnswer,
     @IsCorrect,
-    @AnswerTime,
-    @ElapsedSeconds
+    @AnswerTime
 );";
 
             using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
             {
                 command.Parameters.AddWithValue("@SessionID", sessionId);
-                command.Parameters.AddWithValue("@Sequence", answer.Sequence);
                 command.Parameters.AddWithValue("@ImageID", answer.ImageID);
-                command.Parameters.AddWithValue("@FileName", ToDbValue(answer.FileName));
-                command.Parameters.AddWithValue("@FilePath", ToDbValue(answer.FilePath));
                 command.Parameters.AddWithValue("@UserAnswer", GetAnswerText(answer.UserAnswer));
                 command.Parameters.AddWithValue("@CorrectAnswer", GetNullableAnswerText(answer.CorrectAnswer));
                 command.Parameters.AddWithValue("@IsCorrect", answer.IsCorrect);
                 command.Parameters.AddWithValue("@AnswerTime", answer.AnswerTime);
-                command.Parameters.AddWithValue("@ElapsedSeconds", answer.ElapsedSeconds);
 
                 command.ExecuteNonQuery();
             }
-        }
-
-        /// <summary>
-        /// Converts nullable strings to database values.
-        /// </summary>
-        private static object ToDbValue(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return DBNull.Value;
-
-            return value;
         }
 
         /// <summary>

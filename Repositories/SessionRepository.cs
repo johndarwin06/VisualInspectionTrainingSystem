@@ -11,12 +11,13 @@ namespace VisualInspectionTrainingSystem.Repositories
 {
     /// <summary>
     /// Provides database access for completed training sessions.
+    /// Matches the existing tbl_training_session schema.
     /// </summary>
     public class SessionRepository
     {
         #region Constants
 
-        private const string TableName = "tbl_training_sessions";
+        private const string TableName = "tbl_training_session";
 
         #endregion
 
@@ -51,6 +52,9 @@ namespace VisualInspectionTrainingSystem.Repositories
 
             if (session.User == null)
                 throw new InvalidOperationException("Training session has no user.");
+
+            if (session.User.UserID <= 0)
+                throw new InvalidOperationException("Training session user has no database UserID.");
 
             using (MySqlTransaction transaction = _database.BeginTransaction())
             {
@@ -108,26 +112,18 @@ namespace VisualInspectionTrainingSystem.Repositories
             MySqlTransaction transaction)
         {
             const string sql = @"
-CREATE TABLE IF NOT EXISTS tbl_training_sessions
+CREATE TABLE IF NOT EXISTS tbl_training_session
 (
-    SessionID INT NOT NULL AUTO_INCREMENT,
-    UserID INT NULL,
-    EmployeeNo VARCHAR(50) NULL,
-    FullName VARCHAR(255) NULL,
-    Started DATETIME NOT NULL,
-    Finished DATETIME NULL,
-    DurationSeconds DOUBLE NOT NULL DEFAULT 0,
-    TotalQuestions INT NOT NULL DEFAULT 0,
-    AnsweredQuestions INT NOT NULL DEFAULT 0,
-    GoodAnswers INT NOT NULL DEFAULT 0,
-    NgAnswers INT NOT NULL DEFAULT 0,
-    CorrectAnswers INT NOT NULL DEFAULT 0,
-    WrongAnswers INT NOT NULL DEFAULT 0,
-    Accuracy DOUBLE NOT NULL DEFAULT 0,
-    CreatedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (SessionID),
-    INDEX IX_TrainingSessions_UserID (UserID),
-    INDEX IX_TrainingSessions_Started (Started)
+    SessionID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    StartTime DATETIME NOT NULL,
+    EndTime DATETIME NULL,
+    TotalQuestions INT DEFAULT 0,
+    CorrectAnswers INT DEFAULT 0,
+    WrongAnswers INT DEFAULT 0,
+    Accuracy DECIMAL(5,2) DEFAULT 0,
+    FOREIGN KEY(UserID)
+        REFERENCES tbl_users(UserID)
 );";
 
             using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
@@ -148,15 +144,9 @@ CREATE TABLE IF NOT EXISTS tbl_training_sessions
 INSERT INTO {TableName}
 (
     UserID,
-    EmployeeNo,
-    FullName,
-    Started,
-    Finished,
-    DurationSeconds,
+    StartTime,
+    EndTime,
     TotalQuestions,
-    AnsweredQuestions,
-    GoodAnswers,
-    NgAnswers,
     CorrectAnswers,
     WrongAnswers,
     Accuracy
@@ -164,33 +154,20 @@ INSERT INTO {TableName}
 VALUES
 (
     @UserID,
-    @EmployeeNo,
-    @FullName,
-    @Started,
-    @Finished,
-    @DurationSeconds,
+    @StartTime,
+    @EndTime,
     @TotalQuestions,
-    @AnsweredQuestions,
-    @GoodAnswers,
-    @NgAnswers,
     @CorrectAnswers,
     @WrongAnswers,
     @Accuracy
-);
-";
+);";
 
             using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
             {
-                command.Parameters.AddWithValue("@UserID", GetUserIdValue(session.User));
-                command.Parameters.AddWithValue("@EmployeeNo", ToDbValue(session.User.EmployeeNo));
-                command.Parameters.AddWithValue("@FullName", ToDbValue(session.User.FullName));
-                command.Parameters.AddWithValue("@Started", session.Started);
-                command.Parameters.AddWithValue("@Finished", GetFinishedValue(session));
-                command.Parameters.AddWithValue("@DurationSeconds", Math.Round(session.Duration.TotalSeconds, 2));
+                command.Parameters.AddWithValue("@UserID", session.User.UserID);
+                command.Parameters.AddWithValue("@StartTime", session.Started);
+                command.Parameters.AddWithValue("@EndTime", GetEndTimeValue(session));
                 command.Parameters.AddWithValue("@TotalQuestions", session.TotalQuestions);
-                command.Parameters.AddWithValue("@AnsweredQuestions", session.AnsweredQuestions);
-                command.Parameters.AddWithValue("@GoodAnswers", CountAnswers(session, QuizAnswerType.Good));
-                command.Parameters.AddWithValue("@NgAnswers", CountAnswers(session, QuizAnswerType.Ng));
                 command.Parameters.AddWithValue("@CorrectAnswers", session.CorrectAnswers);
                 command.Parameters.AddWithValue("@WrongAnswers", session.WrongAnswers);
                 command.Parameters.AddWithValue("@Accuracy", session.Accuracy);
@@ -202,60 +179,14 @@ VALUES
         }
 
         /// <summary>
-        /// Counts answers by selected answer type.
-        /// </summary>
-        private static int CountAnswers(
-            TrainingSession session,
-            QuizAnswerType answerType)
-        {
-            int count = 0;
-
-            foreach (QuizAnswer answer in session.Answers)
-            {
-                if (answer != null &&
-                    answer.UserAnswer == answerType)
-                {
-                    count++;
-                }
-            }
-
-            return count;
-        }
-
-        /// <summary>
-        /// Converts the user ID to a database value.
-        /// </summary>
-        private static object GetUserIdValue(User user)
-        {
-            if (user == null ||
-                user.UserID <= 0)
-            {
-                return DBNull.Value;
-            }
-
-            return user.UserID;
-        }
-
-        /// <summary>
         /// Converts session finish time to a database value.
         /// </summary>
-        private static object GetFinishedValue(TrainingSession session)
+        private static object GetEndTimeValue(TrainingSession session)
         {
             if (session.Finished.HasValue)
                 return session.Finished.Value;
 
             return DBNull.Value;
-        }
-
-        /// <summary>
-        /// Converts nullable strings to database values.
-        /// </summary>
-        private static object ToDbValue(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return DBNull.Value;
-
-            return value;
         }
 
         #endregion
