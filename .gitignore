@@ -64,6 +64,7 @@ coverage/
 #################################################
 
 App.local.config
+DatabaseSettings.local.config
 *.local.config
 DatabaseSettings.local.json
 appsettings.local.json

@@ -1,8 +1,7 @@
-﻿#region Namespaces
+#region Namespaces
 
 using MySql.Data.MySqlClient;
 using System;
-using System.Configuration;
 using System.Data;
 using System.Windows;
 
@@ -29,17 +28,7 @@ namespace VisualInspectionTrainingSystem.Services
         /// </summary>
         public MySqlService()
         {
-            var settings = ConfigurationManager.ConnectionStrings["MySqlConnection"];
-
-            if (settings == null)
-            {
-                throw new Exception(
-                    "Connection string 'MySqlConnection' was not found in App.config.");
-            }
-
-            _connectionString = settings.ConnectionString;
-
-            //MessageBox.Show(_connectionString, "Connection String");
+            _connectionString = ConfigurationService.GetMySqlConnectionString();
 
             _connection = new MySqlConnection(_connectionString);
         }
@@ -54,10 +43,14 @@ namespace VisualInspectionTrainingSystem.Services
         public void OpenConnection()
         {
             if (_connection == null)
+            {
                 _connection = new MySqlConnection(_connectionString);
+            }
 
             if (_connection.State != ConnectionState.Open)
+            {
                 _connection.Open();
+            }
         }
 
         /// <summary>
@@ -96,7 +89,9 @@ namespace VisualInspectionTrainingSystem.Services
             using (MySqlCommand command = new MySqlCommand(sql, _connection))
             {
                 if (parameters != null)
+                {
                     command.Parameters.AddRange(parameters);
+                }
 
                 return command.ExecuteNonQuery();
             }
@@ -114,7 +109,9 @@ namespace VisualInspectionTrainingSystem.Services
             using (MySqlCommand command = new MySqlCommand(sql, _connection))
             {
                 if (parameters != null)
+                {
                     command.Parameters.AddRange(parameters);
+                }
 
                 return command.ExecuteScalar();
             }
@@ -132,7 +129,9 @@ namespace VisualInspectionTrainingSystem.Services
             using (MySqlCommand command = new MySqlCommand(sql, _connection))
             {
                 if (parameters != null)
+                {
                     command.Parameters.AddRange(parameters);
+                }
 
                 using (MySqlDataAdapter adapter = new MySqlDataAdapter(command))
                 {
@@ -158,7 +157,9 @@ namespace VisualInspectionTrainingSystem.Services
             MySqlCommand command = new MySqlCommand(sql, _connection);
 
             if (parameters != null)
+            {
                 command.Parameters.AddRange(parameters);
+            }
 
             return command.ExecuteReader();
         }
@@ -212,6 +213,9 @@ namespace VisualInspectionTrainingSystem.Services
 
         #region IDisposable
 
+        /// <summary>
+        /// Releases the database connection.
+        /// </summary>
         public void Dispose()
         {
             CloseConnection();
@@ -224,6 +228,5 @@ namespace VisualInspectionTrainingSystem.Services
         }
 
         #endregion
-
     }
 }
