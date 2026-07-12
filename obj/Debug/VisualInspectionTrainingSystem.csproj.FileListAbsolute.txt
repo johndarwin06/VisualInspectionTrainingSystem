@@ -206,3 +206,4 @@ D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\ob
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\VisualIn.7C0DB26F.Up2Date
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\VisualInpsectionTrainingSystem.exe
 D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\obj\Debug\VisualInpsectionTrainingSystem.pdb
+D:\Visual Studio\My Project\.NET Framework\WPF\VisualInspectionTrainingSystem\bin\Debug\BCrypt-Net-Next.dll
