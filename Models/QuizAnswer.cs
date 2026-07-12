@@ -20,6 +20,11 @@ namespace VisualInspectionTrainingSystem.Models
         public int AnswerID { get; set; }
 
         /// <summary>
+        /// Parent training session ID.
+        /// </summary>
+        public int SessionID { get; set; }
+
+        /// <summary>
         /// Question number within the session.
         /// </summary>
         public int Sequence { get; set; }
@@ -42,6 +47,12 @@ namespace VisualInspectionTrainingSystem.Models
         /// Full image path.
         /// </summary>
         public string FilePath { get; set; }
+
+        /// <summary>
+        /// Employee number from the parent session.
+        /// Used by the admin review screen.
+        /// </summary>
+        public string EmployeeNo { get; set; }
 
         #endregion
 

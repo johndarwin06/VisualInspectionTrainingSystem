@@ -3,6 +3,7 @@
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Services;
 
@@ -46,6 +47,87 @@ namespace VisualInspectionTrainingSystem.Repositories
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Loads saved answers for admin review.
+        /// </summary>
+        public List<QuizAnswer> GetForReview()
+        {
+            const string sql = @"
+SELECT
+    a.AnswerID,
+    a.SessionID,
+    s.EmployeeNo,
+    a.ImageID,
+    a.UserAnswer,
+    a.CorrectAnswer,
+    a.IsCorrect,
+    a.AnswerTime
+FROM tbl_quiz_answer a
+INNER JOIN tbl_training_session s
+    ON s.SessionID = a.SessionID
+ORDER BY a.AnswerTime DESC, a.AnswerID DESC;";
+
+            try
+            {
+                DataTable table = _database.ExecuteDataTable(sql);
+
+                List<QuizAnswer> answers = new List<QuizAnswer>();
+
+                foreach (DataRow row in table.Rows)
+                {
+                    answers.Add(MapAnswer(row));
+                }
+
+                return answers;
+            }
+            finally
+            {
+                _database.CloseConnection();
+            }
+        }
+
+        /// <summary>
+        /// Assigns the correct answer for one saved quiz answer.
+        /// </summary>
+        public void ReviewAnswer(
+            int answerId,
+            QuizAnswerType correctAnswer)
+        {
+            if (answerId <= 0)
+                throw new ArgumentOutOfRangeException(nameof(answerId));
+
+            int sessionId = GetSessionId(answerId);
+
+            if (sessionId <= 0)
+                throw new InvalidOperationException("Answer was not found.");
+
+            string correctAnswerText = GetAnswerText(correctAnswer);
+
+            const string sql = @"
+UPDATE tbl_quiz_answer
+SET
+    CorrectAnswer = @CorrectAnswer,
+    IsCorrect = CASE
+        WHEN UPPER(UserAnswer) = @CorrectAnswer THEN 1
+        ELSE 0
+    END
+WHERE AnswerID = @AnswerID;";
+
+            try
+            {
+                _database.ExecuteNonQuery(
+                    sql,
+                    new MySqlParameter("@CorrectAnswer", correctAnswerText),
+                    new MySqlParameter("@AnswerID", answerId));
+            }
+            finally
+            {
+                _database.CloseConnection();
+            }
+
+            RecalculateSession(sessionId);
+        }
 
         /// <summary>
         /// Saves all answers for one training session.
@@ -147,6 +229,113 @@ CREATE TABLE IF NOT EXISTS tbl_quiz_answer
         #region Private Methods
 
         /// <summary>
+        /// Maps one database row to a quiz answer.
+        /// </summary>
+        private static QuizAnswer MapAnswer(DataRow row)
+        {
+            QuizAnswer answer = new QuizAnswer
+            {
+                AnswerID = Convert.ToInt32(row["AnswerID"]),
+
+                SessionID = Convert.ToInt32(row["SessionID"]),
+
+                EmployeeNo = row["EmployeeNo"].ToString(),
+
+                ImageID = Convert.ToInt32(row["ImageID"]),
+
+                UserAnswer = ParseAnswer(row["UserAnswer"]),
+
+                CorrectAnswer = ParseNullableAnswer(row["CorrectAnswer"]),
+
+                IsCorrect = ToBoolean(row["IsCorrect"]),
+
+                AnswerTime = Convert.ToDateTime(row["AnswerTime"])
+            };
+
+            return answer;
+        }
+
+        /// <summary>
+        /// Returns the parent session ID for an answer.
+        /// </summary>
+        private int GetSessionId(int answerId)
+        {
+            const string sql = @"
+SELECT SessionID
+FROM tbl_quiz_answer
+WHERE AnswerID = @AnswerID
+LIMIT 1;";
+
+            try
+            {
+                object result = _database.ExecuteScalar(
+                    sql,
+                    new MySqlParameter("@AnswerID", answerId));
+
+                if (result == null ||
+                    result == DBNull.Value)
+                {
+                    return 0;
+                }
+
+                return Convert.ToInt32(result);
+            }
+            finally
+            {
+                _database.CloseConnection();
+            }
+        }
+
+        /// <summary>
+        /// Updates the summary columns for one training session.
+        /// </summary>
+        private void RecalculateSession(int sessionId)
+        {
+            const string sql = @"
+UPDATE tbl_training_session
+SET
+    CorrectAnswers =
+    (
+        SELECT COUNT(*)
+        FROM tbl_quiz_answer
+        WHERE SessionID = @SessionID
+          AND CorrectAnswer IS NOT NULL
+          AND IsCorrect = 1
+    ),
+    WrongAnswers =
+    (
+        SELECT COUNT(*)
+        FROM tbl_quiz_answer
+        WHERE SessionID = @SessionID
+          AND CorrectAnswer IS NOT NULL
+          AND IsCorrect = 0
+    ),
+    Accuracy =
+    (
+        SELECT
+            CASE
+                WHEN COUNT(*) = 0 THEN 0
+                ELSE ROUND(SUM(CASE WHEN IsCorrect = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100, 2)
+            END
+        FROM tbl_quiz_answer
+        WHERE SessionID = @SessionID
+          AND CorrectAnswer IS NOT NULL
+    )
+WHERE SessionID = @SessionID;";
+
+            try
+            {
+                _database.ExecuteNonQuery(
+                    sql,
+                    new MySqlParameter("@SessionID", sessionId));
+            }
+            finally
+            {
+                _database.CloseConnection();
+            }
+        }
+
+        /// <summary>
         /// Saves one answer using an existing transaction.
         /// </summary>
         private void Save(
@@ -194,6 +383,60 @@ VALUES
         private static string GetAnswerText(QuizAnswerType answer)
         {
             return answer.ToString().ToUpperInvariant();
+        }
+
+        /// <summary>
+        /// Parses a stored answer value.
+        /// </summary>
+        private static QuizAnswerType ParseAnswer(object value)
+        {
+            QuizAnswerType answer;
+
+            if (value != null &&
+                value != DBNull.Value &&
+                Enum.TryParse(
+                    value.ToString(),
+                    true,
+                    out answer))
+            {
+                return answer;
+            }
+
+            return QuizAnswerType.Good;
+        }
+
+        /// <summary>
+        /// Parses a nullable stored answer value.
+        /// </summary>
+        private static QuizAnswerType? ParseNullableAnswer(object value)
+        {
+            QuizAnswerType answer;
+
+            if (value != null &&
+                value != DBNull.Value &&
+                Enum.TryParse(
+                    value.ToString(),
+                    true,
+                    out answer))
+            {
+                return answer;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Converts database bit values to Boolean.
+        /// </summary>
+        private static bool ToBoolean(object value)
+        {
+            if (value == null ||
+                value == DBNull.Value)
+            {
+                return false;
+            }
+
+            return Convert.ToBoolean(value);
         }
 
         /// <summary>

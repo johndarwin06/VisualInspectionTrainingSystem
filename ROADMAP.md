@@ -8,9 +8,9 @@
 
 # Sprint 2
 
-- [ ] SessionRepository
-- [ ] AnswerRepository
-- [ ] MySQL Integration
+- [x] SessionRepository
+- [x] AnswerRepository
+- [x] MySQL Integration
 
 # Sprint 3
 
