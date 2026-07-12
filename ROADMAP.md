@@ -1,22 +1,22 @@
 # Sprint 1
 
-- [ ] QuizEngine
-- [ ] QuizViewModel
-- [ ] QuizWindow
-- [ ] ResultViewModel
-- [ ] ResultWindow
+- [x] QuizEngine
+- [x] QuizViewModel
+- [x] QuizWindow
+- [x] ResultViewModel
+- [x] ResultWindow
 
 # Sprint 2
 
-- [ ] SessionRepository
-- [ ] AnswerRepository
-- [ ] MySQL Integration
+- [x] SessionRepository
+- [x] AnswerRepository
+- [x] MySQL Integration
 
 # Sprint 3
 
-- [ ] Admin Module
+- [x] Admin Module
 
 # Sprint 4
 
-- [ ] Dashboard
-- [ ] Reports
+- [x] Dashboard
+- [x] Reports

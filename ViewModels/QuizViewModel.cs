@@ -1,15 +1,14 @@
-﻿#region Namespaces
+#region Namespaces
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using VisualInspectionTrainingSystem.Commands;
 using VisualInspectionTrainingSystem.Models;
+using VisualInspectionTrainingSystem.Repositories;
 using VisualInspectionTrainingSystem.Services;
-using VisualInspectionTrainingSystem.Views;
 using VisualInspectionTrainingSystem.Views.Result;
 
 #endregion
@@ -25,17 +24,21 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         private readonly ImageService _imageService;
 
-        private List<QuizImage> _images;
+        private readonly SessionRepository _sessionRepository;
 
-        private readonly List<QuizAnswer> _answers;
+        private readonly RelayCommand _goodCommand;
 
-        private int _currentIndex;
+        private readonly RelayCommand _ngCommand;
+
+        private QuizEngine _quizEngine;
 
         private BitmapImage _currentImage;
 
         private string _progress;
 
         private string _currentUser;
+
+        private bool _isFinished;
 
         #endregion
 
@@ -45,13 +48,21 @@ namespace VisualInspectionTrainingSystem.ViewModels
         {
             _imageService = new ImageService();
 
-            _answers = new List<QuizAnswer>();
+            _sessionRepository = new SessionRepository();
 
-            GoodCommand = new RelayCommand(OnGood);
+            _goodCommand = new RelayCommand(
+                OnGood,
+                CanSubmitAnswer);
 
-            NgCommand = new RelayCommand(OnNg);
+            _ngCommand = new RelayCommand(
+                OnNg,
+                CanSubmitAnswer);
 
-            LoadImages();
+            GoodCommand = _goodCommand;
+
+            NgCommand = _ngCommand;
+
+            InitializeQuiz();
         }
 
         #endregion
@@ -60,112 +71,223 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         public BitmapImage CurrentImage
         {
-            get => _currentImage;
-            set => SetProperty(ref _currentImage, value);
+            get
+            {
+                return _currentImage;
+            }
+            set
+            {
+                SetProperty(ref _currentImage, value);
+            }
         }
 
         public string Progress
         {
-            get => _progress;
-            set => SetProperty(ref _progress, value);
+            get
+            {
+                return _progress;
+            }
+            set
+            {
+                SetProperty(ref _progress, value);
+            }
         }
 
         public string CurrentUser
         {
-            get => _currentUser;
-            set => SetProperty(ref _currentUser, value);
-        }
-
-        public ICommand GoodCommand { get; }
-
-        public ICommand NgCommand { get; }
-
-        #endregion
-
-        #region Load Images
-
-        private void LoadImages()
-        {
-            CurrentUser = SessionService.CurrentUser.FullName;
-
-            _images = _imageService.LoadImages(AppConstants.QuizImageFolder);
-
-            if (_images == null || _images.Count == 0)
+            get
             {
-                MessageBox.Show(
-                    "No BMP images were found.",
-                    "Quiz",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
-                return;
+                return _currentUser;
             }
+            set
+            {
+                SetProperty(ref _currentUser, value);
+            }
+        }
 
-            _currentIndex = 0;
+        public ICommand GoodCommand
+        {
+            get;
+        }
 
-            DisplayCurrentImage();
+        public ICommand NgCommand
+        {
+            get;
         }
 
         #endregion
 
-        #region Display Image
+        #region Initialization
 
+        /// <summary>
+        /// Loads quiz data and starts the quiz engine.
+        /// </summary>
+        private void InitializeQuiz()
+        {
+            try
+            {
+                User user = GetCurrentUser();
+
+                CurrentUser = user.FullName;
+
+                List<QuizImage> images =
+                    _imageService.LoadImages(AppConstants.QuizImageFolder);
+
+                _quizEngine = new QuizEngine(
+                    user,
+                    images);
+
+                if (_quizEngine.IsCompleted())
+                {
+                    Progress = _quizEngine.Progress;
+
+                    CurrentImage = null;
+
+                    ShowNoImagesMessage();
+
+                    RefreshCommands();
+
+                    return;
+                }
+
+                DisplayCurrentImage();
+            }
+            catch (Exception ex)
+            {
+                _isFinished = true;
+
+                CurrentImage = null;
+
+                Progress = "0 / 0";
+
+                MessageBox.Show(
+                    ex.Message,
+                    "Quiz Startup Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+
+                RefreshCommands();
+            }
+        }
+
+        /// <summary>
+        /// Returns the current logged-in user or a safe design-time fallback.
+        /// </summary>
+        private User GetCurrentUser()
+        {
+            if (SessionService.CurrentUser != null)
+                return SessionService.CurrentUser;
+
+            return new User
+            {
+                FullName = "Trainee",
+                Role = UserRoles.User,
+                IsActive = true,
+                CreatedDate = DateTime.Now
+            };
+        }
+
+        #endregion
+
+        #region Display
+
+        /// <summary>
+        /// Displays the image currently selected by the quiz engine.
+        /// </summary>
         private void DisplayCurrentImage()
         {
-            if (_currentIndex >= _images.Count)
+            if (_quizEngine == null ||
+                _quizEngine.IsCompleted())
             {
                 FinishQuiz();
                 return;
             }
 
-            QuizImage image = _images[_currentIndex];
+            QuizImage image = _quizEngine.CurrentImage;
 
-            CurrentImage = new BitmapImage();
+            if (image == null)
+            {
+                FinishQuiz();
+                return;
+            }
 
-            CurrentImage.BeginInit();
-            CurrentImage.CacheOption = BitmapCacheOption.OnLoad;
-            CurrentImage.UriSource = new Uri(image.FilePath);
-            CurrentImage.EndInit();
+            CurrentImage = LoadBitmap(image.FilePath);
 
-            Progress = $"{_currentIndex + 1} / {_images.Count}";
+            Progress = _quizEngine.Progress;
+
+            RefreshCommands();
+        }
+
+        /// <summary>
+        /// Loads an image from disk without keeping the file locked.
+        /// </summary>
+        private BitmapImage LoadBitmap(string filePath)
+        {
+            BitmapImage bitmap = new BitmapImage();
+
+            bitmap.BeginInit();
+
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+
+            bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+
+            bitmap.UriSource = new Uri(
+                filePath,
+                UriKind.Absolute);
+
+            bitmap.EndInit();
+
+            if (bitmap.CanFreeze)
+            {
+                bitmap.Freeze();
+            }
+
+            return bitmap;
         }
 
         #endregion
 
-        #region GOOD
+        #region Commands
+
+        private bool CanSubmitAnswer()
+        {
+            return !_isFinished &&
+                   _quizEngine != null &&
+                   _quizEngine.CanSubmitAnswer;
+        }
 
         private void OnGood()
         {
-            SaveAnswer(QuizAnswerType.Good);
+            SubmitAnswer(QuizAnswerType.Good);
         }
-
-        #endregion
-
-        #region NG
 
         private void OnNg()
         {
-            SaveAnswer(QuizAnswerType.Ng);
+            SubmitAnswer(QuizAnswerType.Ng);
         }
 
         #endregion
 
-        #region Save Answer
+        #region Answer Handling
 
-        private void SaveAnswer(QuizAnswerType answer)
+        /// <summary>
+        /// Submits the selected answer through the quiz engine.
+        /// </summary>
+        private void SubmitAnswer(QuizAnswerType answer)
         {
-            QuizImage image = _images[_currentIndex];
+            if (_quizEngine == null)
+                return;
 
-            _answers.Add(new QuizAnswer
+            bool accepted = _quizEngine.TrySubmitAnswer(answer);
+
+            if (!accepted)
+                return;
+
+            if (_quizEngine.IsCompleted())
             {
-                ImageID = image.ImageID,
-                FileName = image.FileName,
-                FilePath = image.FilePath,
-                UserAnswer = answer,
-                AnswerTime = DateTime.Now
-            });
-
-            _currentIndex++;
+                FinishQuiz();
+                return;
+            }
 
             DisplayCurrentImage();
         }
@@ -174,19 +296,58 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         #region Finish
 
+        /// <summary>
+        /// Handles quiz completion.
+        /// </summary>
         private void FinishQuiz()
         {
-            /*ResultWindow resultWindow =
-                new ResultWindow(_answers);
+            if (_isFinished)
+                return;
 
-            resultWindow.Show();*/
+            _isFinished = true;
+
+            CurrentImage = null;
+
+            if (_quizEngine != null)
+            {
+                if (_quizEngine.TotalQuestions > 0)
+                {
+                    Progress = $"{_quizEngine.TotalQuestions} / {_quizEngine.TotalQuestions}";
+                }
+                else
+                {
+                    Progress = _quizEngine.Progress;
+                }
+            }
+
+            RefreshCommands();
+
+            SaveCompletedSession();
+
+            ShowResultWindow();
+
+            CloseQuizWindow();
+        }
+
+        /// <summary>
+        /// Shows the empty-image message.
+        /// </summary>
+        private void ShowNoImagesMessage()
+        {
+            _isFinished = true;
 
             MessageBox.Show(
-    "Training Completed!",
-    "Quiz",
-    MessageBoxButton.OK,
-    MessageBoxImage.Information);
+                "No BMP images were found.",
+                "Quiz",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
 
+        /// <summary>
+        /// Closes the active quiz window.
+        /// </summary>
+        private void CloseQuizWindow()
+        {
             foreach (Window window in Application.Current.Windows)
             {
                 if (window is Views.Quiz.QuizWindow)
@@ -195,6 +356,67 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Opens the result window for the completed quiz.
+        /// </summary>
+        private void ShowResultWindow()
+        {
+            if (_quizEngine == null)
+                return;
+
+            ResultWindow resultWindow =
+                new ResultWindow(
+                    new List<QuizAnswer>(_quizEngine.Session.Answers));
+
+            resultWindow.Show();
+        }
+
+        /// <summary>
+        /// Saves the completed session and its answers.
+        /// </summary>
+        private void SaveCompletedSession()
+        {
+            if (_quizEngine == null)
+                return;
+
+            TrainingSession session = _quizEngine.Session;
+
+            if (session == null ||
+                session.SessionID > 0 ||
+                session.Answers.Count == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                _sessionRepository.Save(session);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Training completed, but the result could not be saved to MySQL.\n\n" +
+                    ex.Message,
+                    "Save Result Warning",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+        }
+
+        #endregion
+
+        #region Helpers
+
+        /// <summary>
+        /// Refreshes command enabled states.
+        /// </summary>
+        private void RefreshCommands()
+        {
+            _goodCommand.RaiseCanExecuteChanged();
+
+            _ngCommand.RaiseCanExecuteChanged();
         }
 
         #endregion
