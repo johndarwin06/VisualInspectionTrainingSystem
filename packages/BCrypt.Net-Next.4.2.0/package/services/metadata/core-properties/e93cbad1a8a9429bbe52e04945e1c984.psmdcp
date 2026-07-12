@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coreProperties xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.openxmlformats.org/package/2006/metadata/core-properties">
+  <dc:creator>Chris McKee, Ryan D. Emerl, Damien Miller</dc:creator>
+  <dc:description>A fixed, enhanced and namespace compatible version of BCrypt.Net port of jBCrypt implemented in C#. It uses a variant of the Blowfish encryption algorithm’s keying schedule, and introduces a work factor, which allows you to determine how expensive the hash function will be, allowing the algorithm to be "future-proof".</dc:description>
+  <dc:identifier>BCrypt.Net-Next</dc:identifier>
+  <version>4.2.0</version>
+  <keywords>bcrypt BCrypt.Net cryptography hashing password security,hash crypto blowfish gdpr</keywords>
+  <lastModifiedBy>NuGet.Packaging, Version=7.3.1.22005, Culture=neutral, PublicKeyToken=31bf3856ad364e35;Microsoft Windows NT 10.0.26200.0;.NET Framework 4.7.2</lastModifiedBy>
+</coreProperties>

@@ -20,3 +20,7 @@
 
 - [x] Dashboard
 - [x] Reports
+
+# Sprint 5
+
+- [x] User Password Hashing and Migration
