@@ -1,6 +1,7 @@
 ﻿#region Namespaces
 
 using System;
+using System.Configuration;
 using System.IO;
 using System.Threading.Tasks;
 using VisualInspectionTrainingSystem.Services;
@@ -14,6 +15,12 @@ namespace VisualInspectionTrainingSystem.Services
     /// </summary>
     public class SystemInitializerService
     {
+        #region Fields
+
+        private string _startupErrorMessage;
+
+        #endregion
+
         #region Events
 
         /// <summary>
@@ -35,12 +42,21 @@ namespace VisualInspectionTrainingSystem.Services
         /// </summary>
         public async Task InitializeAsync()
         {
+            ApplicationSettings settings;
+
             // -----------------------------
             // Load Configuration
             // -----------------------------
 
             ReportProgress(10, "Loading configuration...");
             await Task.Delay(400);
+
+            if (!TryLoadConfiguration(out settings))
+            {
+                ReportProgress(10, _startupErrorMessage);
+
+                return;
+            }
 
             // -----------------------------
             // Database
@@ -53,7 +69,12 @@ namespace VisualInspectionTrainingSystem.Services
 
             if (!databaseConnected)
             {
-                ReportProgress(30, "Unable to connect to MySQL.");
+                ReportProgress(
+                    30,
+                    string.IsNullOrWhiteSpace(_startupErrorMessage)
+                        ? "Unable to connect to MySQL."
+                        : _startupErrorMessage);
+
                 return;
             }
 
@@ -64,7 +85,8 @@ namespace VisualInspectionTrainingSystem.Services
             ReportProgress(60, "Checking quiz image folder...");
             await Task.Delay(300);
 
-            int imageCount = CheckImageFolder();
+            int imageCount = CheckImageFolder(
+                settings.Paths.QuizImageFolder);
 
             ReportProgress(
                 80,
@@ -104,18 +126,64 @@ namespace VisualInspectionTrainingSystem.Services
         }
 
         /// <summary>
+        /// Loads and validates application configuration.
+        /// </summary>
+        private bool TryLoadConfiguration(out ApplicationSettings settings)
+        {
+            settings = null;
+
+            try
+            {
+                settings = ConfigurationService.GetApplicationSettings();
+
+                return true;
+            }
+            catch (ConfigurationErrorsException ex)
+            {
+                _startupErrorMessage = ex.Message;
+
+                return false;
+            }
+            catch
+            {
+                _startupErrorMessage =
+                    "Application configuration could not be loaded.";
+
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Checks the MySQL connection.
         /// </summary>
         private bool CheckDatabase()
         {
             try
             {
-                MySqlService database = new MySqlService();
+                using (MySqlService database = new MySqlService())
+                {
+                    bool connected = database.TestConnection();
 
-                return database.TestConnection();
+                    if (!connected)
+                    {
+                        _startupErrorMessage =
+                            "Unable to connect to MySQL. Check the local database configuration.";
+                    }
+
+                    return connected;
+                }
+            }
+            catch (ConfigurationErrorsException ex)
+            {
+                _startupErrorMessage = ex.Message;
+
+                return false;
             }
             catch
             {
+                _startupErrorMessage =
+                    "Unable to connect to MySQL. Check the local database configuration.";
+
                 return false;
             }
         }
@@ -123,11 +191,8 @@ namespace VisualInspectionTrainingSystem.Services
         /// <summary>
         /// Counts BMP images.
         /// </summary>
-        private int CheckImageFolder()
+        private int CheckImageFolder(string folder)
         {
-            const string folder =
-                @"D:\QuizImages";
-
             if (!Directory.Exists(folder))
                 return 0;
 

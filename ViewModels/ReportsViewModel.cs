@@ -11,6 +11,7 @@ using Microsoft.Win32;
 using VisualInspectionTrainingSystem.Commands;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Repositories;
+using VisualInspectionTrainingSystem.Services;
 
 #endregion
 
@@ -477,23 +478,27 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 return;
             }
 
-            SaveFileDialog dialog = new SaveFileDialog
-            {
-                AddExtension = true,
-                DefaultExt = ".csv",
-                FileName = $"TrainingReport_{DateTime.Now:yyyyMMdd_HHmmss}.csv",
-                Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
-                OverwritePrompt = true,
-                Title = "Export Training Report"
-            };
-
-            bool? result = dialog.ShowDialog();
-
-            if (result != true)
-                return;
-
             try
             {
+                PathSettings pathSettings =
+                    ConfigurationService.GetPathSettings();
+
+                SaveFileDialog dialog = new SaveFileDialog
+                {
+                    AddExtension = true,
+                    DefaultExt = ".csv",
+                    FileName = $"TrainingReport_{DateTime.Now:yyyyMMdd_HHmmss}.csv",
+                    Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+                    InitialDirectory = pathSettings.ExportFolder,
+                    OverwritePrompt = true,
+                    Title = "Export Training Report"
+                };
+
+                bool? result = dialog.ShowDialog();
+
+                if (result != true)
+                    return;
+
                 string csv = BuildCsv();
 
                 File.WriteAllText(
