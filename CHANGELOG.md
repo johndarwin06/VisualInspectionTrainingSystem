@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Database
+
+- Made completed quiz session persistence atomic with MySQL transactions.
+- Made answer batch persistence atomic with MySQL transactions.
+- Made admin answer review and session statistics recalculation atomic with MySQL transactions.
+- Prevented partial session, answer, or recalculated-result writes when a related operation fails.
+
 ### Configuration
 
 - Added a unified local XML configuration system for database and application path settings.

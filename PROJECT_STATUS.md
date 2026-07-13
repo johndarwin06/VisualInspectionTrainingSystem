@@ -4,7 +4,7 @@ Project: Visual Inspection Training System
 
 Current Version: 0.8 Beta
 
-Current Module: Configuration System
+Current Module: Database Transactions
 
 Build Status: Successful
 
@@ -27,9 +27,10 @@ Completed:
 - User Password Hashing and Migration
 - Secure Configuration
 - Configuration System
+- Database Transactions
 
 In Progress:
 - Stabilization
 
 Next Task:
-- Add real workstation values to `DatabaseSettings.local.config`, verify MySQL login manually, rotate any previously committed MySQL password, then continue the next stabilization issue.
+- Continue the next stabilization issue after reviewing the transaction changes in Visual Studio.

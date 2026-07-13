@@ -25,3 +25,13 @@ The service centralizes XML parsing, path normalization, required-value validati
 The configured quiz image folder is required to exist. The log, export, and report folders are output folders and are created automatically when missing and when the application has permission.
 
 Startup validation occurs in `SystemInitializerService`. Quiz and admin image loading use the configured quiz image folder through `AppConstants.QuizImageFolder` for compatibility. Report CSV export uses the configured export folder.
+
+## Database Transactions
+
+Completed quiz persistence is coordinated by `SessionRepository.Save`. The session row and all related answer rows are inserted with the same `MySqlConnection` and `MySqlTransaction`; the transaction commits only after every insert succeeds.
+
+Standalone answer batch persistence is coordinated by `AnswerRepository.SaveMany`. All answer rows in the batch use one connection and transaction.
+
+Admin answer review is coordinated by `AnswerRepository.ReviewAnswer`. The selected answer row is locked, updated, and followed by parent session statistics recalculation in the same transaction. The parent session row is locked before recalculation.
+
+Table creation checks run outside data transactions because MySQL DDL can cause implicit commits. Data-changing workflows roll back on exceptions and rethrow non-sensitive context.
