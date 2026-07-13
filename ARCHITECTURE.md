@@ -49,3 +49,21 @@ MySQL connection resiliency is centralized in `Services/MySqlService.cs` and con
 Each connection attempt uses the configured timeout in the generated MySQL connection string. Transient network and server availability failures are retried up to the configured retry count with a short configured delay. Authentication failures, invalid configuration, cancellation, and startup timeout failures are not retried.
 
 Startup database validation runs through `SystemInitializerService` using the asynchronous MySQL connection test and a bounded cancellation token derived from the configured timeout and retry policy. Errors shown to startup flow are non-sensitive and do not include passwords or full connection strings.
+
+## Repository Validation
+
+Repository public methods validate parameters before opening MySQL connections wherever applicable. Numeric identities must be greater than zero, EmployeeNo values must be present, answer collections must be non-null and contain no null elements, answer values must be GOOD or NG, completed sessions must have valid start/end ordering, and report date ranges must be ordered.
+
+Completed quiz persistence still runs through `SessionRepository.Save` and `AnswerRepository.SaveMany` in one transaction. Before inserting the session header, `SessionRepository` checks for an existing completion with the same EmployeeNo, StartTime second, EndTime second, TotalQuestions, and answer count. When that duplicate rule matches, the transaction rolls back and no new session or answers are saved.
+
+The duplicate rule uses existing schema fields only. A future schema migration should add an explicit client-generated completion identifier for stronger uniqueness:
+
+```sql
+ALTER TABLE tbl_training_session
+    ADD CompletionKey CHAR(36) NULL,
+    ADD UNIQUE INDEX UX_tbl_training_session_CompletionKey (CompletionKey);
+```
+
+Pending review answers are represented by `CorrectAnswer IS NULL`. Repository statistics count correct answers only when `CorrectAnswer IS NOT NULL AND IsCorrect = 1`, and wrong answers only when `CorrectAnswer IS NOT NULL AND IsCorrect = 0`.
+
+Report session rows aggregate answer data directly instead of relying only on stored summary columns, which keeps pending answers out of wrong-answer totals even when old session rows have stale summary values.

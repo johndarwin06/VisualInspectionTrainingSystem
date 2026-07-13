@@ -2,6 +2,7 @@
 
 using MySql.Data.MySqlClient;
 using System;
+using System.Collections.Generic;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Services;
 
@@ -52,7 +53,7 @@ namespace VisualInspectionTrainingSystem.Repositories
         /// <returns>The saved session identity.</returns>
         public int Save(TrainingSession session)
         {
-            ValidateSession(session);
+            ValidatedSession validatedSession = ValidateSession(session);
 
             MySqlTransaction transaction = null;
             int sessionId = 0;
@@ -69,8 +70,13 @@ namespace VisualInspectionTrainingSystem.Repositories
 
                 transaction = connection.BeginTransaction();
 
+                EnsureNotDuplicate(
+                    validatedSession,
+                    connection,
+                    transaction);
+
                 sessionId = InsertSession(
-                    session,
+                    validatedSession,
                     connection,
                     transaction);
 
@@ -78,7 +84,7 @@ namespace VisualInspectionTrainingSystem.Repositories
 
                 _answerRepository.SaveMany(
                     sessionId,
-                    session.Answers,
+                    validatedSession.Answers,
                     connection,
                     transaction);
 
@@ -94,10 +100,14 @@ namespace VisualInspectionTrainingSystem.Repositories
                     "completed quiz session persistence",
                     ex);
 
-                if (sessionId > 0 &&
-                    session != null)
+                if (sessionId > 0)
                 {
                     session.SessionID = 0;
+                }
+
+                if (IsDuplicateException(ex))
+                {
+                    throw;
                 }
 
                 throw new InvalidOperationException(
@@ -152,33 +162,202 @@ CREATE TABLE IF NOT EXISTS tbl_training_session
 
         #endregion
 
-        #region Private Methods
+        #region Validation
 
         /// <summary>
         /// Validates a completed training session before persistence.
         /// </summary>
-        private static void ValidateSession(TrainingSession session)
+        private static ValidatedSession ValidateSession(TrainingSession session)
         {
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
 
+            if (session.SessionID > 0)
+            {
+                throw new InvalidOperationException(
+                    "Training session has already been saved.");
+            }
+
             if (session.User == null)
-                throw new InvalidOperationException("Training session has no user.");
+            {
+                throw new ArgumentException(
+                    "Training session has no user.",
+                    nameof(session));
+            }
 
             if (string.IsNullOrWhiteSpace(session.User.EmployeeNo))
-                throw new InvalidOperationException("Training session user has no EmployeeNo.");
+            {
+                throw new ArgumentException(
+                    "Training session user has no EmployeeNo.",
+                    nameof(session));
+            }
+
+            if (session.TotalQuestions <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(session),
+                    "TotalQuestions must be greater than zero.");
+            }
+
+            if (!session.Finished.HasValue)
+            {
+                throw new InvalidOperationException(
+                    "Only completed training sessions can be saved.");
+            }
+
+            if (session.Started > session.Finished.Value)
+            {
+                throw new ArgumentException(
+                    "StartTime must not be later than EndTime.",
+                    nameof(session));
+            }
+
+            if (session.Answers == null)
+                throw new ArgumentNullException("session.Answers");
+
+            List<QuizAnswer> answers = new List<QuizAnswer>(session.Answers);
+
+            if (answers.Count == 0)
+            {
+                throw new ArgumentException(
+                    "Answer collections must not be empty.",
+                    nameof(session));
+            }
+
+            if (answers.Count != session.TotalQuestions)
+            {
+                throw new ArgumentException(
+                    "Answer count must match TotalQuestions for a completed training session.",
+                    nameof(session));
+            }
+
+            for (int index = 0; index < answers.Count; index++)
+            {
+                AnswerRepository.ValidateAnswerForPersistence(
+                    answers[index],
+                    "session.Answers[" + index + "]");
+            }
+
+            ValidateScoreTotals(session);
+
+            return new ValidatedSession(
+                session,
+                answers,
+                TrimToSecond(session.Started),
+                TrimToSecond(session.Finished.Value));
+        }
+
+        /// <summary>
+        /// Validates calculated training-session totals.
+        /// </summary>
+        private static void ValidateScoreTotals(TrainingSession session)
+        {
+            int totalQuestions = session.TotalQuestions;
+            int correctAnswers = session.CorrectAnswers;
+            int wrongAnswers = session.WrongAnswers;
+            double accuracy = session.Accuracy;
+
+            if (correctAnswers < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(session),
+                    "CorrectAnswers must not be negative.");
+            }
+
+            if (wrongAnswers < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(session),
+                    "WrongAnswers must not be negative.");
+            }
+
+            if (correctAnswers + wrongAnswers > totalQuestions)
+            {
+                throw new ArgumentException(
+                    "CorrectAnswers and WrongAnswers must not exceed TotalQuestions.",
+                    nameof(session));
+            }
+
+            if (accuracy < 0 ||
+                accuracy > 100)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(session),
+                    "Accuracy must be from 0 through 100.");
+            }
+        }
+
+        #endregion
+
+        #region Persistence
+
+        /// <summary>
+        /// Prevents the same completion event from being saved twice.
+        /// </summary>
+        private static void EnsureNotDuplicate(
+            ValidatedSession session,
+            MySqlConnection connection,
+            MySqlTransaction transaction)
+        {
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+
+            const string sql = @"
+SELECT s.SessionID
+FROM tbl_training_session s
+WHERE s.EmployeeNo = @EmployeeNo
+  AND ABS(TIMESTAMPDIFF(SECOND, s.StartTime, @StartTime)) = 0
+  AND s.EndTime IS NOT NULL
+  AND ABS(TIMESTAMPDIFF(SECOND, s.EndTime, @EndTime)) = 0
+  AND s.TotalQuestions = @TotalQuestions
+  AND
+  (
+      SELECT COUNT(*)
+      FROM tbl_quiz_answer a
+      WHERE a.SessionID = s.SessionID
+  ) = @AnswerCount
+ORDER BY s.SessionID DESC
+LIMIT 1
+FOR UPDATE;";
+
+            using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
+            {
+                command.Parameters.AddWithValue("@EmployeeNo", session.EmployeeNo);
+                command.Parameters.AddWithValue("@StartTime", session.StartTime);
+                command.Parameters.AddWithValue("@EndTime", session.EndTime);
+                command.Parameters.AddWithValue("@TotalQuestions", session.TotalQuestions);
+                command.Parameters.AddWithValue("@AnswerCount", session.Answers.Count);
+
+                object result = command.ExecuteScalar();
+
+                if (result != null &&
+                    result != DBNull.Value)
+                {
+                    throw new InvalidOperationException(
+                        "Duplicate completed quiz session detected. No new session or answers were saved.");
+                }
+            }
         }
 
         /// <summary>
         /// Inserts the session header and returns the generated identity.
         /// </summary>
-        private int InsertSession(
-            TrainingSession session,
+        private static int InsertSession(
+            ValidatedSession session,
             MySqlConnection connection,
             MySqlTransaction transaction)
         {
-            string sql = $@"
-INSERT INTO {TableName}
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+
+            string sql = @"
+INSERT INTO " + TableName + @"
 (
     EmployeeNo,
     StartTime,
@@ -201,9 +380,9 @@ VALUES
 
             using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
             {
-                command.Parameters.AddWithValue("@EmployeeNo", session.User.EmployeeNo);
-                command.Parameters.AddWithValue("@StartTime", session.Started);
-                command.Parameters.AddWithValue("@EndTime", GetEndTimeValue(session));
+                command.Parameters.AddWithValue("@EmployeeNo", session.EmployeeNo);
+                command.Parameters.AddWithValue("@StartTime", session.StartTime);
+                command.Parameters.AddWithValue("@EndTime", session.EndTime);
                 command.Parameters.AddWithValue("@TotalQuestions", session.TotalQuestions);
                 command.Parameters.AddWithValue("@CorrectAnswers", session.CorrectAnswers);
                 command.Parameters.AddWithValue("@WrongAnswers", session.WrongAnswers);
@@ -214,6 +393,10 @@ VALUES
                 return Convert.ToInt32(command.LastInsertedId);
             }
         }
+
+        #endregion
+
+        #region Helpers
 
         /// <summary>
         /// Rolls back an active transaction and preserves rollback failures.
@@ -243,14 +426,115 @@ VALUES
         }
 
         /// <summary>
-        /// Converts session finish time to a database value.
+        /// Returns true when an exception already describes duplicate persistence.
         /// </summary>
-        private static object GetEndTimeValue(TrainingSession session)
+        private static bool IsDuplicateException(Exception ex)
         {
-            if (session.Finished.HasValue)
-                return session.Finished.Value;
+            return ex is InvalidOperationException &&
+                   ex.Message.IndexOf(
+                       "Duplicate completed quiz session",
+                       StringComparison.OrdinalIgnoreCase) >= 0;
+        }
 
-            return DBNull.Value;
+        /// <summary>
+        /// Normalizes values to MySQL DATETIME second precision.
+        /// </summary>
+        private static DateTime TrimToSecond(DateTime value)
+        {
+            return new DateTime(
+                value.Year,
+                value.Month,
+                value.Day,
+                value.Hour,
+                value.Minute,
+                value.Second,
+                value.Kind);
+        }
+
+        #endregion
+
+        #region Nested Types
+
+        /// <summary>
+        /// Immutable validated session values used for persistence.
+        /// </summary>
+        private sealed class ValidatedSession
+        {
+            public ValidatedSession(
+                TrainingSession source,
+                List<QuizAnswer> answers,
+                DateTime startTime,
+                DateTime endTime)
+            {
+                Source = source;
+                Answers = answers;
+                StartTime = startTime;
+                EndTime = endTime;
+            }
+
+            public TrainingSession Source
+            {
+                get;
+                private set;
+            }
+
+            public List<QuizAnswer> Answers
+            {
+                get;
+                private set;
+            }
+
+            public string EmployeeNo
+            {
+                get
+                {
+                    return Source.User.EmployeeNo.Trim();
+                }
+            }
+
+            public DateTime StartTime
+            {
+                get;
+                private set;
+            }
+
+            public DateTime EndTime
+            {
+                get;
+                private set;
+            }
+
+            public int TotalQuestions
+            {
+                get
+                {
+                    return Source.TotalQuestions;
+                }
+            }
+
+            public int CorrectAnswers
+            {
+                get
+                {
+                    return Source.CorrectAnswers;
+                }
+            }
+
+            public int WrongAnswers
+            {
+                get
+                {
+                    return Source.WrongAnswers;
+                }
+            }
+
+            public double Accuracy
+            {
+                get
+                {
+                    return Source.Accuracy;
+                }
+            }
         }
 
         #endregion

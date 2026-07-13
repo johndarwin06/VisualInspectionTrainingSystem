@@ -1,5 +1,6 @@
 #region Namespaces
 
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -15,6 +16,12 @@ namespace VisualInspectionTrainingSystem.Repositories
     /// </summary>
     public class DashboardRepository
     {
+        #region Constants
+
+        private const int MaximumRecentSessionLimit = 500;
+
+        #endregion
+
         #region Fields
 
         private readonly MySqlService _database;
@@ -23,6 +30,9 @@ namespace VisualInspectionTrainingSystem.Repositories
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes the dashboard repository.
+        /// </summary>
         public DashboardRepository()
             : this(new MySqlService())
         {
@@ -75,10 +85,9 @@ SELECT
         /// </summary>
         public List<DashboardSessionSummary> GetRecentSessions(int limit)
         {
-            if (limit <= 0)
-                limit = 10;
+            ValidateLimit(limit);
 
-            string sql = @"
+            const string sql = @"
 SELECT
     SessionID,
     EmployeeNo,
@@ -90,11 +99,13 @@ SELECT
     Accuracy
 FROM tbl_training_session
 ORDER BY StartTime DESC, SessionID DESC
-LIMIT " + limit + ";";
+LIMIT @Limit;";
 
             try
             {
-                DataTable table = _database.ExecuteDataTable(sql);
+                DataTable table = _database.ExecuteDataTable(
+                    sql,
+                    new MySqlParameter("@Limit", limit));
 
                 List<DashboardSessionSummary> sessions =
                     new List<DashboardSessionSummary>();
@@ -116,6 +127,9 @@ LIMIT " + limit + ";";
 
         #region Mapping
 
+        /// <summary>
+        /// Maps aggregate dashboard values.
+        /// </summary>
         private static DashboardMetrics MapMetrics(DataRow row)
         {
             return new DashboardMetrics
@@ -130,13 +144,16 @@ LIMIT " + limit + ";";
             };
         }
 
+        /// <summary>
+        /// Maps one recent session row.
+        /// </summary>
         private static DashboardSessionSummary MapSession(DataRow row)
         {
             return new DashboardSessionSummary
             {
-                SessionID = ToInt(row["SessionID"]),
-                EmployeeNo = row["EmployeeNo"].ToString(),
-                StartTime = ToDate(row["StartTime"]),
+                SessionID = ToRequiredInt(row["SessionID"], "SessionID"),
+                EmployeeNo = ToRequiredString(row["EmployeeNo"], "EmployeeNo"),
+                StartTime = ToRequiredDate(row["StartTime"], "StartTime"),
                 EndTime = ToNullableDate(row["EndTime"]),
                 TotalQuestions = ToInt(row["TotalQuestions"]),
                 CorrectAnswers = ToInt(row["CorrectAnswers"]),
@@ -145,12 +162,54 @@ LIMIT " + limit + ";";
             };
         }
 
+        #endregion
+
+        #region Validation
+
+        /// <summary>
+        /// Validates the requested recent-session limit.
+        /// </summary>
+        private static void ValidateLimit(int limit)
+        {
+            if (limit <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(limit),
+                    "Recent session limit must be greater than zero.");
+            }
+
+            if (limit > MaximumRecentSessionLimit)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(limit),
+                    "Recent session limit is too large.");
+            }
+        }
+
+        #endregion
+
+        #region Conversion Helpers
+
         private static int ToInt(object value)
         {
             if (value == null ||
                 value == DBNull.Value)
             {
                 return 0;
+            }
+
+            return Convert.ToInt32(value);
+        }
+
+        private static int ToRequiredInt(
+            object value,
+            string columnName)
+        {
+            if (value == null ||
+                value == DBNull.Value)
+            {
+                throw new InvalidOperationException(
+                    columnName + " is required.");
             }
 
             return Convert.ToInt32(value);
@@ -167,12 +226,30 @@ LIMIT " + limit + ";";
             return Convert.ToDecimal(value);
         }
 
-        private static DateTime ToDate(object value)
+        private static string ToRequiredString(
+            object value,
+            string columnName)
+        {
+            if (value == null ||
+                value == DBNull.Value ||
+                string.IsNullOrWhiteSpace(value.ToString()))
+            {
+                throw new InvalidOperationException(
+                    columnName + " is required.");
+            }
+
+            return value.ToString();
+        }
+
+        private static DateTime ToRequiredDate(
+            object value,
+            string columnName)
         {
             if (value == null ||
                 value == DBNull.Value)
             {
-                return DateTime.MinValue;
+                throw new InvalidOperationException(
+                    columnName + " is required.");
             }
 
             return Convert.ToDateTime(value);

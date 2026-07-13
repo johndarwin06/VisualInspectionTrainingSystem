@@ -24,6 +24,9 @@ namespace VisualInspectionTrainingSystem.Repositories
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes the report repository.
+        /// </summary>
         public ReportRepository()
             : this(new MySqlService())
         {
@@ -48,14 +51,48 @@ namespace VisualInspectionTrainingSystem.Repositories
             DateTime? startDate,
             DateTime? endDateExclusive)
         {
+            ValidateDateRange(
+                startDate,
+                endDateExclusive);
+
             const string sql = @"
 SELECT
     COUNT(*) AS SessionCount,
     IFNULL(SUM(s.TotalQuestions), 0) AS TotalQuestions,
-    IFNULL(SUM(s.CorrectAnswers), 0) AS CorrectAnswers,
-    IFNULL(SUM(s.WrongAnswers), 0) AS WrongAnswers,
+    (
+        SELECT COUNT(*)
+        FROM tbl_quiz_answer a
+        INNER JOIN tbl_training_session ts
+            ON ts.SessionID = a.SessionID
+        WHERE (@StartDate IS NULL OR ts.StartTime >= @StartDate)
+          AND (@EndDate IS NULL OR ts.StartTime < @EndDate)
+          AND a.CorrectAnswer IS NOT NULL
+          AND a.IsCorrect = 1
+    ) AS CorrectAnswers,
+    (
+        SELECT COUNT(*)
+        FROM tbl_quiz_answer a
+        INNER JOIN tbl_training_session ts
+            ON ts.SessionID = a.SessionID
+        WHERE (@StartDate IS NULL OR ts.StartTime >= @StartDate)
+          AND (@EndDate IS NULL OR ts.StartTime < @EndDate)
+          AND a.CorrectAnswer IS NOT NULL
+          AND a.IsCorrect = 0
+    ) AS WrongAnswers,
     COUNT(DISTINCT s.EmployeeNo) AS TraineeCount,
-    IFNULL(ROUND(AVG(s.Accuracy), 2), 0) AS AverageAccuracy,
+    (
+        SELECT
+            CASE
+                WHEN COUNT(*) = 0 THEN 0
+                ELSE ROUND(SUM(CASE WHEN a.IsCorrect = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100, 2)
+            END
+        FROM tbl_quiz_answer a
+        INNER JOIN tbl_training_session ts
+            ON ts.SessionID = a.SessionID
+        WHERE (@StartDate IS NULL OR ts.StartTime >= @StartDate)
+          AND (@EndDate IS NULL OR ts.StartTime < @EndDate)
+          AND a.CorrectAnswer IS NOT NULL
+    ) AS AverageAccuracy,
     MIN(s.StartTime) AS FirstSessionTime,
     MAX(s.StartTime) AS LastSessionTime,
     (
@@ -105,6 +142,10 @@ WHERE (@StartDate IS NULL OR s.StartTime >= @StartDate)
             DateTime? startDate,
             DateTime? endDateExclusive)
         {
+            ValidateDateRange(
+                startDate,
+                endDateExclusive);
+
             const string sql = @"
 SELECT
     s.SessionID,
@@ -114,26 +155,32 @@ SELECT
     s.StartTime,
     s.EndTime,
     s.TotalQuestions,
-    s.CorrectAnswers,
-    s.WrongAnswers,
-    s.Accuracy,
-    (
-        SELECT COUNT(*)
-        FROM tbl_quiz_answer a
-        WHERE a.SessionID = s.SessionID
-          AND a.CorrectAnswer IS NULL
-    ) AS PendingAnswers,
-    (
-        SELECT COUNT(*)
-        FROM tbl_quiz_answer a
-        WHERE a.SessionID = s.SessionID
-          AND a.CorrectAnswer IS NOT NULL
-    ) AS ReviewedAnswers
+    IFNULL(SUM(CASE WHEN a.CorrectAnswer IS NOT NULL AND a.IsCorrect = 1 THEN 1 ELSE 0 END), 0) AS CorrectAnswers,
+    IFNULL(SUM(CASE WHEN a.CorrectAnswer IS NOT NULL AND a.IsCorrect = 0 THEN 1 ELSE 0 END), 0) AS WrongAnswers,
+    IFNULL(SUM(CASE WHEN a.CorrectAnswer IS NULL AND a.AnswerID IS NOT NULL THEN 1 ELSE 0 END), 0) AS PendingAnswers,
+    IFNULL(SUM(CASE WHEN a.CorrectAnswer IS NOT NULL THEN 1 ELSE 0 END), 0) AS ReviewedAnswers,
+    CASE
+        WHEN IFNULL(SUM(CASE WHEN a.CorrectAnswer IS NOT NULL THEN 1 ELSE 0 END), 0) = 0 THEN 0
+        ELSE ROUND(
+            IFNULL(SUM(CASE WHEN a.CorrectAnswer IS NOT NULL AND a.IsCorrect = 1 THEN 1 ELSE 0 END), 0) /
+            SUM(CASE WHEN a.CorrectAnswer IS NOT NULL THEN 1 ELSE 0 END) * 100,
+            2)
+    END AS Accuracy
 FROM tbl_training_session s
 LEFT JOIN tbl_users u
     ON u.EmployeeNo = s.EmployeeNo
+LEFT JOIN tbl_quiz_answer a
+    ON a.SessionID = s.SessionID
 WHERE (@StartDate IS NULL OR s.StartTime >= @StartDate)
   AND (@EndDate IS NULL OR s.StartTime < @EndDate)
+GROUP BY
+    s.SessionID,
+    s.EmployeeNo,
+    u.FullName,
+    u.Department,
+    s.StartTime,
+    s.EndTime,
+    s.TotalQuestions
 ORDER BY s.StartTime DESC, s.SessionID DESC
 LIMIT 500;";
 
@@ -164,6 +211,9 @@ LIMIT 500;";
 
         #region Mapping
 
+        /// <summary>
+        /// Maps aggregate report values.
+        /// </summary>
         private static ReportSummary MapSummary(DataRow row)
         {
             return new ReportSummary
@@ -181,15 +231,18 @@ LIMIT 500;";
             };
         }
 
+        /// <summary>
+        /// Maps one session report row.
+        /// </summary>
         private static ReportSessionRow MapSession(DataRow row)
         {
             return new ReportSessionRow
             {
-                SessionID = ToInt(row["SessionID"]),
-                EmployeeNo = row["EmployeeNo"].ToString(),
-                FullName = row["FullName"].ToString(),
-                Department = row["Department"].ToString(),
-                StartTime = ToDate(row["StartTime"]),
+                SessionID = ToRequiredInt(row["SessionID"], "SessionID"),
+                EmployeeNo = ToRequiredString(row["EmployeeNo"], "EmployeeNo"),
+                FullName = ToOptionalString(row["FullName"]),
+                Department = ToOptionalString(row["Department"]),
+                StartTime = ToRequiredDate(row["StartTime"], "StartTime"),
                 EndTime = ToNullableDate(row["EndTime"]),
                 TotalQuestions = ToInt(row["TotalQuestions"]),
                 CorrectAnswers = ToInt(row["CorrectAnswers"]),
@@ -200,6 +253,33 @@ LIMIT 500;";
             };
         }
 
+        #endregion
+
+        #region Validation
+
+        /// <summary>
+        /// Validates date range parameters before SQL execution.
+        /// </summary>
+        private static void ValidateDateRange(
+            DateTime? startDate,
+            DateTime? endDateExclusive)
+        {
+            if (startDate.HasValue &&
+                endDateExclusive.HasValue &&
+                startDate.Value > endDateExclusive.Value)
+            {
+                throw new ArgumentException(
+                    "Start date must not be later than end date.");
+            }
+        }
+
+        #endregion
+
+        #region SQL Parameters
+
+        /// <summary>
+        /// Creates a nullable date parameter.
+        /// </summary>
         private static MySqlParameter CreateDateParameter(
             string name,
             DateTime? value)
@@ -209,12 +289,30 @@ LIMIT 500;";
                 value.HasValue ? (object)value.Value : DBNull.Value);
         }
 
+        #endregion
+
+        #region Conversion Helpers
+
         private static int ToInt(object value)
         {
             if (value == null ||
                 value == DBNull.Value)
             {
                 return 0;
+            }
+
+            return Convert.ToInt32(value);
+        }
+
+        private static int ToRequiredInt(
+            object value,
+            string columnName)
+        {
+            if (value == null ||
+                value == DBNull.Value)
+            {
+                throw new InvalidOperationException(
+                    columnName + " is required.");
             }
 
             return Convert.ToInt32(value);
@@ -231,12 +329,41 @@ LIMIT 500;";
             return Convert.ToDecimal(value);
         }
 
-        private static DateTime ToDate(object value)
+        private static string ToOptionalString(object value)
         {
             if (value == null ||
                 value == DBNull.Value)
             {
-                return DateTime.MinValue;
+                return string.Empty;
+            }
+
+            return value.ToString();
+        }
+
+        private static string ToRequiredString(
+            object value,
+            string columnName)
+        {
+            if (value == null ||
+                value == DBNull.Value ||
+                string.IsNullOrWhiteSpace(value.ToString()))
+            {
+                throw new InvalidOperationException(
+                    columnName + " is required.");
+            }
+
+            return value.ToString();
+        }
+
+        private static DateTime ToRequiredDate(
+            object value,
+            string columnName)
+        {
+            if (value == null ||
+                value == DBNull.Value)
+            {
+                throw new InvalidOperationException(
+                    columnName + " is required.");
             }
 
             return Convert.ToDateTime(value);

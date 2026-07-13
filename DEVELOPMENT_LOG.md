@@ -2,6 +2,21 @@
 
 ## 2026-07-13
 
+### Repository Validation
+
+- Reviewed all repository classes for invalid parameters, unsafe null handling, duplicate persistence risks, `SELECT *` usage, deterministic ordering, and SQL parameterization.
+- Rewrote `SessionRepository` validation for completed sessions, answer collections, score totals, completion dates, and already-saved sessions.
+- Added database-backed duplicate completed-session detection inside the existing quiz save transaction.
+- Rewrote `AnswerRepository` validation so null answer collections, null answer elements, invalid ImageID values, invalid GOOD/NG values, inconsistent reviewed answers, and invalid answer timing are rejected before SQL.
+- Updated answer mapping so pending `CorrectAnswer` values load as null and are not counted as wrong.
+- Updated admin review recalculation to require exactly one affected answer/session row and keep pending answers out of wrong-answer totals.
+- Updated `UserRepository` to validate EmployeeNo and password-hash inputs before SQL and to map nullable user columns safely.
+- Updated `DashboardRepository` to parameterize the recent-session limit and stop replacing required session values with misleading defaults.
+- Updated `ReportRepository` to validate date ranges and calculate correct, wrong, pending, reviewed, and accuracy values from answer aggregates.
+- Updated `ImageRepository` folder validation and deterministic file ordering before optional shuffling.
+- Built `VisualInpsectionTrainingSystem.slnx` in Debug after repository changes.
+- Verified invalid input validation, successful quiz save, duplicate completion blocking, pending review loading, transaction rollback on forced answer insert failure, and normal connection behavior with a temporary repository probe.
+
 ### Connection Resiliency
 
 - Added configurable MySQL connection timeout, retry count, and retry delay settings to the local XML configuration.
