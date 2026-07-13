@@ -282,7 +282,19 @@ namespace VisualInspectionTrainingSystem.Services
                         "password",
                         true,
                         false),
-                    SslMode = GetRequiredAttribute(mysql, "sslMode")
+                    SslMode = GetRequiredAttribute(mysql, "sslMode"),
+                    ConnectionTimeoutSeconds = GetOptionalIntAttribute(
+                        mysql,
+                        "connectionTimeoutSeconds",
+                        5),
+                    RetryCount = GetOptionalIntAttribute(
+                        mysql,
+                        "retryCount",
+                        2),
+                    RetryDelayMilliseconds = GetOptionalIntAttribute(
+                        mysql,
+                        "retryDelayMilliseconds",
+                        500)
                 };
 
             ValidateDatabaseSettings(settings);
@@ -388,6 +400,30 @@ namespace VisualInspectionTrainingSystem.Services
             return port;
         }
 
+        private static int GetOptionalIntAttribute(
+            XElement element,
+            string attributeName,
+            int defaultValue)
+        {
+            XAttribute attribute = element.Attribute(attributeName);
+
+            if (attribute == null ||
+                string.IsNullOrWhiteSpace(attribute.Value))
+            {
+                return defaultValue;
+            }
+
+            int value;
+
+            if (!int.TryParse(attribute.Value.Trim(), out value))
+            {
+                throw CreateInvalidConfigurationException(
+                    "The '" + attributeName + "' value must be a whole number.");
+            }
+
+            return value;
+        }
+
         private static ConfigurationErrorsException CreateInvalidConfigurationException(
             string detail)
         {
@@ -426,6 +462,8 @@ namespace VisualInspectionTrainingSystem.Services
 
         private static void ValidateDatabaseSettings(DatabaseSettings settings)
         {
+            ValidateRetrySettings(settings);
+
             try
             {
                 BuildConnectionString(settings);
@@ -436,6 +474,30 @@ namespace VisualInspectionTrainingSystem.Services
                     "Application configuration contains an invalid MySQL setting. " +
                     ex.Message,
                     ex);
+            }
+        }
+
+        private static void ValidateRetrySettings(DatabaseSettings settings)
+        {
+            if (settings.ConnectionTimeoutSeconds < 1 ||
+                settings.ConnectionTimeoutSeconds > 60)
+            {
+                throw CreateInvalidConfigurationException(
+                    "connectionTimeoutSeconds must be from 1 to 60.");
+            }
+
+            if (settings.RetryCount < 0 ||
+                settings.RetryCount > 5)
+            {
+                throw CreateInvalidConfigurationException(
+                    "retryCount must be from 0 to 5.");
+            }
+
+            if (settings.RetryDelayMilliseconds < 0 ||
+                settings.RetryDelayMilliseconds > 10000)
+            {
+                throw CreateInvalidConfigurationException(
+                    "retryDelayMilliseconds must be from 0 to 10000.");
             }
         }
 
@@ -554,6 +616,7 @@ namespace VisualInspectionTrainingSystem.Services
             builder.Database = settings.Database;
             builder.UserID = settings.Username;
             builder.Password = settings.Password;
+            builder.ConnectionTimeout = Convert.ToUInt32(settings.ConnectionTimeoutSeconds);
             builder["SslMode"] = settings.SslMode;
 
             return builder.ConnectionString;
@@ -640,6 +703,33 @@ namespace VisualInspectionTrainingSystem.Services
         /// MySQL SSL mode.
         /// </summary>
         public string SslMode
+        {
+            get;
+            internal set;
+        }
+
+        /// <summary>
+        /// Connection timeout in seconds.
+        /// </summary>
+        public int ConnectionTimeoutSeconds
+        {
+            get;
+            internal set;
+        }
+
+        /// <summary>
+        /// Number of retry attempts after the first connection attempt.
+        /// </summary>
+        public int RetryCount
+        {
+            get;
+            internal set;
+        }
+
+        /// <summary>
+        /// Delay between retry attempts.
+        /// </summary>
+        public int RetryDelayMilliseconds
         {
             get;
             internal set;
