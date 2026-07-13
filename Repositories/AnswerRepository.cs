@@ -490,36 +490,27 @@ WHERE AnswerID = @AnswerID;";
                 transaction);
 
             const string sql = @"
-UPDATE tbl_training_session
+UPDATE tbl_training_session s
+LEFT JOIN
+(
+    SELECT
+        SessionID,
+        SUM(CASE WHEN CorrectAnswer IS NOT NULL AND IsCorrect = 1 THEN 1 ELSE 0 END) AS CorrectAnswers,
+        SUM(CASE WHEN CorrectAnswer IS NOT NULL AND IsCorrect = 0 THEN 1 ELSE 0 END) AS WrongAnswers,
+        SUM(CASE WHEN CorrectAnswer IS NOT NULL THEN 1 ELSE 0 END) AS ReviewedAnswers
+    FROM tbl_quiz_answer
+    WHERE SessionID = @SessionID
+    GROUP BY SessionID
+) answerTotals
+    ON answerTotals.SessionID = s.SessionID
 SET
-    CorrectAnswers =
-    (
-        SELECT COUNT(*)
-        FROM tbl_quiz_answer
-        WHERE SessionID = @SessionID
-          AND CorrectAnswer IS NOT NULL
-          AND IsCorrect = 1
-    ),
-    WrongAnswers =
-    (
-        SELECT COUNT(*)
-        FROM tbl_quiz_answer
-        WHERE SessionID = @SessionID
-          AND CorrectAnswer IS NOT NULL
-          AND IsCorrect = 0
-    ),
-    Accuracy =
-    (
-        SELECT
-            CASE
-                WHEN COUNT(*) = 0 THEN 0
-                ELSE ROUND(SUM(CASE WHEN IsCorrect = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100, 2)
-            END
-        FROM tbl_quiz_answer
-        WHERE SessionID = @SessionID
-          AND CorrectAnswer IS NOT NULL
-    )
-WHERE SessionID = @SessionID;";
+    s.CorrectAnswers = IFNULL(answerTotals.CorrectAnswers, 0),
+    s.WrongAnswers = IFNULL(answerTotals.WrongAnswers, 0),
+    s.Accuracy = CASE
+        WHEN IFNULL(answerTotals.ReviewedAnswers, 0) = 0 THEN 0
+        ELSE ROUND(IFNULL(answerTotals.CorrectAnswers, 0) / answerTotals.ReviewedAnswers * 100, 2)
+    END
+WHERE s.SessionID = @SessionID;";
 
             using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
             {

@@ -3,6 +3,9 @@
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Services;
 
@@ -19,6 +22,8 @@ namespace VisualInspectionTrainingSystem.Repositories
         #region Constants
 
         private const string TableName = "tbl_training_session";
+        private const string DuplicateKeyColumnName = "DuplicateKey";
+        private const string DuplicateKeyIndexName = "UX_tbl_training_session_DuplicateKey";
 
         #endregion
 
@@ -105,9 +110,14 @@ namespace VisualInspectionTrainingSystem.Repositories
                     session.SessionID = 0;
                 }
 
-                if (IsDuplicateException(ex))
+                if (IsDuplicateValidationException(ex))
                 {
                     throw;
+                }
+
+                if (IsDuplicateKeyException(ex))
+                {
+                    throw CreateDuplicateSessionException(ex);
                 }
 
                 throw new InvalidOperationException(
@@ -130,7 +140,7 @@ namespace VisualInspectionTrainingSystem.Repositories
         #region Internal Methods
 
         /// <summary>
-        /// Creates the session table when it does not exist.
+        /// Creates and upgrades the session table when needed.
         /// DDL is intentionally executed outside data transactions.
         /// </summary>
         /// <param name="connection">The open MySQL connection.</param>
@@ -150,6 +160,8 @@ CREATE TABLE IF NOT EXISTS tbl_training_session
     CorrectAnswers INT DEFAULT 0,
     WrongAnswers INT DEFAULT 0,
     Accuracy DECIMAL(5,2) DEFAULT 0,
+    DuplicateKey VARCHAR(64) NULL,
+    UNIQUE KEY UX_tbl_training_session_DuplicateKey (DuplicateKey),
     FOREIGN KEY(EmployeeNo)
         REFERENCES tbl_users(EmployeeNo)
 );";
@@ -157,6 +169,18 @@ CREATE TABLE IF NOT EXISTS tbl_training_session
             using (MySqlCommand command = new MySqlCommand(sql, connection))
             {
                 command.ExecuteNonQuery();
+            }
+
+            EnsureDuplicateKeyColumn(connection);
+
+            if (!IndexExists(
+                    connection,
+                    TableName,
+                    DuplicateKeyIndexName))
+            {
+                BackfillDuplicateKeys(connection);
+
+                EnsureDuplicateKeyIndex(connection);
             }
         }
 
@@ -240,11 +264,21 @@ CREATE TABLE IF NOT EXISTS tbl_training_session
 
             ValidateScoreTotals(session);
 
+            DateTime startTime = TrimToSecond(session.Started);
+            DateTime endTime = TrimToSecond(session.Finished.Value);
+            string duplicateKey = BuildDuplicateKey(
+                session.User.EmployeeNo,
+                startTime,
+                endTime,
+                session.TotalQuestions,
+                answers.Count);
+
             return new ValidatedSession(
                 session,
                 answers,
-                TrimToSecond(session.Started),
-                TrimToSecond(session.Finished.Value));
+                startTime,
+                endTime,
+                duplicateKey);
         }
 
         /// <summary>
@@ -305,6 +339,54 @@ CREATE TABLE IF NOT EXISTS tbl_training_session
             if (transaction == null)
                 throw new ArgumentNullException(nameof(transaction));
 
+            EnsureNoDuplicateKey(
+                session,
+                connection,
+                transaction);
+
+            EnsureNoLegacyDuplicate(
+                session,
+                connection,
+                transaction);
+        }
+
+        /// <summary>
+        /// Checks the database-enforced duplicate key before insertion.
+        /// </summary>
+        private static void EnsureNoDuplicateKey(
+            ValidatedSession session,
+            MySqlConnection connection,
+            MySqlTransaction transaction)
+        {
+            const string sql = @"
+SELECT SessionID
+FROM tbl_training_session
+WHERE DuplicateKey = @DuplicateKey
+LIMIT 1
+FOR UPDATE;";
+
+            using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
+            {
+                command.Parameters.AddWithValue("@DuplicateKey", session.DuplicateKey);
+
+                object result = command.ExecuteScalar();
+
+                if (result != null &&
+                    result != DBNull.Value)
+                {
+                    throw CreateDuplicateSessionException(null);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks historical rows that may not have a duplicate key because they predate the unique index.
+        /// </summary>
+        private static void EnsureNoLegacyDuplicate(
+            ValidatedSession session,
+            MySqlConnection connection,
+            MySqlTransaction transaction)
+        {
             const string sql = @"
 SELECT s.SessionID
 FROM tbl_training_session s
@@ -313,6 +395,7 @@ WHERE s.EmployeeNo = @EmployeeNo
   AND s.EndTime IS NOT NULL
   AND ABS(TIMESTAMPDIFF(SECOND, s.EndTime, @EndTime)) = 0
   AND s.TotalQuestions = @TotalQuestions
+  AND (s.DuplicateKey IS NULL OR s.DuplicateKey <> @DuplicateKey)
   AND
   (
       SELECT COUNT(*)
@@ -329,15 +412,15 @@ FOR UPDATE;";
                 command.Parameters.AddWithValue("@StartTime", session.StartTime);
                 command.Parameters.AddWithValue("@EndTime", session.EndTime);
                 command.Parameters.AddWithValue("@TotalQuestions", session.TotalQuestions);
-                command.Parameters.AddWithValue("@AnswerCount", session.Answers.Count);
+                command.Parameters.AddWithValue("@AnswerCount", session.AnswerCount);
+                command.Parameters.AddWithValue("@DuplicateKey", session.DuplicateKey);
 
                 object result = command.ExecuteScalar();
 
                 if (result != null &&
                     result != DBNull.Value)
                 {
-                    throw new InvalidOperationException(
-                        "Duplicate completed quiz session detected. No new session or answers were saved.");
+                    throw CreateDuplicateSessionException(null);
                 }
             }
         }
@@ -365,7 +448,8 @@ INSERT INTO " + TableName + @"
     TotalQuestions,
     CorrectAnswers,
     WrongAnswers,
-    Accuracy
+    Accuracy,
+    DuplicateKey
 )
 VALUES
 (
@@ -375,7 +459,8 @@ VALUES
     @TotalQuestions,
     @CorrectAnswers,
     @WrongAnswers,
-    @Accuracy
+    @Accuracy,
+    @DuplicateKey
 );";
 
             using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
@@ -387,10 +472,331 @@ VALUES
                 command.Parameters.AddWithValue("@CorrectAnswers", session.CorrectAnswers);
                 command.Parameters.AddWithValue("@WrongAnswers", session.WrongAnswers);
                 command.Parameters.AddWithValue("@Accuracy", session.Accuracy);
+                command.Parameters.AddWithValue("@DuplicateKey", session.DuplicateKey);
 
                 command.ExecuteNonQuery();
 
                 return Convert.ToInt32(command.LastInsertedId);
+            }
+        }
+
+        #endregion
+
+        #region Schema Upgrade
+
+        /// <summary>
+        /// Ensures the duplicate key column exists for existing installations.
+        /// </summary>
+        private static void EnsureDuplicateKeyColumn(MySqlConnection connection)
+        {
+            if (ColumnExists(
+                    connection,
+                    TableName,
+                    DuplicateKeyColumnName))
+            {
+                return;
+            }
+
+            const string sql = @"
+ALTER TABLE tbl_training_session
+ADD COLUMN DuplicateKey VARCHAR(64) NULL AFTER Accuracy;";
+
+            using (MySqlCommand command = new MySqlCommand(sql, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Backfills duplicate keys for existing non-duplicate completed sessions before the unique index is created.
+        /// </summary>
+        private static void BackfillDuplicateKeys(MySqlConnection connection)
+        {
+            List<ExistingSessionDuplicateInfo> sessions =
+                LoadExistingSessionDuplicateInfo(connection);
+
+            Dictionary<string, List<int>> idsByDuplicateKey =
+                new Dictionary<string, List<int>>(StringComparer.Ordinal);
+
+            foreach (ExistingSessionDuplicateInfo session in sessions)
+            {
+                if (string.IsNullOrWhiteSpace(session.DuplicateKey))
+                {
+                    UpdateDuplicateKey(
+                        connection,
+                        session.SessionID,
+                        null);
+
+                    continue;
+                }
+
+                List<int> sessionIds;
+
+                if (!idsByDuplicateKey.TryGetValue(
+                        session.DuplicateKey,
+                        out sessionIds))
+                {
+                    sessionIds = new List<int>();
+                    idsByDuplicateKey.Add(
+                        session.DuplicateKey,
+                        sessionIds);
+                }
+
+                sessionIds.Add(session.SessionID);
+            }
+
+            foreach (KeyValuePair<string, List<int>> duplicateGroup in idsByDuplicateKey)
+            {
+                string duplicateKeyToStore =
+                    duplicateGroup.Value.Count == 1
+                        ? duplicateGroup.Key
+                        : null;
+
+                foreach (int sessionId in duplicateGroup.Value)
+                {
+                    UpdateDuplicateKey(
+                        connection,
+                        sessionId,
+                        duplicateKeyToStore);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Loads existing sessions with the answer count needed to build duplicate keys.
+        /// </summary>
+        private static List<ExistingSessionDuplicateInfo> LoadExistingSessionDuplicateInfo(
+            MySqlConnection connection)
+        {
+            const string sql = @"
+SELECT
+    s.SessionID,
+    s.EmployeeNo,
+    s.StartTime,
+    s.EndTime,
+    s.TotalQuestions,
+    COUNT(a.AnswerID) AS AnswerCount
+FROM tbl_training_session s
+LEFT JOIN tbl_quiz_answer a
+    ON a.SessionID = s.SessionID
+GROUP BY
+    s.SessionID,
+    s.EmployeeNo,
+    s.StartTime,
+    s.EndTime,
+    s.TotalQuestions;";
+
+            List<ExistingSessionDuplicateInfo> sessions =
+                new List<ExistingSessionDuplicateInfo>();
+
+            using (MySqlCommand command = new MySqlCommand(sql, connection))
+            using (MySqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int sessionId = Convert.ToInt32(reader["SessionID"]);
+                    string duplicateKey = TryBuildExistingDuplicateKey(reader);
+
+                    sessions.Add(
+                        new ExistingSessionDuplicateInfo(
+                            sessionId,
+                            duplicateKey));
+                }
+            }
+
+            return sessions;
+        }
+
+        /// <summary>
+        /// Creates the unique duplicate key index when it is missing.
+        /// </summary>
+        private static void EnsureDuplicateKeyIndex(MySqlConnection connection)
+        {
+            if (IndexExists(
+                    connection,
+                    TableName,
+                    DuplicateKeyIndexName))
+            {
+                return;
+            }
+
+            const string sql = @"
+CREATE UNIQUE INDEX UX_tbl_training_session_DuplicateKey
+ON tbl_training_session (DuplicateKey);";
+
+            using (MySqlCommand command = new MySqlCommand(sql, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Updates a session duplicate key during schema migration.
+        /// </summary>
+        private static void UpdateDuplicateKey(
+            MySqlConnection connection,
+            int sessionId,
+            string duplicateKey)
+        {
+            const string sql = @"
+UPDATE tbl_training_session
+SET DuplicateKey = @DuplicateKey
+WHERE SessionID = @SessionID;";
+
+            using (MySqlCommand command = new MySqlCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue(
+                    "@DuplicateKey",
+                    string.IsNullOrWhiteSpace(duplicateKey)
+                        ? (object)DBNull.Value
+                        : duplicateKey);
+
+                command.Parameters.AddWithValue("@SessionID", sessionId);
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Returns true when a table column exists in the current database.
+        /// </summary>
+        private static bool ColumnExists(
+            MySqlConnection connection,
+            string tableName,
+            string columnName)
+        {
+            const string sql = @"
+SELECT COUNT(*)
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE()
+  AND TABLE_NAME = @TableName
+  AND COLUMN_NAME = @ColumnName;";
+
+            using (MySqlCommand command = new MySqlCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue("@TableName", tableName);
+                command.Parameters.AddWithValue("@ColumnName", columnName);
+
+                return Convert.ToInt32(command.ExecuteScalar()) > 0;
+            }
+        }
+
+        /// <summary>
+        /// Returns true when an index exists in the current database.
+        /// </summary>
+        private static bool IndexExists(
+            MySqlConnection connection,
+            string tableName,
+            string indexName)
+        {
+            const string sql = @"
+SELECT COUNT(*)
+FROM information_schema.STATISTICS
+WHERE TABLE_SCHEMA = DATABASE()
+  AND TABLE_NAME = @TableName
+  AND INDEX_NAME = @IndexName;";
+
+            using (MySqlCommand command = new MySqlCommand(sql, connection))
+            {
+                command.Parameters.AddWithValue("@TableName", tableName);
+                command.Parameters.AddWithValue("@IndexName", indexName);
+
+                return Convert.ToInt32(command.ExecuteScalar()) > 0;
+            }
+        }
+
+        #endregion
+
+        #region Duplicate Key Helpers
+
+        /// <summary>
+        /// Builds the stable completion key protected by the database unique index.
+        /// </summary>
+        private static string BuildDuplicateKey(
+            string employeeNo,
+            DateTime startTime,
+            DateTime endTime,
+            int totalQuestions,
+            int answerCount)
+        {
+            string material =
+                NormalizeEmployeeNo(employeeNo) +
+                "|" +
+                startTime.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture) +
+                "|" +
+                endTime.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture) +
+                "|" +
+                totalQuestions.ToString(CultureInfo.InvariantCulture) +
+                "|" +
+                answerCount.ToString(CultureInfo.InvariantCulture);
+
+            return ComputeSha256Hex(material);
+        }
+
+        /// <summary>
+        /// Builds a duplicate key for an existing completed session, or null when the historical row is incomplete.
+        /// </summary>
+        private static string TryBuildExistingDuplicateKey(MySqlDataReader reader)
+        {
+            if (reader["EmployeeNo"] == null ||
+                reader["EmployeeNo"] == DBNull.Value ||
+                string.IsNullOrWhiteSpace(reader["EmployeeNo"].ToString()) ||
+                reader["StartTime"] == null ||
+                reader["StartTime"] == DBNull.Value ||
+                reader["EndTime"] == null ||
+                reader["EndTime"] == DBNull.Value ||
+                reader["TotalQuestions"] == null ||
+                reader["TotalQuestions"] == DBNull.Value ||
+                reader["AnswerCount"] == null ||
+                reader["AnswerCount"] == DBNull.Value)
+            {
+                return null;
+            }
+
+            int totalQuestions = Convert.ToInt32(reader["TotalQuestions"]);
+            int answerCount = Convert.ToInt32(reader["AnswerCount"]);
+
+            if (totalQuestions <= 0 ||
+                answerCount <= 0)
+            {
+                return null;
+            }
+
+            return BuildDuplicateKey(
+                reader["EmployeeNo"].ToString(),
+                TrimToSecond(Convert.ToDateTime(reader["StartTime"])),
+                TrimToSecond(Convert.ToDateTime(reader["EndTime"])),
+                totalQuestions,
+                answerCount);
+        }
+
+        /// <summary>
+        /// Normalizes employee numbers for a database-level idempotency key.
+        /// </summary>
+        private static string NormalizeEmployeeNo(string employeeNo)
+        {
+            return employeeNo.Trim().ToUpperInvariant();
+        }
+
+        /// <summary>
+        /// Computes a lowercase SHA-256 hex string.
+        /// </summary>
+        private static string ComputeSha256Hex(string value)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(value);
+
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] hash = sha256.ComputeHash(bytes);
+                StringBuilder builder = new StringBuilder(hash.Length * 2);
+
+                for (int index = 0; index < hash.Length; index++)
+                {
+                    builder.Append(
+                        hash[index].ToString("x2", CultureInfo.InvariantCulture));
+                }
+
+                return builder.ToString();
             }
         }
 
@@ -426,14 +832,43 @@ VALUES
         }
 
         /// <summary>
+        /// Creates the standard duplicate-session exception without sensitive details.
+        /// </summary>
+        private static InvalidOperationException CreateDuplicateSessionException(Exception innerException)
+        {
+            return new InvalidOperationException(
+                "Duplicate completed quiz session detected. No new session or answers were saved.",
+                innerException);
+        }
+
+        /// <summary>
         /// Returns true when an exception already describes duplicate persistence.
         /// </summary>
-        private static bool IsDuplicateException(Exception ex)
+        private static bool IsDuplicateValidationException(Exception ex)
         {
             return ex is InvalidOperationException &&
                    ex.Message.IndexOf(
                        "Duplicate completed quiz session",
                        StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        /// <summary>
+        /// Returns true when MySQL rejected the insert through the unique duplicate-session key.
+        /// </summary>
+        private static bool IsDuplicateKeyException(Exception ex)
+        {
+            if (ex == null)
+                return false;
+
+            MySqlException mysqlException = ex as MySqlException;
+
+            if (mysqlException != null &&
+                mysqlException.Number == 1062)
+            {
+                return true;
+            }
+
+            return IsDuplicateKeyException(ex.InnerException);
         }
 
         /// <summary>
@@ -464,12 +899,14 @@ VALUES
                 TrainingSession source,
                 List<QuizAnswer> answers,
                 DateTime startTime,
-                DateTime endTime)
+                DateTime endTime,
+                string duplicateKey)
             {
                 Source = source;
                 Answers = answers;
                 StartTime = startTime;
                 EndTime = endTime;
+                DuplicateKey = duplicateKey;
             }
 
             public TrainingSession Source
@@ -534,6 +971,46 @@ VALUES
                 {
                     return Source.Accuracy;
                 }
+            }
+
+            public int AnswerCount
+            {
+                get
+                {
+                    return Answers.Count;
+                }
+            }
+
+            public string DuplicateKey
+            {
+                get;
+                private set;
+            }
+        }
+
+        /// <summary>
+        /// Historical session information used during duplicate-key migration.
+        /// </summary>
+        private sealed class ExistingSessionDuplicateInfo
+        {
+            public ExistingSessionDuplicateInfo(
+                int sessionId,
+                string duplicateKey)
+            {
+                SessionID = sessionId;
+                DuplicateKey = duplicateKey;
+            }
+
+            public int SessionID
+            {
+                get;
+                private set;
+            }
+
+            public string DuplicateKey
+            {
+                get;
+                private set;
             }
         }
 

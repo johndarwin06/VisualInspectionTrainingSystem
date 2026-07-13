@@ -6,8 +6,12 @@
 
 - Added repository input validation before SQL execution for sessions, answers, users, dashboard limits, report date ranges, and image folders.
 - Added duplicate completed-session protection inside the quiz persistence transaction.
+- Added a database-enforced completed-session duplicate key and unique index while preserving transactional session and answer persistence.
+- Added duplicate-key migration handling that backfills unique historical completion rows and leaves historical duplicate groups nullable so the unique index can be created safely.
+- Changed user activation mapping to fail closed when `IsActive` is null or malformed.
 - Updated repository null handling so pending quiz answers keep `CorrectAnswer` as null and are not counted as wrong.
 - Updated report calculations to use answer aggregates for correct, wrong, pending, reviewed, and accuracy values.
+- Optimized dashboard metrics, report summaries, and session recalculation with conditional aggregation to reduce repeated table scans.
 - Parameterized dashboard recent-session limits and kept deterministic ordering on session queries.
 - Made completed quiz session persistence atomic with MySQL transactions.
 - Made answer batch persistence atomic with MySQL transactions.

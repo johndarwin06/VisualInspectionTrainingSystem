@@ -2,6 +2,20 @@
 
 ## 2026-07-13
 
+### Repository Validation Hardening
+
+- Updated `UserRepository` so null or malformed `IsActive` data maps to inactive instead of active.
+- Confirmed `AuthenticationService` rejects a database user whose `IsActive` value is null.
+- Added a nullable `DuplicateKey` column and unique index for the completed-session duplicate rule.
+- Added duplicate-key migration handling that backfills only unique historical completion rows before creating the unique index.
+- Preserved the existing transaction that saves a session header and all quiz answers atomically.
+- Added duplicate-key handling that reports a clear non-sensitive duplicate-completion message.
+- Rewrote `AnswerRepository.RecalculateSession` to update correct, wrong, and accuracy values from one conditional aggregate.
+- Rewrote `DashboardRepository.GetMetrics` to consolidate session and answer scans.
+- Rewrote `ReportRepository.GetSummary` to consolidate filtered session and answer totals.
+- Built `VisualInpsectionTrainingSystem.slnx` in Debug after each modified C# repository file.
+- Verified null activation rejection, simultaneous duplicate save handling, forced answer insert rollback, pending answer loading, dashboard metrics, and report summary totals with a temporary repository hardening probe.
+
 ### Repository Validation
 
 - Reviewed all repository classes for invalid parameters, unsafe null handling, duplicate persistence risks, `SELECT *` usage, deterministic ordering, and SQL parameterization.

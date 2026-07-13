@@ -59,61 +59,33 @@ namespace VisualInspectionTrainingSystem.Repositories
 SELECT
     COUNT(*) AS SessionCount,
     IFNULL(SUM(s.TotalQuestions), 0) AS TotalQuestions,
-    (
-        SELECT COUNT(*)
-        FROM tbl_quiz_answer a
-        INNER JOIN tbl_training_session ts
-            ON ts.SessionID = a.SessionID
-        WHERE (@StartDate IS NULL OR ts.StartTime >= @StartDate)
-          AND (@EndDate IS NULL OR ts.StartTime < @EndDate)
-          AND a.CorrectAnswer IS NOT NULL
-          AND a.IsCorrect = 1
-    ) AS CorrectAnswers,
-    (
-        SELECT COUNT(*)
-        FROM tbl_quiz_answer a
-        INNER JOIN tbl_training_session ts
-            ON ts.SessionID = a.SessionID
-        WHERE (@StartDate IS NULL OR ts.StartTime >= @StartDate)
-          AND (@EndDate IS NULL OR ts.StartTime < @EndDate)
-          AND a.CorrectAnswer IS NOT NULL
-          AND a.IsCorrect = 0
-    ) AS WrongAnswers,
+    IFNULL(SUM(IFNULL(answerTotals.CorrectAnswers, 0)), 0) AS CorrectAnswers,
+    IFNULL(SUM(IFNULL(answerTotals.WrongAnswers, 0)), 0) AS WrongAnswers,
     COUNT(DISTINCT s.EmployeeNo) AS TraineeCount,
-    (
-        SELECT
-            CASE
-                WHEN COUNT(*) = 0 THEN 0
-                ELSE ROUND(SUM(CASE WHEN a.IsCorrect = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100, 2)
-            END
-        FROM tbl_quiz_answer a
-        INNER JOIN tbl_training_session ts
-            ON ts.SessionID = a.SessionID
-        WHERE (@StartDate IS NULL OR ts.StartTime >= @StartDate)
-          AND (@EndDate IS NULL OR ts.StartTime < @EndDate)
-          AND a.CorrectAnswer IS NOT NULL
-    ) AS AverageAccuracy,
+    CASE
+        WHEN IFNULL(SUM(IFNULL(answerTotals.ReviewedAnswers, 0)), 0) = 0 THEN 0
+        ELSE ROUND(
+            IFNULL(SUM(IFNULL(answerTotals.CorrectAnswers, 0)), 0) /
+            SUM(IFNULL(answerTotals.ReviewedAnswers, 0)) * 100,
+            2)
+    END AS AverageAccuracy,
     MIN(s.StartTime) AS FirstSessionTime,
     MAX(s.StartTime) AS LastSessionTime,
-    (
-        SELECT COUNT(*)
-        FROM tbl_quiz_answer a
-        INNER JOIN tbl_training_session ts
-            ON ts.SessionID = a.SessionID
-        WHERE (@StartDate IS NULL OR ts.StartTime >= @StartDate)
-          AND (@EndDate IS NULL OR ts.StartTime < @EndDate)
-          AND a.CorrectAnswer IS NULL
-    ) AS PendingAnswers,
-    (
-        SELECT COUNT(*)
-        FROM tbl_quiz_answer a
-        INNER JOIN tbl_training_session ts
-            ON ts.SessionID = a.SessionID
-        WHERE (@StartDate IS NULL OR ts.StartTime >= @StartDate)
-          AND (@EndDate IS NULL OR ts.StartTime < @EndDate)
-          AND a.CorrectAnswer IS NOT NULL
-    ) AS ReviewedAnswers
+    IFNULL(SUM(IFNULL(answerTotals.PendingAnswers, 0)), 0) AS PendingAnswers,
+    IFNULL(SUM(IFNULL(answerTotals.ReviewedAnswers, 0)), 0) AS ReviewedAnswers
 FROM tbl_training_session s
+LEFT JOIN
+(
+    SELECT
+        SessionID,
+        SUM(CASE WHEN CorrectAnswer IS NOT NULL AND IsCorrect = 1 THEN 1 ELSE 0 END) AS CorrectAnswers,
+        SUM(CASE WHEN CorrectAnswer IS NOT NULL AND IsCorrect = 0 THEN 1 ELSE 0 END) AS WrongAnswers,
+        SUM(CASE WHEN CorrectAnswer IS NULL THEN 1 ELSE 0 END) AS PendingAnswers,
+        SUM(CASE WHEN CorrectAnswer IS NOT NULL THEN 1 ELSE 0 END) AS ReviewedAnswers
+    FROM tbl_quiz_answer
+    GROUP BY SessionID
+) answerTotals
+    ON answerTotals.SessionID = s.SessionID
 WHERE (@StartDate IS NULL OR s.StartTime >= @StartDate)
   AND (@EndDate IS NULL OR s.StartTime < @EndDate);";
 
@@ -293,6 +265,9 @@ LIMIT 500;";
 
         #region Conversion Helpers
 
+        /// <summary>
+        /// Converts a nullable numeric value to an integer.
+        /// </summary>
         private static int ToInt(object value)
         {
             if (value == null ||
@@ -304,6 +279,9 @@ LIMIT 500;";
             return Convert.ToInt32(value);
         }
 
+        /// <summary>
+        /// Converts a required numeric value to an integer.
+        /// </summary>
         private static int ToRequiredInt(
             object value,
             string columnName)
@@ -318,6 +296,9 @@ LIMIT 500;";
             return Convert.ToInt32(value);
         }
 
+        /// <summary>
+        /// Converts a nullable numeric value to a decimal.
+        /// </summary>
         private static decimal ToDecimal(object value)
         {
             if (value == null ||
@@ -329,6 +310,9 @@ LIMIT 500;";
             return Convert.ToDecimal(value);
         }
 
+        /// <summary>
+        /// Converts a nullable string value.
+        /// </summary>
         private static string ToOptionalString(object value)
         {
             if (value == null ||
@@ -340,6 +324,9 @@ LIMIT 500;";
             return value.ToString();
         }
 
+        /// <summary>
+        /// Converts a required string value.
+        /// </summary>
         private static string ToRequiredString(
             object value,
             string columnName)
@@ -355,6 +342,9 @@ LIMIT 500;";
             return value.ToString();
         }
 
+        /// <summary>
+        /// Converts a required DateTime value.
+        /// </summary>
         private static DateTime ToRequiredDate(
             object value,
             string columnName)
@@ -369,6 +359,9 @@ LIMIT 500;";
             return Convert.ToDateTime(value);
         }
 
+        /// <summary>
+        /// Converts a nullable DateTime value.
+        /// </summary>
         private static DateTime? ToNullableDate(object value)
         {
             if (value == null ||
