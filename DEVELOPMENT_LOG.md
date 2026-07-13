@@ -2,6 +2,18 @@
 
 ## 2026-07-13
 
+### Database Transactions
+
+- Updated completed quiz persistence so the session header and all answer rows are saved in one MySQL transaction.
+- Moved table creation checks outside data transactions to avoid MySQL implicit DDL commits.
+- Updated standalone answer batch persistence to use one MySQL transaction.
+- Updated admin answer review so the answer update and parent session statistics recalculation use the same connection and transaction.
+- Added transaction-aware repository methods that accept `MySqlConnection` and `MySqlTransaction`.
+- Added row locking for admin review lookups and parent session recalculation.
+- Added rollback behavior with non-sensitive exception context.
+- Built `VisualInpsectionTrainingSystem.slnx` in Debug.
+- Verified successful quiz save, forced answer persistence rollback, successful admin review, and forced recalculation rollback with a temporary transaction probe.
+
 ### Configuration System
 
 - Replaced the empty `ConfigurationService` with a strongly typed XML configuration loader.

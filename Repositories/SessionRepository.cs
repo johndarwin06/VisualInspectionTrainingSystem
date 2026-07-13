@@ -31,6 +31,9 @@ namespace VisualInspectionTrainingSystem.Repositories
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes the session repository.
+        /// </summary>
         public SessionRepository()
         {
             _database = new MySqlService();
@@ -43,74 +46,89 @@ namespace VisualInspectionTrainingSystem.Repositories
         #region Public Methods
 
         /// <summary>
-        /// Saves one completed training session and its answers.
+        /// Saves one completed training session and its answers atomically.
         /// </summary>
+        /// <param name="session">The completed training session.</param>
+        /// <returns>The saved session identity.</returns>
         public int Save(TrainingSession session)
         {
-            if (session == null)
-                throw new ArgumentNullException(nameof(session));
+            ValidateSession(session);
 
-            if (session.User == null)
-                throw new InvalidOperationException("Training session has no user.");
+            MySqlTransaction transaction = null;
+            int sessionId = 0;
 
-            if (string.IsNullOrWhiteSpace(session.User.EmployeeNo))
-                throw new InvalidOperationException("Training session user has no EmployeeNo.");
-
-            using (MySqlTransaction transaction = _database.BeginTransaction())
+            try
             {
-                try
+                _database.OpenConnection();
+
+                MySqlConnection connection = _database.GetConnection();
+
+                EnsureTable(connection);
+
+                _answerRepository.EnsureTable(connection);
+
+                transaction = connection.BeginTransaction();
+
+                sessionId = InsertSession(
+                    session,
+                    connection,
+                    transaction);
+
+                session.SessionID = sessionId;
+
+                _answerRepository.SaveMany(
+                    sessionId,
+                    session.Answers,
+                    connection,
+                    transaction);
+
+                transaction.Commit();
+                transaction = null;
+
+                return sessionId;
+            }
+            catch (Exception ex)
+            {
+                RollbackTransaction(
+                    transaction,
+                    "completed quiz session persistence",
+                    ex);
+
+                if (sessionId > 0 &&
+                    session != null)
                 {
-                    MySqlConnection connection = _database.GetConnection();
-
-                    EnsureTable(
-                        connection,
-                        transaction);
-
-                    _answerRepository.EnsureTable(
-                        connection,
-                        transaction);
-
-                    int sessionId = InsertSession(
-                        session,
-                        connection,
-                        transaction);
-
-                    session.SessionID = sessionId;
-
-                    _answerRepository.SaveMany(
-                        sessionId,
-                        session.Answers,
-                        connection,
-                        transaction);
-
-                    transaction.Commit();
-
-                    return sessionId;
+                    session.SessionID = 0;
                 }
-                catch
+
+                throw new InvalidOperationException(
+                    "Failed to save the completed quiz session. The session and answer inserts were rolled back.",
+                    ex);
+            }
+            finally
+            {
+                if (transaction != null)
                 {
-                    transaction.Rollback();
+                    transaction.Dispose();
+                }
 
-                    throw;
-                }
-                finally
-                {
-                    _database.CloseConnection();
-                }
+                _database.CloseConnection();
             }
         }
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
         /// <summary>
         /// Creates the session table when it does not exist.
+        /// DDL is intentionally executed outside data transactions.
         /// </summary>
-        private void EnsureTable(
-            MySqlConnection connection,
-            MySqlTransaction transaction)
+        /// <param name="connection">The open MySQL connection.</param>
+        internal void EnsureTable(MySqlConnection connection)
         {
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
             const string sql = @"
 CREATE TABLE IF NOT EXISTS tbl_training_session
 (
@@ -126,10 +144,29 @@ CREATE TABLE IF NOT EXISTS tbl_training_session
         REFERENCES tbl_users(EmployeeNo)
 );";
 
-            using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
+            using (MySqlCommand command = new MySqlCommand(sql, connection))
             {
                 command.ExecuteNonQuery();
             }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Validates a completed training session before persistence.
+        /// </summary>
+        private static void ValidateSession(TrainingSession session)
+        {
+            if (session == null)
+                throw new ArgumentNullException(nameof(session));
+
+            if (session.User == null)
+                throw new InvalidOperationException("Training session has no user.");
+
+            if (string.IsNullOrWhiteSpace(session.User.EmployeeNo))
+                throw new InvalidOperationException("Training session user has no EmployeeNo.");
         }
 
         /// <summary>
@@ -175,6 +212,33 @@ VALUES
                 command.ExecuteNonQuery();
 
                 return Convert.ToInt32(command.LastInsertedId);
+            }
+        }
+
+        /// <summary>
+        /// Rolls back an active transaction and preserves rollback failures.
+        /// </summary>
+        private static void RollbackTransaction(
+            MySqlTransaction transaction,
+            string operationName,
+            Exception originalException)
+        {
+            if (transaction == null)
+                return;
+
+            try
+            {
+                transaction.Rollback();
+            }
+            catch (Exception rollbackException)
+            {
+                throw new InvalidOperationException(
+                    "Failed to roll back the " +
+                    operationName +
+                    " transaction.",
+                    new AggregateException(
+                        originalException,
+                        rollbackException));
             }
         }
 

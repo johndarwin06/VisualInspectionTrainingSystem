@@ -31,6 +31,9 @@ namespace VisualInspectionTrainingSystem.Repositories
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes the answer repository.
+        /// </summary>
         public AnswerRepository()
             : this(new MySqlService())
         {
@@ -88,7 +91,7 @@ ORDER BY a.AnswerTime DESC, a.AnswerID DESC;";
         }
 
         /// <summary>
-        /// Assigns the correct answer for one saved quiz answer.
+        /// Assigns the correct answer and recalculates the parent session atomically.
         /// </summary>
         public void ReviewAnswer(
             int answerId,
@@ -97,40 +100,62 @@ ORDER BY a.AnswerTime DESC, a.AnswerID DESC;";
             if (answerId <= 0)
                 throw new ArgumentOutOfRangeException(nameof(answerId));
 
-            int sessionId = GetSessionId(answerId);
-
-            if (sessionId <= 0)
-                throw new InvalidOperationException("Answer was not found.");
-
-            string correctAnswerText = GetAnswerText(correctAnswer);
-
-            const string sql = @"
-UPDATE tbl_quiz_answer
-SET
-    CorrectAnswer = @CorrectAnswer,
-    IsCorrect = CASE
-        WHEN UPPER(UserAnswer) = @CorrectAnswer THEN 1
-        ELSE 0
-    END
-WHERE AnswerID = @AnswerID;";
+            MySqlTransaction transaction = null;
 
             try
             {
-                _database.ExecuteNonQuery(
-                    sql,
-                    new MySqlParameter("@CorrectAnswer", correctAnswerText),
-                    new MySqlParameter("@AnswerID", answerId));
+                _database.OpenConnection();
+
+                MySqlConnection connection = _database.GetConnection();
+
+                transaction = connection.BeginTransaction();
+
+                int sessionId = GetSessionId(
+                    answerId,
+                    connection,
+                    transaction);
+
+                if (sessionId <= 0)
+                    throw new InvalidOperationException("Answer was not found.");
+
+                UpdateReviewedAnswer(
+                    answerId,
+                    correctAnswer,
+                    connection,
+                    transaction);
+
+                RecalculateSession(
+                    sessionId,
+                    connection,
+                    transaction);
+
+                transaction.Commit();
+                transaction = null;
+            }
+            catch (Exception ex)
+            {
+                RollbackTransaction(
+                    transaction,
+                    "admin answer review",
+                    ex);
+
+                throw new InvalidOperationException(
+                    "Failed to review the selected answer. The review update and session recalculation were rolled back.",
+                    ex);
             }
             finally
             {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
                 _database.CloseConnection();
             }
-
-            RecalculateSession(sessionId);
         }
 
         /// <summary>
-        /// Saves all answers for one training session.
+        /// Saves all answers for one training session atomically.
         /// </summary>
         public void SaveMany(
             int sessionId,
@@ -139,32 +164,46 @@ WHERE AnswerID = @AnswerID;";
             if (sessionId <= 0)
                 throw new ArgumentOutOfRangeException(nameof(sessionId));
 
-            using (MySqlTransaction transaction = _database.BeginTransaction())
+            MySqlTransaction transaction = null;
+
+            try
             {
-                try
-                {
-                    EnsureTable(
-                        _database.GetConnection(),
-                        transaction);
+                _database.OpenConnection();
 
-                    SaveMany(
-                        sessionId,
-                        answers,
-                        _database.GetConnection(),
-                        transaction);
+                MySqlConnection connection = _database.GetConnection();
 
-                    transaction.Commit();
-                }
-                catch
-                {
-                    transaction.Rollback();
+                EnsureTable(connection);
 
-                    throw;
-                }
-                finally
+                transaction = connection.BeginTransaction();
+
+                SaveMany(
+                    sessionId,
+                    answers,
+                    connection,
+                    transaction);
+
+                transaction.Commit();
+                transaction = null;
+            }
+            catch (Exception ex)
+            {
+                RollbackTransaction(
+                    transaction,
+                    "answer persistence",
+                    ex);
+
+                throw new InvalidOperationException(
+                    "Failed to save quiz answers. The answer insert transaction was rolled back.",
+                    ex);
+            }
+            finally
+            {
+                if (transaction != null)
                 {
-                    _database.CloseConnection();
+                    transaction.Dispose();
                 }
+
+                _database.CloseConnection();
             }
         }
 
@@ -174,11 +213,13 @@ WHERE AnswerID = @AnswerID;";
 
         /// <summary>
         /// Creates the answer table when it does not exist.
+        /// DDL is intentionally executed outside data transactions.
         /// </summary>
-        internal void EnsureTable(
-            MySqlConnection connection,
-            MySqlTransaction transaction)
+        internal void EnsureTable(MySqlConnection connection)
         {
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
             const string sql = @"
 CREATE TABLE IF NOT EXISTS tbl_quiz_answer
 (
@@ -193,14 +234,14 @@ CREATE TABLE IF NOT EXISTS tbl_quiz_answer
         REFERENCES tbl_training_session(SessionID)
 );";
 
-            using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
+            using (MySqlCommand command = new MySqlCommand(sql, connection))
             {
                 command.ExecuteNonQuery();
             }
         }
 
         /// <summary>
-        /// Saves answers using an existing transaction.
+        /// Saves answers using an existing connection and transaction.
         /// </summary>
         internal void SaveMany(
             int sessionId,
@@ -208,6 +249,15 @@ CREATE TABLE IF NOT EXISTS tbl_quiz_answer
             MySqlConnection connection,
             MySqlTransaction transaction)
         {
+            if (sessionId <= 0)
+                throw new ArgumentOutOfRangeException(nameof(sessionId));
+
+            if (connection == null)
+                throw new ArgumentNullException(nameof(connection));
+
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+
             if (answers == null)
                 return;
 
@@ -256,21 +306,25 @@ CREATE TABLE IF NOT EXISTS tbl_quiz_answer
         }
 
         /// <summary>
-        /// Returns the parent session ID for an answer.
+        /// Returns the parent session ID for an answer using the active transaction.
         /// </summary>
-        private int GetSessionId(int answerId)
+        private int GetSessionId(
+            int answerId,
+            MySqlConnection connection,
+            MySqlTransaction transaction)
         {
             const string sql = @"
 SELECT SessionID
 FROM tbl_quiz_answer
 WHERE AnswerID = @AnswerID
-LIMIT 1;";
+LIMIT 1
+FOR UPDATE;";
 
-            try
+            using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
             {
-                object result = _database.ExecuteScalar(
-                    sql,
-                    new MySqlParameter("@AnswerID", answerId));
+                command.Parameters.AddWithValue("@AnswerID", answerId);
+
+                object result = command.ExecuteScalar();
 
                 if (result == null ||
                     result == DBNull.Value)
@@ -280,17 +334,51 @@ LIMIT 1;";
 
                 return Convert.ToInt32(result);
             }
-            finally
+        }
+
+        /// <summary>
+        /// Updates one reviewed answer inside the active transaction.
+        /// </summary>
+        private void UpdateReviewedAnswer(
+            int answerId,
+            QuizAnswerType correctAnswer,
+            MySqlConnection connection,
+            MySqlTransaction transaction)
+        {
+            string correctAnswerText = GetAnswerText(correctAnswer);
+
+            const string sql = @"
+UPDATE tbl_quiz_answer
+SET
+    CorrectAnswer = @CorrectAnswer,
+    IsCorrect = CASE
+        WHEN UPPER(UserAnswer) = @CorrectAnswer THEN 1
+        ELSE 0
+    END
+WHERE AnswerID = @AnswerID;";
+
+            using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
             {
-                _database.CloseConnection();
+                command.Parameters.AddWithValue("@CorrectAnswer", correctAnswerText);
+                command.Parameters.AddWithValue("@AnswerID", answerId);
+
+                command.ExecuteNonQuery();
             }
         }
 
         /// <summary>
-        /// Updates the summary columns for one training session.
+        /// Updates the summary columns for one training session inside the active transaction.
         /// </summary>
-        private void RecalculateSession(int sessionId)
+        private void RecalculateSession(
+            int sessionId,
+            MySqlConnection connection,
+            MySqlTransaction transaction)
         {
+            EnsureSessionExists(
+                sessionId,
+                connection,
+                transaction);
+
             const string sql = @"
 UPDATE tbl_training_session
 SET
@@ -323,15 +411,41 @@ SET
     )
 WHERE SessionID = @SessionID;";
 
-            try
+            using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
             {
-                _database.ExecuteNonQuery(
-                    sql,
-                    new MySqlParameter("@SessionID", sessionId));
+                command.Parameters.AddWithValue("@SessionID", sessionId);
+
+                command.ExecuteNonQuery();
             }
-            finally
+        }
+
+        /// <summary>
+        /// Verifies and locks the parent training session before recalculation.
+        /// </summary>
+        private static void EnsureSessionExists(
+            int sessionId,
+            MySqlConnection connection,
+            MySqlTransaction transaction)
+        {
+            const string sql = @"
+SELECT SessionID
+FROM tbl_training_session
+WHERE SessionID = @SessionID
+LIMIT 1
+FOR UPDATE;";
+
+            using (MySqlCommand command = new MySqlCommand(sql, connection, transaction))
             {
-                _database.CloseConnection();
+                command.Parameters.AddWithValue("@SessionID", sessionId);
+
+                object result = command.ExecuteScalar();
+
+                if (result == null ||
+                    result == DBNull.Value)
+                {
+                    throw new InvalidOperationException(
+                        "Parent training session was not found for recalculation.");
+                }
             }
         }
 
@@ -344,6 +458,9 @@ WHERE SessionID = @SessionID;";
             MySqlConnection connection,
             MySqlTransaction transaction)
         {
+            if (answer.ImageID <= 0)
+                throw new InvalidOperationException("Quiz answer has an invalid ImageID.");
+
             string sql = $@"
 INSERT INTO {TableName}
 (
@@ -374,6 +491,33 @@ VALUES
                 command.Parameters.AddWithValue("@AnswerTime", answer.AnswerTime);
 
                 command.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Rolls back an active transaction and preserves rollback failures.
+        /// </summary>
+        private static void RollbackTransaction(
+            MySqlTransaction transaction,
+            string operationName,
+            Exception originalException)
+        {
+            if (transaction == null)
+                return;
+
+            try
+            {
+                transaction.Rollback();
+            }
+            catch (Exception rollbackException)
+            {
+                throw new InvalidOperationException(
+                    "Failed to roll back the " +
+                    operationName +
+                    " transaction.",
+                    new AggregateException(
+                        originalException,
+                        rollbackException));
             }
         }
 
