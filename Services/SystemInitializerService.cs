@@ -3,6 +3,7 @@
 using System;
 using System.Configuration;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 #endregion
@@ -56,7 +57,7 @@ namespace VisualInspectionTrainingSystem.Services
             ReportProgress(30, "Checking MySQL connection...");
             await Task.Delay(300);
 
-            bool databaseConnected = CheckDatabase();
+            bool databaseConnected = await CheckDatabaseAsync(settings);
 
             if (!databaseConnected)
             {
@@ -139,26 +140,41 @@ namespace VisualInspectionTrainingSystem.Services
         /// <summary>
         /// Checks the MySQL connection.
         /// </summary>
-        private bool CheckDatabase()
+        private async Task<bool> CheckDatabaseAsync(ApplicationSettings settings)
         {
             try
             {
-                using (MySqlService database = new MySqlService())
+                using (CancellationTokenSource timeout =
+                    new CancellationTokenSource(
+                        GetDatabaseStartupTimeout(settings.Database)))
                 {
-                    bool connected = database.TestConnection();
-
-                    if (!connected)
+                    using (MySqlService database = new MySqlService())
                     {
-                        _startupErrorMessage =
-                            "Unable to connect to MySQL. Check the local database configuration.";
-                    }
+                        bool connected =
+                            await database.TestConnectionAsync(timeout.Token);
 
-                    return connected;
+                        if (!connected)
+                        {
+                            _startupErrorMessage =
+                                string.IsNullOrWhiteSpace(database.LastConnectionError)
+                                    ? "Unable to connect to MySQL. Check the local database configuration."
+                                    : database.LastConnectionError;
+                        }
+
+                        return connected;
+                    }
                 }
             }
             catch (ConfigurationErrorsException ex)
             {
                 _startupErrorMessage = ex.Message;
+
+                return false;
+            }
+            catch (OperationCanceledException)
+            {
+                _startupErrorMessage =
+                    "Database connection timed out. Check that MySQL is running and reachable.";
 
                 return false;
             }
@@ -169,6 +185,30 @@ namespace VisualInspectionTrainingSystem.Services
 
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Gets the maximum startup wait time for database connectivity.
+        /// </summary>
+        private TimeSpan GetDatabaseStartupTimeout(DatabaseSettings settings)
+        {
+            int attemptCount = Math.Max(
+                1,
+                settings.RetryCount + 1);
+
+            int retryDelayCount = Math.Max(
+                0,
+                attemptCount - 1);
+
+            double totalMilliseconds =
+                (settings.ConnectionTimeoutSeconds * 1000.0 * attemptCount) +
+                (settings.RetryDelayMilliseconds * retryDelayCount) +
+                1000.0;
+
+            return TimeSpan.FromMilliseconds(
+                Math.Min(
+                    totalMilliseconds,
+                    120000.0));
         }
 
         /// <summary>

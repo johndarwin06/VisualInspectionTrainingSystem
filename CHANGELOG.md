@@ -8,6 +8,13 @@
 - Made answer batch persistence atomic with MySQL transactions.
 - Made admin answer review and session statistics recalculation atomic with MySQL transactions.
 - Prevented partial session, answer, or recalculated-result writes when a related operation fails.
+- Added configurable MySQL connection timeout and limited transient retry behavior.
+- Prevented authentication and invalid configuration failures from being retried.
+
+### Startup
+
+- Updated splash startup database validation to use a bounded asynchronous connection check.
+- Added clear non-sensitive database unavailable messages when MySQL remains unreachable.
 
 ### Configuration
 
@@ -15,6 +22,7 @@
 - Added strongly typed application, database, and path settings.
 - Removed hardcoded quiz image folder usage from source code.
 - Added configurable log, export, and report folders.
+- Added configurable MySQL connection timeout, retry count, and retry delay settings.
 - Report CSV export now uses the configured export folder.
 - Removed the unused JSON settings file.
 

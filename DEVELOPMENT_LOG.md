@@ -2,6 +2,21 @@
 
 ## 2026-07-13
 
+### Connection Resiliency
+
+- Added configurable MySQL connection timeout, retry count, and retry delay settings to the local XML configuration.
+- Updated `ConfigurationService` to parse, validate, and apply connection resiliency settings when building the MySQL connection string.
+- Rewrote `MySqlService` connection opening to use a limited retry policy for transient connection failures.
+- Added asynchronous connection testing with cancellation support for startup checks.
+- Prevented retries for configuration errors and detected authentication/setup failures.
+- Updated `SystemInitializerService` so the splash startup database check awaits a bounded asynchronous connection test instead of blocking indefinitely.
+- Added safe, non-sensitive connection failure messages without exposing passwords or full connection strings.
+- Built `VisualInpsectionTrainingSystem.slnx` in Debug.
+- Final build succeeded with 0 errors and 1 warning.
+- Verified valid database connectivity with a temporary probe.
+- Verified invalid host retry behavior, simulated stopped MySQL behavior through an unavailable local port, bounded timeout behavior, invalid credential non-retry behavior, and invalid retry configuration handling with temporary probes.
+- Launched the WPF application from the Debug build output and stopped it after confirming the process stayed running for 8 seconds.
+
 ### Database Transactions
 
 - Updated completed quiz persistence so the session header and all answer rows are saved in one MySQL transaction.

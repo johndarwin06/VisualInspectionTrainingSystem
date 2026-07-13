@@ -35,3 +35,17 @@ Standalone answer batch persistence is coordinated by `AnswerRepository.SaveMany
 Admin answer review is coordinated by `AnswerRepository.ReviewAnswer`. The selected answer row is locked, updated, and followed by parent session statistics recalculation in the same transaction. The parent session row is locked before recalculation.
 
 Table creation checks run outside data transactions because MySQL DDL can cause implicit commits. Data-changing workflows roll back on exceptions and rethrow non-sensitive context.
+
+## Connection Resiliency
+
+MySQL connection resiliency is centralized in `Services/MySqlService.cs` and configured through the local XML configuration loaded by `ConfigurationService`.
+
+`DatabaseSettings` includes:
+
+- `ConnectionTimeoutSeconds`
+- `RetryCount`
+- `RetryDelayMilliseconds`
+
+Each connection attempt uses the configured timeout in the generated MySQL connection string. Transient network and server availability failures are retried up to the configured retry count with a short configured delay. Authentication failures, invalid configuration, cancellation, and startup timeout failures are not retried.
+
+Startup database validation runs through `SystemInitializerService` using the asynchronous MySQL connection test and a bounded cancellation token derived from the configured timeout and retry policy. Errors shown to startup flow are non-sensitive and do not include passwords or full connection strings.

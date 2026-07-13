@@ -27,3 +27,4 @@
 - [x] Secure Configuration
 - [x] Configuration System
 - [x] Database Transactions
+- [x] Connection Resiliency

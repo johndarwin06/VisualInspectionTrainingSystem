@@ -4,7 +4,7 @@ Project: Visual Inspection Training System
 
 Current Version: 0.8 Beta
 
-Current Module: Database Transactions
+Current Module: Connection Resiliency
 
 Build Status: Successful
 
@@ -28,9 +28,10 @@ Completed:
 - Secure Configuration
 - Configuration System
 - Database Transactions
+- Connection Resiliency
 
 In Progress:
 - Stabilization
 
 Next Task:
-- Continue the next stabilization issue after reviewing the transaction changes in Visual Studio.
+- Review the remaining build warnings and continue the next approved stabilization issue.

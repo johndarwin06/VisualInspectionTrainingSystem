@@ -25,7 +25,10 @@ To configure a workstation:
     database="visualinspectionquiz"
     username="YOUR_DATABASE_USER"
     password="YOUR_DATABASE_PASSWORD"
-    sslMode="Disabled" />
+    sslMode="Disabled"
+    connectionTimeoutSeconds="5"
+    retryCount="2"
+    retryDelayMilliseconds="500" />
 
   <paths
     quizImageFolder=".\QuizImages"
@@ -41,5 +44,10 @@ To configure a workstation:
 - `logFolder`, `exportFolder`, and `reportFolder` are created automatically when they are missing and the application has permission.
 - Invalid or missing values stop startup with a clear non-sensitive configuration error.
 - Report CSV export opens in the configured `exportFolder`.
+- `connectionTimeoutSeconds` bounds each MySQL connection attempt.
+- `retryCount` controls how many transient connection retries happen after the first attempt.
+- `retryDelayMilliseconds` controls the short delay between retries.
+- Authentication failures and invalid configuration values are not retried.
+- Startup database checks are bounded so the splash screen does not wait indefinitely for MySQL.
 
 If a real database password was previously committed to Git history, change that MySQL password before continuing normal use. Removing it from current files does not remove it from older commits.
