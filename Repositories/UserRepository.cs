@@ -33,7 +33,7 @@ namespace VisualInspectionTrainingSystem.Repositories
 
         #endregion
 
-        #region Get User By Employee Number
+        #region Public Methods
 
         /// <summary>
         /// Returns a user by Employee Number.
@@ -42,6 +42,8 @@ namespace VisualInspectionTrainingSystem.Repositories
         /// <returns>The matching user, or null when no user exists.</returns>
         public User GetByEmployeeNo(string employeeNo)
         {
+            string validatedEmployeeNo = ValidateEmployeeNo(employeeNo);
+
             const string sql = @"
 SELECT
     UserID,
@@ -56,35 +58,24 @@ FROM tbl_users
 WHERE EmployeeNo = @EmployeeNo
 LIMIT 1;";
 
-            DataTable table = _database.ExecuteDataTable(
-                sql,
-                new MySqlParameter("@EmployeeNo", employeeNo));
-
-            if (table.Rows.Count == 0)
+            try
             {
-                return null;
+                DataTable table = _database.ExecuteDataTable(
+                    sql,
+                    new MySqlParameter("@EmployeeNo", validatedEmployeeNo));
+
+                if (table.Rows.Count == 0)
+                {
+                    return null;
+                }
+
+                return MapUser(table.Rows[0]);
             }
-
-            DataRow row = table.Rows[0];
-
-            return new User
+            finally
             {
-                UserID = Convert.ToInt32(row["UserID"]),
-                EmployeeNo = row["EmployeeNo"].ToString(),
-                FullName = row["FullName"].ToString(),
-                PasswordHash = row["PasswordHash"] == DBNull.Value
-                    ? string.Empty
-                    : row["PasswordHash"].ToString(),
-                Role = row["Role"].ToString(),
-                Department = row["Department"].ToString(),
-                IsActive = Convert.ToBoolean(row["IsActive"]),
-                CreatedDate = Convert.ToDateTime(row["CreatedDate"])
-            };
+                _database.CloseConnection();
+            }
         }
-
-        #endregion
-
-        #region Password Migration
 
         /// <summary>
         /// Updates the stored password hash for a user.
@@ -95,16 +86,187 @@ LIMIT 1;";
             string employeeNo,
             string passwordHash)
         {
+            string validatedEmployeeNo = ValidateEmployeeNo(employeeNo);
+
+            if (passwordHash == null)
+                throw new ArgumentNullException(nameof(passwordHash));
+
+            if (string.IsNullOrWhiteSpace(passwordHash))
+            {
+                throw new ArgumentException(
+                    "Password hash must not be empty.",
+                    nameof(passwordHash));
+            }
+
             const string sql = @"
 UPDATE tbl_users
 SET PasswordHash = @PasswordHash
 WHERE EmployeeNo = @EmployeeNo
 LIMIT 1;";
 
-            _database.ExecuteNonQuery(
-                sql,
-                new MySqlParameter("@PasswordHash", passwordHash),
-                new MySqlParameter("@EmployeeNo", employeeNo));
+            try
+            {
+                int affectedRows = _database.ExecuteNonQuery(
+                    sql,
+                    new MySqlParameter("@PasswordHash", passwordHash),
+                    new MySqlParameter("@EmployeeNo", validatedEmployeeNo));
+
+                if (affectedRows != 1)
+                {
+                    throw new InvalidOperationException(
+                        "Password hash update did not affect exactly one user.");
+                }
+            }
+            finally
+            {
+                _database.CloseConnection();
+            }
+        }
+
+        #endregion
+
+        #region Mapping
+
+        /// <summary>
+        /// Maps a database row to a user model.
+        /// </summary>
+        private static User MapUser(DataRow row)
+        {
+            if (row == null)
+                throw new ArgumentNullException(nameof(row));
+
+            return new User
+            {
+                UserID = ReadRequiredInt(row, "UserID"),
+                EmployeeNo = ReadRequiredString(row, "EmployeeNo"),
+                FullName = ReadOptionalString(row, "FullName"),
+                PasswordHash = ReadOptionalString(row, "PasswordHash"),
+                Role = ReadOptionalString(row, "Role"),
+                Department = ReadOptionalString(row, "Department"),
+                IsActive = ReadOptionalBoolean(row, "IsActive", true),
+                CreatedDate = ReadOptionalDate(row, "CreatedDate", DateTime.MinValue)
+            };
+        }
+
+        #endregion
+
+        #region Validation
+
+        /// <summary>
+        /// Validates an employee number for user lookup and updates.
+        /// </summary>
+        private static string ValidateEmployeeNo(string employeeNo)
+        {
+            if (employeeNo == null)
+                throw new ArgumentNullException(nameof(employeeNo));
+
+            if (string.IsNullOrWhiteSpace(employeeNo))
+            {
+                throw new ArgumentException(
+                    "EmployeeNo must not be empty.",
+                    nameof(employeeNo));
+            }
+
+            return employeeNo.Trim();
+        }
+
+        #endregion
+
+        #region Conversion Helpers
+
+        /// <summary>
+        /// Reads a required integer column.
+        /// </summary>
+        private static int ReadRequiredInt(
+            DataRow row,
+            string columnName)
+        {
+            object value = row[columnName];
+
+            if (value == null ||
+                value == DBNull.Value)
+            {
+                throw new InvalidOperationException(
+                    columnName + " is required.");
+            }
+
+            return Convert.ToInt32(value);
+        }
+
+        /// <summary>
+        /// Reads a required string column.
+        /// </summary>
+        private static string ReadRequiredString(
+            DataRow row,
+            string columnName)
+        {
+            object value = row[columnName];
+
+            if (value == null ||
+                value == DBNull.Value ||
+                string.IsNullOrWhiteSpace(value.ToString()))
+            {
+                throw new InvalidOperationException(
+                    columnName + " is required.");
+            }
+
+            return value.ToString();
+        }
+
+        /// <summary>
+        /// Reads an optional string column.
+        /// </summary>
+        private static string ReadOptionalString(
+            DataRow row,
+            string columnName)
+        {
+            object value = row[columnName];
+
+            if (value == null ||
+                value == DBNull.Value)
+            {
+                return string.Empty;
+            }
+
+            return value.ToString();
+        }
+
+        /// <summary>
+        /// Reads an optional Boolean column.
+        /// </summary>
+        private static bool ReadOptionalBoolean(
+            DataRow row,
+            string columnName,
+            bool defaultValue)
+        {
+            object value = row[columnName];
+
+            if (value == null ||
+                value == DBNull.Value)
+            {
+                return defaultValue;
+            }
+
+            return Convert.ToBoolean(value);
+        }
+
+        /// <summary>
+        /// Reads an optional DateTime column.
+        /// </summary>
+        private static DateTime ReadOptionalDate(
+            DataRow row,
+            string columnName,
+            DateTime defaultValue)
+        {
+            object value = row[columnName];
+
+            if (value == null ||
+                value == DBNull.Value)
+            {
+                return defaultValue;
+            }
+
+            return Convert.ToDateTime(value);
         }
 
         #endregion

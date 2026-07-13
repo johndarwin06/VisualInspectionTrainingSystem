@@ -1,4 +1,4 @@
-﻿#region Namespaces
+#region Namespaces
 
 using System;
 using System.Collections.Generic;
@@ -24,6 +24,9 @@ namespace VisualInspectionTrainingSystem.Repositories
 
         #region Constructor
 
+        /// <summary>
+        /// Initializes the image repository.
+        /// </summary>
         public ImageRepository()
         {
             _random = new Random();
@@ -40,19 +43,19 @@ namespace VisualInspectionTrainingSystem.Repositories
             string folderPath,
             bool shuffle = true)
         {
-            if (string.IsNullOrWhiteSpace(folderPath))
-                throw new ArgumentException(nameof(folderPath));
-
-            if (!Directory.Exists(folderPath))
-                throw new DirectoryNotFoundException(folderPath);
+            string validatedFolderPath = ValidateFolderPath(folderPath);
 
             List<QuizImage> images = new List<QuizImage>();
 
             string[] files =
                 Directory.GetFiles(
-                    folderPath,
+                    validatedFolderPath,
                     "*.bmp",
                     SearchOption.TopDirectoryOnly);
+
+            Array.Sort(
+                files,
+                StringComparer.OrdinalIgnoreCase);
 
             int id = 1;
 
@@ -64,7 +67,7 @@ namespace VisualInspectionTrainingSystem.Repositories
                     FileName = Path.GetFileName(file),
                     FilePath = file,
                     Category = "General",
-                    Remarks = "",
+                    Remarks = string.Empty,
                     IsActive = true
                 });
             }
@@ -79,10 +82,50 @@ namespace VisualInspectionTrainingSystem.Repositories
 
         #endregion
 
+        #region Validation
+
+        /// <summary>
+        /// Validates and normalizes the image folder path.
+        /// </summary>
+        private static string ValidateFolderPath(string folderPath)
+        {
+            if (folderPath == null)
+                throw new ArgumentNullException(nameof(folderPath));
+
+            if (string.IsNullOrWhiteSpace(folderPath))
+            {
+                throw new ArgumentException(
+                    "Image folder path must not be empty.",
+                    nameof(folderPath));
+            }
+
+            if (folderPath.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
+            {
+                throw new ArgumentException(
+                    "Image folder path contains invalid characters.",
+                    nameof(folderPath));
+            }
+
+            string fullPath = Path.GetFullPath(folderPath);
+
+            if (!Directory.Exists(fullPath))
+                throw new DirectoryNotFoundException(fullPath);
+
+            return fullPath;
+        }
+
+        #endregion
+
         #region Private Methods
 
+        /// <summary>
+        /// Shuffles loaded images in memory.
+        /// </summary>
         private void Shuffle(List<QuizImage> images)
         {
+            if (images == null)
+                throw new ArgumentNullException(nameof(images));
+
             for (int i = images.Count - 1; i > 0; i--)
             {
                 int j = _random.Next(i + 1);
