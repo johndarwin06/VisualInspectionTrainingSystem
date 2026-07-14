@@ -501,9 +501,23 @@ VALUES
 ALTER TABLE tbl_training_session
 ADD COLUMN DuplicateKey VARCHAR(64) NULL AFTER Accuracy;";
 
-            using (MySqlCommand command = new MySqlCommand(sql, connection))
+            try
             {
-                command.ExecuteNonQuery();
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (MySqlException ex)
+            {
+                if (!IsDuplicateColumnException(ex) ||
+                    !ColumnExists(
+                        connection,
+                        TableName,
+                        DuplicateKeyColumnName))
+                {
+                    throw;
+                }
             }
         }
 
@@ -624,9 +638,23 @@ GROUP BY
 CREATE UNIQUE INDEX UX_tbl_training_session_DuplicateKey
 ON tbl_training_session (DuplicateKey);";
 
-            using (MySqlCommand command = new MySqlCommand(sql, connection))
+            try
             {
-                command.ExecuteNonQuery();
+                using (MySqlCommand command = new MySqlCommand(sql, connection))
+                {
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (MySqlException ex)
+            {
+                if (!IsDuplicateIndexException(ex) ||
+                    !IndexExists(
+                        connection,
+                        TableName,
+                        DuplicateKeyIndexName))
+                {
+                    throw;
+                }
             }
         }
 
@@ -703,6 +731,62 @@ WHERE TABLE_SCHEMA = DATABASE()
 
                 return Convert.ToInt32(command.ExecuteScalar()) > 0;
             }
+        }
+
+        /// <summary>
+        /// Returns true when MySQL reports that the expected column already exists.
+        /// </summary>
+        private static bool IsDuplicateColumnException(MySqlException ex)
+        {
+            if (ex == null)
+                return false;
+
+            if (ex.Number == 1060)
+            {
+                return true;
+            }
+
+            string message = ex.Message ?? string.Empty;
+
+            return message.IndexOf(
+                       "Duplicate column",
+                       StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   (message.IndexOf(
+                        DuplicateKeyColumnName,
+                        StringComparison.OrdinalIgnoreCase) >= 0 &&
+                    message.IndexOf(
+                        "already exists",
+                        StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        /// <summary>
+        /// Returns true when MySQL reports that the expected index already exists.
+        /// </summary>
+        private static bool IsDuplicateIndexException(MySqlException ex)
+        {
+            if (ex == null)
+                return false;
+
+            if (ex.Number == 1061 ||
+                ex.Number == 1831)
+            {
+                return true;
+            }
+
+            string message = ex.Message ?? string.Empty;
+
+            return message.IndexOf(
+                       "Duplicate key",
+                       StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   message.IndexOf(
+                       "Duplicate index",
+                       StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   (message.IndexOf(
+                        DuplicateKeyIndexName,
+                        StringComparison.OrdinalIgnoreCase) >= 0 &&
+                    message.IndexOf(
+                        "already exists",
+                        StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         #endregion
