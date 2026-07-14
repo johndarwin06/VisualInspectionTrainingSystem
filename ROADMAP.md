@@ -30,3 +30,4 @@
 - [x] Connection Resiliency
 - [x] Repository Validation
 - [x] Repository Validation Hardening
+- [x] Splash Screen Improvement

@@ -50,6 +50,16 @@ Each connection attempt uses the configured timeout in the generated MySQL conne
 
 Startup database validation runs through `SystemInitializerService` using the asynchronous MySQL connection test and a bounded cancellation token derived from the configured timeout and retry policy. Errors shown to startup flow are non-sensitive and do not include passwords or full connection strings.
 
+## Splash Startup Flow
+
+The splash screen is coordinated by `Views/Splash/SplashWindow.xaml.cs`, `ViewModels/SplashViewModel.cs`, and `Services/SystemInitializerService.cs`.
+
+`SplashWindow` starts initialization from the WPF `Loaded` event after the splash is visible. `SplashViewModel` keeps one initialization task per splash instance, exposes progress, status, and diagnostic properties, and raises completion only once. Closing the splash or pressing Exit cancels the initialization token and prevents the login window from opening afterward.
+
+`SystemInitializerService` returns an `InitializationResult` for required startup checks. Configuration loading runs off the UI thread, MySQL validation reuses `MySqlService`, and the database check is also guarded by an outer bounded wait so startup cannot hang if the connector does not return promptly. Optional image inventory checks can be skipped without blocking login when required configuration and database services are available.
+
+The login window is opened only by the splash window after a successful startup result, and `Application.Current.MainWindow` is updated to the login window before the splash closes.
+
 ## Repository Validation
 
 Repository public methods validate parameters before opening MySQL connections wherever applicable. Numeric identities must be greater than zero, EmployeeNo values must be present, answer collections must be non-null and contain no null elements, answer values must be GOOD or NG, completed sessions must have valid start/end ordering, and report date ranges must be ordered.

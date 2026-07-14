@@ -24,6 +24,11 @@
 
 - Updated splash startup database validation to use a bounded asynchronous connection check.
 - Added clear non-sensitive database unavailable messages when MySQL remains unreachable.
+- Changed splash startup initialization to begin asynchronously after the splash window is visible.
+- Added bounded startup timeout handling for database checks that do not return promptly.
+- Added non-sensitive splash diagnostics for configuration failures, unavailable services, timeouts, cancellation, and unexpected startup failures.
+- Prevented duplicate startup initialization and duplicate login window opening from the splash screen.
+- Added a splash Exit action that safely cancels startup initialization.
 
 ### Configuration
 
