@@ -56,14 +56,10 @@ Repository public methods validate parameters before opening MySQL connections w
 
 Completed quiz persistence still runs through `SessionRepository.Save` and `AnswerRepository.SaveMany` in one transaction. Before inserting the session header, `SessionRepository` checks for an existing completion with the same EmployeeNo, StartTime second, EndTime second, TotalQuestions, and answer count. When that duplicate rule matches, the transaction rolls back and no new session or answers are saved.
 
-The duplicate rule uses existing schema fields only. A future schema migration should add an explicit client-generated completion identifier for stronger uniqueness:
-
-```sql
-ALTER TABLE tbl_training_session
-    ADD CompletionKey CHAR(36) NULL,
-    ADD UNIQUE INDEX UX_tbl_training_session_CompletionKey (CompletionKey);
-```
+The duplicate rule is also enforced by the database. `SessionRepository.EnsureTable` upgrades `tbl_training_session` with a nullable `DuplicateKey VARCHAR(64)` column and the unique index `UX_tbl_training_session_DuplicateKey`. The key is a SHA-256 hash of EmployeeNo, StartTime second, EndTime second, TotalQuestions, and answer count. Existing unique historical completion rows are backfilled before the index is created; historical duplicate groups are left with a null `DuplicateKey` so the unique index can be created without deleting data. A legacy duplicate lookup remains in the save transaction to reject new saves that match those historical null-key rows.
 
 Pending review answers are represented by `CorrectAnswer IS NULL`. Repository statistics count correct answers only when `CorrectAnswer IS NOT NULL AND IsCorrect = 1`, and wrong answers only when `CorrectAnswer IS NOT NULL AND IsCorrect = 0`.
 
 Report session rows aggregate answer data directly instead of relying only on stored summary columns, which keeps pending answers out of wrong-answer totals even when old session rows have stale summary values.
+
+Dashboard metrics, report summaries, and admin review session recalculation use conditional aggregation to reduce repeated scans while preserving existing total, pending, reviewed, correct, wrong, and accuracy meanings.

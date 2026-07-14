@@ -57,13 +57,30 @@ namespace VisualInspectionTrainingSystem.Repositories
         {
             const string sql = @"
 SELECT
-    (SELECT COUNT(*) FROM tbl_training_session) AS TotalSessions,
-    (SELECT COUNT(*) FROM tbl_quiz_answer) AS TotalAnswers,
-    (SELECT COUNT(*) FROM tbl_quiz_answer WHERE CorrectAnswer IS NOT NULL) AS ReviewedAnswers,
-    (SELECT COUNT(*) FROM tbl_quiz_answer WHERE CorrectAnswer IS NULL) AS PendingAnswers,
-    (SELECT COUNT(DISTINCT EmployeeNo) FROM tbl_training_session) AS ActiveTrainees,
-    (SELECT IFNULL(ROUND(AVG(Accuracy), 2), 0) FROM tbl_training_session) AS AverageAccuracy,
-    (SELECT MAX(StartTime) FROM tbl_training_session) AS LatestSessionTime;";
+    IFNULL(sessionTotals.TotalSessions, 0) AS TotalSessions,
+    IFNULL(answerTotals.TotalAnswers, 0) AS TotalAnswers,
+    IFNULL(answerTotals.ReviewedAnswers, 0) AS ReviewedAnswers,
+    IFNULL(answerTotals.PendingAnswers, 0) AS PendingAnswers,
+    IFNULL(sessionTotals.ActiveTrainees, 0) AS ActiveTrainees,
+    IFNULL(sessionTotals.AverageAccuracy, 0) AS AverageAccuracy,
+    sessionTotals.LatestSessionTime AS LatestSessionTime
+FROM
+(
+    SELECT
+        COUNT(*) AS TotalSessions,
+        COUNT(DISTINCT EmployeeNo) AS ActiveTrainees,
+        IFNULL(ROUND(AVG(Accuracy), 2), 0) AS AverageAccuracy,
+        MAX(StartTime) AS LatestSessionTime
+    FROM tbl_training_session
+) sessionTotals
+CROSS JOIN
+(
+    SELECT
+        COUNT(*) AS TotalAnswers,
+        SUM(CASE WHEN CorrectAnswer IS NOT NULL THEN 1 ELSE 0 END) AS ReviewedAnswers,
+        SUM(CASE WHEN CorrectAnswer IS NULL THEN 1 ELSE 0 END) AS PendingAnswers
+    FROM tbl_quiz_answer
+) answerTotals;";
 
             try
             {
@@ -190,6 +207,9 @@ LIMIT @Limit;";
 
         #region Conversion Helpers
 
+        /// <summary>
+        /// Converts a nullable numeric value to an integer.
+        /// </summary>
         private static int ToInt(object value)
         {
             if (value == null ||
@@ -201,6 +221,9 @@ LIMIT @Limit;";
             return Convert.ToInt32(value);
         }
 
+        /// <summary>
+        /// Converts a required numeric value to an integer.
+        /// </summary>
         private static int ToRequiredInt(
             object value,
             string columnName)
@@ -215,6 +238,9 @@ LIMIT @Limit;";
             return Convert.ToInt32(value);
         }
 
+        /// <summary>
+        /// Converts a nullable numeric value to a decimal.
+        /// </summary>
         private static decimal ToDecimal(object value)
         {
             if (value == null ||
@@ -226,6 +252,9 @@ LIMIT @Limit;";
             return Convert.ToDecimal(value);
         }
 
+        /// <summary>
+        /// Converts a required string value.
+        /// </summary>
         private static string ToRequiredString(
             object value,
             string columnName)
@@ -241,6 +270,9 @@ LIMIT @Limit;";
             return value.ToString();
         }
 
+        /// <summary>
+        /// Converts a required DateTime value.
+        /// </summary>
         private static DateTime ToRequiredDate(
             object value,
             string columnName)
@@ -255,6 +287,9 @@ LIMIT @Limit;";
             return Convert.ToDateTime(value);
         }
 
+        /// <summary>
+        /// Converts a nullable DateTime value.
+        /// </summary>
         private static DateTime? ToNullableDate(object value)
         {
             if (value == null ||

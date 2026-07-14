@@ -143,7 +143,7 @@ LIMIT 1;";
                 PasswordHash = ReadOptionalString(row, "PasswordHash"),
                 Role = ReadOptionalString(row, "Role"),
                 Department = ReadOptionalString(row, "Department"),
-                IsActive = ReadOptionalBoolean(row, "IsActive", true),
+                IsActive = ReadFailClosedBoolean(row, "IsActive"),
                 CreatedDate = ReadOptionalDate(row, "CreatedDate", DateTime.MinValue)
             };
         }
@@ -232,22 +232,32 @@ LIMIT 1;";
         }
 
         /// <summary>
-        /// Reads an optional Boolean column.
+        /// Reads an activation flag and treats missing or malformed data as inactive.
         /// </summary>
-        private static bool ReadOptionalBoolean(
+        private static bool ReadFailClosedBoolean(
             DataRow row,
-            string columnName,
-            bool defaultValue)
+            string columnName)
         {
             object value = row[columnName];
 
             if (value == null ||
                 value == DBNull.Value)
             {
-                return defaultValue;
+                return false;
             }
 
-            return Convert.ToBoolean(value);
+            try
+            {
+                return Convert.ToBoolean(value);
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+            catch (InvalidCastException)
+            {
+                return false;
+            }
         }
 
         /// <summary>
