@@ -1,5 +1,22 @@
 # DEVELOPMENT LOG
 
+## 2026-07-14
+
+### Splash Screen Improvement
+
+- Reworked `SystemInitializerService` so startup initialization runs asynchronously with cancellation support and duplicate initialization protection.
+- Reused `MySqlService` for startup database resiliency and added an outer bounded wait so startup cannot hang when a MySQL handshake does not return promptly.
+- Added non-sensitive startup result and diagnostic models for success, cancellation, timeout, configuration failure, service failure, and unexpected startup failure states.
+- Updated `SplashViewModel` so initialization starts from the splash window lifecycle instead of the constructor, exposes status/diagnostics, and prevents duplicate completion events.
+- Updated `SplashWindow` lifecycle handling so startup begins after the window is visible, close requests cancel initialization, and the login window opens exactly once.
+- Updated the splash XAML to show diagnostics and an Exit action while keeping standard WPF controls and inline styling.
+- Built `VisualInpsectionTrainingSystem.slnx` in Debug after each modified C# file.
+- Final build succeeded with 0 errors and 1 warning.
+- Verified normal startup with valid local configuration and MySQL access using a temporary startup probe.
+- Verified missing configuration, malformed configuration, unavailable database, bounded startup timeout, unexpected initialization exception handling, duplicate initialization prevention, and close-during-initialization cancellation with temporary probes.
+- Verified the WPF splash dispatcher remained responsive and opened exactly one login window with a temporary WPF probe.
+- Removed all temporary probe files and local placeholder configs after testing.
+
 ## 2026-07-13
 
 ### Repository Validation Hardening
