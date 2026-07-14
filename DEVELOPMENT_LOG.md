@@ -2,6 +2,19 @@
 
 ## 2026-07-14
 
+### Splash Timeout Hardening
+
+- Reworked `SystemInitializerService` optional image inventory so synchronous filesystem work is guarded by a true bounded wait.
+- Added timeout handling that marks optional image inventory as skipped and allows startup to continue after required checks pass.
+- Added abandoned-task observation for timed-out configuration, database, and image inventory tasks so later exceptions are consumed.
+- Hardened configuration loading with the same bounded-wait pattern because local configuration discovery also performs synchronous filesystem work.
+- Preserved the existing MySQL connection timeout and retry implementation in `MySqlService` without duplicating retry behavior.
+- Built `VisualInpsectionTrainingSystem.slnx` in Debug after the modified C# service file.
+- Verified normal local image inventory, missing image folder handling, filesystem exception handling, optional image timeout, and cancellation during image inventory with temporary probes.
+- Verified normal startup, required configuration failure, and existing database timeout behavior with temporary probes.
+- Verified the WPF splash dispatcher remained responsive and opened exactly one login window when the optional image inventory timed out.
+- Removed all temporary probe files and local placeholder configs after testing.
+
 ### Splash Screen Improvement
 
 - Reworked `SystemInitializerService` so startup initialization runs asynchronously with cancellation support and duplicate initialization protection.

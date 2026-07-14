@@ -29,6 +29,8 @@
 - Added non-sensitive splash diagnostics for configuration failures, unavailable services, timeouts, cancellation, and unexpected startup failures.
 - Prevented duplicate startup initialization and duplicate login window opening from the splash screen.
 - Added a splash Exit action that safely cancels startup initialization.
+- Hardened configuration loading with a bounded wait so required startup initialization cannot hang on stalled filesystem discovery.
+- Hardened optional image inventory with a bounded wait; unavailable or stalled image folders are skipped without blocking login.
 
 ### Configuration
 

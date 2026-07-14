@@ -24,6 +24,9 @@ namespace VisualInspectionTrainingSystem.Services
         private static readonly TimeSpan MinimumStartupTimeout =
             TimeSpan.FromSeconds(10);
 
+        private static readonly TimeSpan OptionalImageInventoryTimeout =
+            TimeSpan.FromSeconds(2);
+
         #endregion
 
         #region Fields
@@ -112,7 +115,9 @@ namespace VisualInspectionTrainingSystem.Services
                     ReportProgress(5, "Starting system checks...");
 
                     ApplicationSettings settings =
-                        await LoadConfigurationAsync(token);
+                        await LoadConfigurationAsync(
+                            token,
+                            cancellationToken);
 
                     startupTimeout.CancelAfter(
                         GetStartupTimeout(settings));
@@ -139,7 +144,15 @@ namespace VisualInspectionTrainingSystem.Services
                     OptionalStartupResult imageInventory =
                         await CheckImageInventoryAsync(
                             settings.Paths.QuizImageFolder,
-                            token);
+                            token,
+                            cancellationToken);
+
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return InitializationResult.CreateCancelled(
+                            "Startup cancelled.",
+                            "Initialization was cancelled before it completed.");
+                    }
 
                     ReportProgress(
                         85,
@@ -168,6 +181,17 @@ namespace VisualInspectionTrainingSystem.Services
                 return InitializationResult.Failed(
                     message,
                     "Required application configuration is missing or invalid.");
+            }
+            catch (TimeoutException ex)
+            {
+                const string message =
+                    "Startup timed out while loading required configuration.";
+
+                SafeReportProgress(10, message);
+
+                return InitializationResult.CreateTimedOut(
+                    message,
+                    ex.Message);
             }
             catch (OperationCanceledException)
             {
@@ -204,18 +228,49 @@ namespace VisualInspectionTrainingSystem.Services
         #region Required Checks
 
         /// <summary>
-        /// Loads and validates application configuration on a background thread.
+        /// Loads and validates application configuration with a bounded wait.
         /// </summary>
-        private static Task<ApplicationSettings> LoadConfigurationAsync(CancellationToken cancellationToken)
+        private static async Task<ApplicationSettings> LoadConfigurationAsync(
+            CancellationToken startupToken,
+            CancellationToken callerToken)
         {
-            return Task.Run(
-                () =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
+            callerToken.ThrowIfCancellationRequested();
+            startupToken.ThrowIfCancellationRequested();
 
-                    return ConfigurationService.GetApplicationSettings();
-                },
-                cancellationToken);
+            Task<ApplicationSettings> configurationTask =
+                Task.Run(
+                    () => ConfigurationService.GetApplicationSettings());
+
+            Task timeoutTask =
+                Task.Delay(
+                    DefaultStartupTimeout,
+                    startupToken);
+
+            Task completedTask =
+                await Task.WhenAny(
+                    configurationTask,
+                    timeoutTask);
+
+            if (completedTask != configurationTask)
+            {
+                _ = ObserveAbandonedTaskAsync(configurationTask);
+
+                if (callerToken.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException(callerToken);
+                }
+
+                throw new TimeoutException(
+                    "Required configuration loading did not complete before the startup timeout.");
+            }
+
+            ApplicationSettings settings =
+                await configurationTask;
+
+            callerToken.ThrowIfCancellationRequested();
+            startupToken.ThrowIfCancellationRequested();
+
+            return settings;
         }
 
         /// <summary>
@@ -258,7 +313,7 @@ namespace VisualInspectionTrainingSystem.Services
                     database.Dispose();
                     database = null;
 
-                    _ = ObserveDatabaseTaskAsync(connectionTask);
+                    _ = ObserveAbandonedTaskAsync(connectionTask);
 
                     if (callerToken.IsCancellationRequested)
                     {
@@ -331,13 +386,13 @@ namespace VisualInspectionTrainingSystem.Services
         }
 
         /// <summary>
-        /// Observes a timed-out database task so any later exception does not surface unhandled.
+        /// Observes an abandoned task so any later exception does not surface unhandled.
         /// </summary>
-        private static async Task ObserveDatabaseTaskAsync(Task<bool> connectionTask)
+        private static async Task ObserveAbandonedTaskAsync(Task task)
         {
             try
             {
-                await connectionTask;
+                await task;
             }
             catch
             {
@@ -349,24 +404,70 @@ namespace VisualInspectionTrainingSystem.Services
         #region Optional Checks
 
         /// <summary>
-        /// Counts image files when available without blocking startup if the optional inventory check fails.
+        /// Counts image files when available without blocking startup if the optional inventory check stalls.
+        /// </summary>
+        private static Task<OptionalStartupResult> CheckImageInventoryAsync(
+            string folder,
+            CancellationToken startupToken,
+            CancellationToken callerToken)
+        {
+            return CheckImageInventoryAsync(
+                folder,
+                OptionalImageInventoryTimeout,
+                startupToken,
+                callerToken);
+        }
+
+        /// <summary>
+        /// Counts image files with a bounded optional timeout.
         /// </summary>
         private static async Task<OptionalStartupResult> CheckImageInventoryAsync(
             string folder,
-            CancellationToken cancellationToken)
+            TimeSpan timeout,
+            CancellationToken startupToken,
+            CancellationToken callerToken)
         {
+            callerToken.ThrowIfCancellationRequested();
+            startupToken.ThrowIfCancellationRequested();
+
+            Task<OptionalStartupResult> inventoryTask =
+                Task.Run(
+                    () => BuildImageInventoryResult(folder));
+
+            Task timeoutTask =
+                Task.Delay(
+                    timeout,
+                    startupToken);
+
+            Task completedTask =
+                await Task.WhenAny(
+                    inventoryTask,
+                    timeoutTask);
+
+            if (completedTask != inventoryTask)
+            {
+                _ = ObserveAbandonedTaskAsync(inventoryTask);
+
+                if (callerToken.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException(callerToken);
+                }
+
+                return OptionalStartupResult.CreateSkipped(
+                    "Image inventory timed out; continuing startup.",
+                    "Optional image inventory exceeded " +
+                    FormatSeconds(timeout) +
+                    " second(s) and was skipped.");
+            }
+
             try
             {
-                int imageCount =
-                    await Task.Run(
-                        () => CountImageFiles(
-                            folder,
-                            cancellationToken),
-                        cancellationToken);
+                OptionalStartupResult result =
+                    await inventoryTask;
 
-                return OptionalStartupResult.CreateAvailable(
-                    "Found " + imageCount + " image(s).",
-                    "Optional image inventory completed.");
+                callerToken.ThrowIfCancellationRequested();
+
+                return result;
             }
             catch (OperationCanceledException)
             {
@@ -376,23 +477,21 @@ namespace VisualInspectionTrainingSystem.Services
             {
                 return OptionalStartupResult.CreateSkipped(
                     "Image inventory unavailable; continuing startup.",
-                    "Optional image inventory check was skipped.");
+                    "Optional image inventory check was skipped after a file system error.");
             }
         }
 
         /// <summary>
-        /// Counts BMP images in the configured folder.
+        /// Builds the optional image inventory result from the filesystem.
         /// </summary>
-        private static int CountImageFiles(
-            string folder,
-            CancellationToken cancellationToken)
+        private static OptionalStartupResult BuildImageInventoryResult(string folder)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             if (string.IsNullOrWhiteSpace(folder) ||
                 !Directory.Exists(folder))
             {
-                return 0;
+                return OptionalStartupResult.CreateSkipped(
+                    "Image inventory unavailable; continuing startup.",
+                    "Configured image folder was not available during optional startup check.");
             }
 
             string[] files =
@@ -401,7 +500,9 @@ namespace VisualInspectionTrainingSystem.Services
                     "*.bmp",
                     SearchOption.TopDirectoryOnly);
 
-            return files.Length;
+            return OptionalStartupResult.CreateAvailable(
+                "Found " + files.Length + " image(s).",
+                "Optional image inventory completed.");
         }
 
         #endregion
@@ -524,9 +625,17 @@ namespace VisualInspectionTrainingSystem.Services
                 : imageInventory.DiagnosticMessage;
 
             return "Startup completed in " +
-                   Math.Round(elapsed.TotalSeconds, 1).ToString("0.0") +
+                   FormatSeconds(elapsed) +
                    " second(s). " +
                    optionalStatus;
+        }
+
+        /// <summary>
+        /// Formats a duration in seconds.
+        /// </summary>
+        private static string FormatSeconds(TimeSpan duration)
+        {
+            return Math.Round(duration.TotalSeconds, 1).ToString("0.0");
         }
 
         #endregion

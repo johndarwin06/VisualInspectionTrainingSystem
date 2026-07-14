@@ -56,7 +56,11 @@ The splash screen is coordinated by `Views/Splash/SplashWindow.xaml.cs`, `ViewMo
 
 `SplashWindow` starts initialization from the WPF `Loaded` event after the splash is visible. `SplashViewModel` keeps one initialization task per splash instance, exposes progress, status, and diagnostic properties, and raises completion only once. Closing the splash or pressing Exit cancels the initialization token and prevents the login window from opening afterward.
 
-`SystemInitializerService` returns an `InitializationResult` for required startup checks. Configuration loading runs off the UI thread, MySQL validation reuses `MySqlService`, and the database check is also guarded by an outer bounded wait so startup cannot hang if the connector does not return promptly. Optional image inventory checks can be skipped without blocking login when required configuration and database services are available.
+`SystemInitializerService` returns an `InitializationResult` for required startup checks. Configuration loading runs off the UI thread and is guarded by a bounded wait because configuration discovery performs synchronous filesystem work. If configuration loading exceeds the required-startup timeout, startup fails safely with a non-sensitive timeout result.
+
+MySQL validation reuses `MySqlService`, and the database check is also guarded by an outer bounded wait so startup cannot hang if the connector does not return promptly. The service does not duplicate MySQL retry policy; it only bounds the startup wait around the existing resiliency implementation.
+
+Optional image inventory checks run behind their own short bounded wait. If the configured image folder is unavailable, throws a filesystem exception, or does not respond before the optional timeout, the inventory result is marked skipped and startup continues after required checks pass. Timed-out background tasks are observed so late exceptions do not become unhandled, and late optional work does not update splash UI state.
 
 The login window is opened only by the splash window after a successful startup result, and `Application.Current.MainWindow` is updated to the login window before the splash closes.
 
