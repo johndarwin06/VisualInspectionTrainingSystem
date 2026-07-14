@@ -31,3 +31,4 @@
 - [x] Repository Validation
 - [x] Repository Validation Hardening
 - [x] Splash Screen Improvement
+- [x] Splash Timeout Hardening

@@ -4,7 +4,7 @@ Project: Visual Inspection Training System
 
 Current Version: 0.8 Beta
 
-Current Module: Splash Screen Improvement
+Current Module: Splash Timeout Hardening
 
 Build Status: Successful
 
@@ -32,9 +32,10 @@ Completed:
 - Repository Validation
 - Repository Validation Hardening
 - Splash Screen Improvement
+- Splash Timeout Hardening
 
 In Progress:
 - Stabilization
 
 Next Task:
-- Review the splash screen improvement draft pull request, then continue the next approved stabilization issue.
+- Review the splash timeout hardening correction draft pull request, then continue the next approved stabilization issue.
