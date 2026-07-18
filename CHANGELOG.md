@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Application Reliability
+
+- Added controlled WPF dispatcher, task scheduler, and AppDomain global exception handling.
+- Added one non-sensitive fatal-error notification before dispatcher-driven application shutdown and suppressed duplicate notifications.
+- Added bounded, sanitized global error diagnostics with UTC timestamps, unique error IDs, handler categories, stack traces, inner exceptions, aggregate exception classifications, and termination status.
+- Redacted passwords, connection strings, user identifiers, tokens, and configuration secrets from error diagnostics.
+- Cached the validated configured log folder during startup and added a LocalAppData fallback when it cannot be used.
+- Strengthened optional image-inventory cancellation so caller and startup cancellation return promptly while abandoned filesystem work is observed.
+
 ### Database
 
 - Added repository input validation before SQL execution for sessions, answers, users, dashboard limits, report date ranges, and image folders.

@@ -1,8 +1,9 @@
-﻿<Application
+<Application
     x:Class="VisualInspectionTrainingSystem.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:VisualInspectionTrainingSystem"
-    StartupUri="Views/Splash/SplashWindow.xaml">
+    StartupUri="Views/Splash/SplashWindow.xaml"
+    DispatcherUnhandledException="App_DispatcherUnhandledException">
     <Application.Resources />
 </Application>

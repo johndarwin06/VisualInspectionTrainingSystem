@@ -172,6 +172,7 @@
     <Compile Include="Repositories\SessionRepository.cs" />
     <Compile Include="Repositories\UserRepository.cs" />
     <Compile Include="Services\AuthenticationService.cs" />
+    <Compile Include="Services\ApplicationErrorLogger.cs" />
     <Compile Include="Services\ConfigurationService.cs" />
     <Compile Include="Services\ImageService.cs" />
     <Compile Include="Services\MySqlService.cs" />

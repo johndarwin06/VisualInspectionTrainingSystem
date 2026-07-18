@@ -50,6 +50,16 @@ Each connection attempt uses the configured timeout in the generated MySQL conne
 
 Startup database validation runs through `SystemInitializerService` using the asynchronous MySQL connection test and a bounded cancellation token derived from the configured timeout and retry policy. Errors shown to startup flow are non-sensitive and do not include passwords or full connection strings.
 
+## Global Error Handling
+
+`App.xaml` routes WPF dispatcher exceptions to `App.xaml.cs`. The application also subscribes once per application instance to `TaskScheduler.UnobservedTaskException` and `AppDomain.CurrentDomain.UnhandledException`, and removes those subscriptions during normal exit.
+
+A dispatcher exception is treated as fatal: the application records a sanitized diagnostic, shows one fixed non-sensitive message, marks the exception handled as part of controlled shutdown, and requests shutdown once. Reentrant or duplicate dispatcher notifications neither log another dispatcher failure nor show another dialog. Task scheduler exceptions are recorded and explicitly observed; AppDomain exceptions are recorded with their terminating classification.
+
+`ApplicationErrorLogger` does not discover configuration while handling an error. After validated startup configuration is loaded, `SystemInitializerService` caches `PathSettings.LogFolder`. The logger first attempts that existing configured directory and falls back to `%LocalAppData%\VisualInspectionTrainingSystem\Logs` when the primary path is missing or unwritable. Logging errors are swallowed so they cannot recursively reach a global handler.
+
+Each error entry is serialized under one process lock and includes a UTC timestamp, unique ID, handler source, termination status, exception type, redacted bounded message, stack trace when available, bounded inner-exception details, and flattened aggregate exception types. Credential-like values, full connection strings, tokens, and configuration secrets are redacted before storage.
+
 ## Splash Startup Flow
 
 The splash screen is coordinated by `Views/Splash/SplashWindow.xaml.cs`, `ViewModels/SplashViewModel.cs`, and `Services/SystemInitializerService.cs`.

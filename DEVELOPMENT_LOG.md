@@ -1,5 +1,21 @@
 # DEVELOPMENT LOG
 
+## 2026-07-18
+
+### Global Error Handling
+
+- Added controlled application-wide WPF dispatcher, task scheduler, and AppDomain exception handling.
+- Dispatcher failures are logged once, show only a fixed non-sensitive message, are marked handled during controlled shutdown, and cannot open duplicate dialogs.
+- Cached the validated configured log folder during startup configuration loading so fatal handlers do not perform configuration discovery.
+- Added `%LocalAppData%\VisualInspectionTrainingSystem\Logs` as the safe fallback when the configured log folder is unavailable or unwritable.
+- Added bounded, serialized diagnostic entries with UTC timestamps, unique error IDs, handler category, exception type, sanitized message, bounded stack trace, bounded inner exceptions, aggregate exception types, and termination classification.
+- Redacted connection strings, passwords, user identifiers, tokens, API keys, and configuration-secret values from diagnostics.
+- Restored deterministic optional-image inventory probes and made caller and startup cancellation win over a stalled optional filesystem operation.
+- Built Debug and Release successfully with 0 errors and 3 existing warnings in each configuration.
+- Verified logger formatting, redaction, configured-folder logging, concurrent writes, contained logger failure, task observation, AppDomain termination classification, optional image timeout/cancellation, required configuration failure, database timeout, and dispatcher responsiveness with temporary probes.
+- Verified an actual terminating AppDomain exception in a bounded child probe. The test-only child set `SEM_NOGPFAULTERRORBOX`, exited with the expected non-zero CLR fatal code, and wrote exactly one terminating entry; this expected probe termination is distinct from a normal application failure.
+- The sandbox did not expose the real WPF windows reliably, so a manual interactive splash/login launch and visible dispatcher fatal-dialog confirmation remain required outside this environment.
+
 ## 2026-07-14
 
 ### Splash Timeout Hardening

@@ -119,6 +119,9 @@ namespace VisualInspectionTrainingSystem.Services
                             token,
                             cancellationToken);
 
+                    ApplicationErrorLogger.ConfigureLogFolder(
+                        settings.Paths.LogFolder);
+
                     startupTimeout.CancelAfter(
                         GetStartupTimeout(settings));
 
@@ -427,31 +430,66 @@ namespace VisualInspectionTrainingSystem.Services
             CancellationToken startupToken,
             CancellationToken callerToken)
         {
+            return await CheckImageInventoryAsync(
+                timeout,
+                startupToken,
+                callerToken,
+                () => BuildImageInventoryResult(folder));
+        }
+
+        /// <summary>
+        /// Runs an optional image inventory operation with a bounded wait.
+        /// </summary>
+        /// <param name="timeout">The maximum wait for the optional operation.</param>
+        /// <param name="startupToken">The bounded startup cancellation token.</param>
+        /// <param name="callerToken">The caller cancellation token.</param>
+        /// <param name="inventoryOperation">The synchronous file-system operation to run outside the UI dispatcher.</param>
+        /// <returns>A non-fatal inventory result.</returns>
+        private static async Task<OptionalStartupResult> CheckImageInventoryAsync(
+            TimeSpan timeout,
+            CancellationToken startupToken,
+            CancellationToken callerToken,
+            Func<OptionalStartupResult> inventoryOperation)
+        {
             callerToken.ThrowIfCancellationRequested();
             startupToken.ThrowIfCancellationRequested();
 
+            if (inventoryOperation == null)
+            {
+                throw new ArgumentNullException("inventoryOperation");
+            }
+
             Task<OptionalStartupResult> inventoryTask =
                 Task.Run(
-                    () => BuildImageInventoryResult(folder));
+                    inventoryOperation);
 
             Task timeoutTask =
                 Task.Delay(
                     timeout,
                     startupToken);
 
+            Task callerCancellationTask =
+                Task.Delay(
+                    Timeout.Infinite,
+                    callerToken);
+
             Task completedTask =
                 await Task.WhenAny(
                     inventoryTask,
-                    timeoutTask);
+                    timeoutTask,
+                    callerCancellationTask);
 
             if (completedTask != inventoryTask)
             {
                 _ = ObserveAbandonedTaskAsync(inventoryTask);
 
-                if (callerToken.IsCancellationRequested)
+                if (completedTask == callerCancellationTask ||
+                    callerToken.IsCancellationRequested)
                 {
                     throw new OperationCanceledException(callerToken);
                 }
+
+                startupToken.ThrowIfCancellationRequested();
 
                 return OptionalStartupResult.CreateSkipped(
                     "Image inventory timed out; continuing startup.",
@@ -466,6 +504,7 @@ namespace VisualInspectionTrainingSystem.Services
                     await inventoryTask;
 
                 callerToken.ThrowIfCancellationRequested();
+                startupToken.ThrowIfCancellationRequested();
 
                 return result;
             }

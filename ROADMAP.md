@@ -32,3 +32,4 @@
 - [x] Repository Validation Hardening
 - [x] Splash Screen Improvement
 - [x] Splash Timeout Hardening
+- [x] Global Error Handling
