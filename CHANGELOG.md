@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Result Module
+
+- Added snapshot-based result statistics for answer distribution, review coverage, reviewed-only accuracy, valid timing, and NG analysis.
+- Added read-only All, Reviewed Wrong, User NG, and Pending Review answer filters with selected-answer details.
+- Added asynchronous, detached single-image result previews that release source files and reject stale or post-close updates.
+- Added native labeled WPF bars for GOOD/NG distribution, reviewed outcomes, review coverage, reviewed accuracy, NG detection, and false-NG rate.
+- Kept pending answers out of correct/wrong and reviewed-truth metrics while retaining their user distribution and valid timing values.
+- Preserved the existing quiz-to-result constructor and flow, transactional persistence, and Issue #9 two-image quiz cache.
+
 ### Quiz Experience
 
 - Added bounded asynchronous quiz image loading with a two-image current/next cache, frozen detached bitmaps, cancellation, stale-load protection, and lifecycle cleanup.

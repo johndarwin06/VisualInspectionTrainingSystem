@@ -84,6 +84,29 @@ Answer commands are enabled only when the active bitmap is ready. A failed activ
 
 Quiz progress is derived from accepted answers: `CurrentQuestion`, `TotalQuestions`, `AnsweredQuestions`, `RemainingQuestions`, and `CompletionPercentage` are synchronized by the ViewModel. The percentage is zero before the first accepted answer, 100 after the final accepted answer, and `AnsweredQuestions + RemainingQuestions` always equals `TotalQuestions`.
 
+## Result Module
+
+`ResultWindow(List<QuizAnswer>)` remains the quiz-to-result entry point. `ResultViewModel` immediately passes the supplied answers to `StatisticsService`, which clones each non-null answer into a read-only `ResultStatistics` snapshot. The result module never writes answers, assigns `CorrectAnswer`, or persists a session; administrator truth remains owned by the Admin module.
+
+Answer distribution uses all snapshot rows with valid user GOOD or NG selections. GOOD and NG percentages divide their respective counts by total snapshot answers. Timing includes only finite, non-negative elapsed values; total, average, fastest, and slowest use that valid-timing subset, and missing timing is displayed as N/A where appropriate.
+
+Review coverage divides reviewed answers by total answers. An answer is reviewed only when `CorrectAnswer` contains a supported GOOD or NG value. Reviewed accuracy divides matching user/truth answers by reviewed answers, never total answers. Pending answers are shown as Pending Review, remain available for distribution and timing, and are excluded from correct and wrong counts.
+
+NG analysis distinguishes trainee selection from reviewed truth:
+
+- User NG rate is trainee NG selections divided by total answers.
+- Correctly detected NG is user NG with reviewed truth NG.
+- False NG is user NG with reviewed truth GOOD.
+- Missed NG is user GOOD with reviewed truth NG.
+- NG detection rate is correctly detected NG divided by reviewed actual NG.
+- False NG rate is false NG divided by reviewed actual GOOD.
+
+Zero reviewed-truth denominators display N/A rather than a misleading percentage. The All, Reviewed Wrong, User NG, and Pending Review filters replace only the displayed read-only collection and never mutate the statistics snapshot.
+
+The ResultWindow uses native labeled WPF bars for user answer distribution, reviewed correct/wrong outcomes, reviewed/pending coverage, reviewed accuracy, NG detection, and false-NG rate. Every visual also presents its metric name, count, and percentage; zero values remain bounded and pending reviewed accuracy displays Pending Review.
+
+Selected-answer preview uses the shared `ImageService` decoder. It reads the requested file on a worker task, uses `BitmapCacheOption.OnLoad`, freezes the bitmap, and releases the source stream before publication. `ResultViewModel` keeps only one preview, cancels the previous selection token, checks a generation and selected-answer identity, observes task completion, and disposes preview work when the window closes. Missing, unreadable, deleted, or corrupt images produce a fixed non-sensitive unavailable status.
+
 ## Repository Validation
 
 Repository public methods validate parameters before opening MySQL connections wherever applicable. Numeric identities must be greater than zero, EmployeeNo values must be present, answer collections must be non-null and contain no null elements, answer values must be GOOD or NG, completed sessions must have valid start/end ordering, and report date ranges must be ordered.

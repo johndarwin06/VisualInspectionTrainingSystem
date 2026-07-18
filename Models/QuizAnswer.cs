@@ -125,7 +125,64 @@ namespace VisualInspectionTrainingSystem.Models
                 if (!IsReviewed)
                     return "Pending Review";
 
-                return IsCorrect ? "Correct" : "Wrong";
+                return UserAnswer == CorrectAnswer.Value
+                    ? "Correct"
+                    : "Wrong";
+            }
+        }
+
+        /// <summary>
+        /// Returns the trainee selection in consistent result-display form.
+        /// </summary>
+        public string UserAnswerText
+        {
+            get
+            {
+                if (UserAnswer == QuizAnswerType.Good)
+                    return "GOOD";
+
+                if (UserAnswer == QuizAnswerType.Ng)
+                    return "NG";
+
+                return "Unknown";
+            }
+        }
+
+        /// <summary>
+        /// Returns reviewed truth without treating an unreviewed answer as GOOD or NG.
+        /// </summary>
+        public string CorrectAnswerText
+        {
+            get
+            {
+                if (!CorrectAnswer.HasValue)
+                    return "Pending";
+
+                if (CorrectAnswer.Value == QuizAnswerType.Good)
+                    return "GOOD";
+
+                if (CorrectAnswer.Value == QuizAnswerType.Ng)
+                    return "NG";
+
+                return "Unknown";
+            }
+        }
+
+        /// <summary>
+        /// Returns a safe elapsed-time label for result review.
+        /// </summary>
+        public string ElapsedTimeText
+        {
+            get
+            {
+                if (ElapsedSeconds < 0 ||
+                    double.IsNaN(ElapsedSeconds) ||
+                    double.IsInfinity(ElapsedSeconds))
+                {
+                    return "N/A";
+                }
+
+                return ElapsedSeconds.ToString("0.00") + " s";
             }
         }
 

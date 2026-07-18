@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -443,13 +442,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
                         image.FilePath,
                         out bitmap))
                 {
-                    bitmap = await Task.Run(
-                        delegate
-                        {
-                            return LoadBitmap(
-                                image.FilePath,
-                                cancellation.Token);
-                        },
+                    bitmap = await _imageService.LoadBitmapAsync(
+                        image.FilePath,
                         cancellation.Token);
 
                     if (!IsCurrentImageLoad(
@@ -562,13 +556,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
         {
             try
             {
-                BitmapImage bitmap = await Task.Run(
-                    delegate
-                    {
-                        return LoadBitmap(
-                            image.FilePath,
-                            cancellationToken);
-                    },
+                BitmapImage bitmap = await _imageService.LoadBitmapAsync(
+                    image.FilePath,
                     cancellationToken).ConfigureAwait(false);
 
                 if (!IsCurrentImagePreload(
@@ -601,40 +590,6 @@ namespace VisualInspectionTrainingSystem.ViewModels
             catch
             {
                 // The image will fail safely if it later becomes the active question.
-            }
-        }
-
-        /// <summary>
-        /// Loads and freezes a bitmap so the source file is released before it reaches the cache.
-        /// </summary>
-        /// <param name="filePath">The configured bitmap path.</param>
-        /// <param name="cancellationToken">The active quiz lifetime token.</param>
-        /// <returns>A frozen detached bitmap image.</returns>
-        private static BitmapImage LoadBitmap(
-            string filePath,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            byte[] imageBytes = File.ReadAllBytes(filePath);
-
-            using (MemoryStream stream = new MemoryStream(imageBytes, false))
-            {
-                BitmapImage bitmap = new BitmapImage();
-
-                bitmap.BeginInit();
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.StreamSource = stream;
-                bitmap.EndInit();
-
-                if (bitmap.CanFreeze)
-                {
-                    bitmap.Freeze();
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                return bitmap;
             }
         }
 
