@@ -4,13 +4,13 @@ Project: Visual Inspection Training System
 
 Current Version: 0.8 Beta
 
-Current Module: Splash Timeout Hardening
+Current Module: Global Error Handling
 
 Build Status: Successful
 
-Last Build: 2026-07-14
+Last Build: 2026-07-18
 
-Build Warnings: 1
+Build Warnings: 3
 
 Completed:
 - Quiz Engine
@@ -33,9 +33,10 @@ Completed:
 - Repository Validation Hardening
 - Splash Screen Improvement
 - Splash Timeout Hardening
+- Global Error Handling
 
 In Progress:
-- Stabilization
+- Stabilization review for Issue #8 global error handling
 
 Next Task:
-- Review the splash timeout hardening correction draft pull request, then continue the next approved stabilization issue.
+- Review the Issue #8 global error handling draft pull request before the next approved stabilization issue. Splash Timeout Hardening was already merged as PR #38; it is not awaiting review.

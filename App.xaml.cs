@@ -16,9 +16,21 @@ namespace VisualInspectionTrainingSystem
     /// </summary>
     public partial class App : Application
     {
+        #region Constants
+
+        private const string FatalErrorMessage =
+            "An unexpected error occurred and the application must close. " +
+            "Please restart the application. Contact support if the problem continues.";
+
+        private const string FatalErrorTitle = "Application Error";
+
+        #endregion
+
         #region Fields
 
+        private int _dispatcherFatalErrorHandling;
         private int _fatalShutdownRequested;
+        private int _globalHandlersRegistered;
 
         #endregion
 
@@ -51,7 +63,7 @@ namespace VisualInspectionTrainingSystem
         #region Exception Handlers
 
         /// <summary>
-        /// Logs a UI-thread exception and shuts down cleanly rather than leaving the application in an unknown state.
+        /// Logs a UI-thread exception, notifies the user without disclosing diagnostics, and shuts down cleanly.
         /// </summary>
         /// <param name="sender">The dispatcher that raised the event.</param>
         /// <param name="e">The unhandled dispatcher exception information.</param>
@@ -59,18 +71,32 @@ namespace VisualInspectionTrainingSystem
             object sender,
             DispatcherUnhandledExceptionEventArgs e)
         {
-            ApplicationErrorLogger.LogUnhandledException(
-                "WPF Dispatcher",
-                e == null
-                    ? null
-                    : e.Exception);
-
-            if (e != null)
+            if (Interlocked.Exchange(
+                    ref _dispatcherFatalErrorHandling,
+                    1) != 0)
             {
-                e.Handled = true;
+                MarkDispatcherExceptionHandled(e);
+                RequestSafeShutdown();
+
+                return;
             }
 
-            RequestSafeShutdown();
+            try
+            {
+                ApplicationErrorLogger.LogUnhandledException(
+                    "WPF Dispatcher",
+                    e == null
+                        ? null
+                        : e.Exception,
+                    true);
+
+                ShowFatalErrorMessage();
+            }
+            finally
+            {
+                MarkDispatcherExceptionHandled(e);
+                RequestSafeShutdown();
+            }
         }
 
         /// <summary>
@@ -82,15 +108,21 @@ namespace VisualInspectionTrainingSystem
             object sender,
             UnobservedTaskExceptionEventArgs e)
         {
-            ApplicationErrorLogger.LogUnhandledException(
-                "Task Scheduler",
-                e == null
-                    ? null
-                    : e.Exception);
-
-            if (e != null)
+            try
             {
-                e.SetObserved();
+                ApplicationErrorLogger.LogUnhandledException(
+                    "Task Scheduler",
+                    e == null
+                        ? null
+                        : e.Exception,
+                    false);
+            }
+            finally
+            {
+                if (e != null)
+                {
+                    e.SetObserved();
+                }
             }
         }
 
@@ -103,13 +135,16 @@ namespace VisualInspectionTrainingSystem
             object sender,
             UnhandledExceptionEventArgs e)
         {
+            bool isTerminating = e != null && e.IsTerminating;
+
             ApplicationErrorLogger.LogUnhandledException(
-                e != null && e.IsTerminating
+                isTerminating
                     ? "AppDomain Terminating"
                     : "AppDomain",
                 e == null
                     ? null
-                    : e.ExceptionObject as Exception);
+                    : e.ExceptionObject as Exception,
+                isTerminating);
         }
 
         #endregion
@@ -121,6 +156,13 @@ namespace VisualInspectionTrainingSystem
         /// </summary>
         private void RegisterGlobalExceptionHandlers()
         {
+            if (Interlocked.Exchange(
+                    ref _globalHandlersRegistered,
+                    1) != 0)
+            {
+                return;
+            }
+
             TaskScheduler.UnobservedTaskException +=
                 TaskScheduler_UnobservedTaskException;
 
@@ -133,6 +175,13 @@ namespace VisualInspectionTrainingSystem
         /// </summary>
         private void UnregisterGlobalExceptionHandlers()
         {
+            if (Interlocked.Exchange(
+                    ref _globalHandlersRegistered,
+                    0) == 0)
+            {
+                return;
+            }
+
             TaskScheduler.UnobservedTaskException -=
                 TaskScheduler_UnobservedTaskException;
 
@@ -143,6 +192,47 @@ namespace VisualInspectionTrainingSystem
         #endregion
 
         #region Shutdown
+
+        /// <summary>
+        /// Displays a single generic failure notification without exposing exception details.
+        /// </summary>
+        private static void ShowFatalErrorMessage()
+        {
+            try
+            {
+                MessageBox.Show(
+                    FatalErrorMessage,
+                    FatalErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+            catch
+            {
+                // A notification failure must not prevent safe shutdown.
+            }
+        }
+
+        /// <summary>
+        /// Marks the dispatcher failure handled only while controlled shutdown is being requested.
+        /// </summary>
+        /// <param name="e">The dispatcher exception information.</param>
+        private static void MarkDispatcherExceptionHandled(
+            DispatcherUnhandledExceptionEventArgs e)
+        {
+            if (e == null)
+            {
+                return;
+            }
+
+            try
+            {
+                e.Handled = true;
+            }
+            catch
+            {
+                // The process is already in a fatal path; do not replace the original failure.
+            }
+        }
 
         /// <summary>
         /// Requests a single safe shutdown after a fatal UI-thread exception.
