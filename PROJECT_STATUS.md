@@ -4,7 +4,7 @@ Project: Visual Inspection Training System
 
 Current Version: 0.9 Beta
 
-Current Module: Issue #10 Result Module — implemented and manually accepted
+Current Module: Issue #11 Dashboard Analytics — implemented and verified; awaiting pull-request review
 
 Build Status: Debug and Release successful
 
@@ -36,15 +36,18 @@ Completed:
 - Splash Timeout Hardening
 - Global Error Handling
 - Quiz Optimization
+- Dashboard Analytics
 
 In Progress:
-- None. Issue #10 is implemented, tested, and manually accepted.
+- Issue #11 Dashboard Analytics is implemented and tested on its feature branch. It is awaiting pull-request review and merge.
 
-Issue #10 Acceptance:
-- PR #41 delivered the Result Module and is merged.
-- Commit `bee4eb0` removed the accidental quiz startup diagnostic dialog and added safe, logged startup error handling.
-- Real login, ten-question quiz completion, single ResultWindow opening, pending statistics, filters, selected-image preview, window closing, controlled reviewed-data calculations, MySQL persistence, and runtime behavior passed manual acceptance.
-- Pending answers remain pending and are not treated as wrong.
+Issue #11 Verification:
+- Today's Training counts completed sessions in the local half-open day range.
+- Average Accuracy uses reviewed answers only and displays N/A when no reviewed rows exist; pending answers are never treated as wrong.
+- Time Spent sums only valid completed-session durations, while GOOD and NG counts include pending trainee selections.
+- Controlled database, empty-day, boundary, invalid-duration, refresh, error-handling, ordering, and limit checks passed 49 automated assertions.
+- Result Module and Issue #9 regression probes passed 76 and 29 assertions respectively.
+- Visible administrator navigation opened one Dashboard, displayed the five live MySQL-backed metrics, refreshed without duplicate rows, and returned safely to Administration when closed.
 
 Next Task:
-- Issue #11 Dashboard Analytics is the next planned task. It has not started.
+- None. No subsequent project issue has started.

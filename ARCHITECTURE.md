@@ -107,6 +107,16 @@ The ResultWindow uses native labeled WPF bars for user answer distribution, revi
 
 Selected-answer preview uses the shared `ImageService` decoder. It reads the requested file on a worker task, uses `BitmapCacheOption.OnLoad`, freezes the bitmap, and releases the source stream before publication. `ResultViewModel` keeps only one preview, cancels the previous selection token, checks a generation and selected-answer identity, observes task completion, and disposes preview work when the window closes. Missing, unreadable, deleted, or corrupt images produce a fixed non-sensitive unavailable status.
 
+## Dashboard Analytics
+
+`DashboardRepository` calculates the five dashboard cards for one local calendar day using caller-supplied `@DayStart` and `@DayEnd` parameters. The range is half-open: `StartTime >= @DayStart` and `StartTime < @DayEnd`. SQL does not apply `DATE()` or another function to `StartTime`, preserving index-friendly filtering.
+
+Session metrics and answer metrics are calculated in separate aggregate subqueries and combined only after each produces one row. This prevents the session-to-answer relationship from multiplying session durations. Today's Training counts only sessions with an `EndTime`; Time Spent sums only completed rows whose end is not earlier than their start. Incomplete and negative durations contribute no time.
+
+Answer distribution counts trainee GOOD and NG selections for sessions started in the selected day, including pending review rows. Reviewed accuracy divides matching `UserAnswer` and `CorrectAnswer` rows by rows with non-null administrator truth. Pending rows are excluded from reviewed correct and wrong counts, and a zero reviewed denominator maps to null so the ViewModel displays N/A.
+
+`DashboardViewModel` loads the metric snapshot and deterministic recent-session list on a worker task so normal WPF navigation remains responsive. One busy flag disables repeated command refresh, and successful refresh replaces the entire recent collection instead of appending rows. A failed refresh records the technical exception through `ApplicationErrorLogger`, clears stale values, and exposes only a fixed non-sensitive status message.
+
 ## Repository Validation
 
 Repository public methods validate parameters before opening MySQL connections wherever applicable. Numeric identities must be greater than zero, EmployeeNo values must be present, answer collections must be non-null and contain no null elements, answer values must be GOOD or NG, completed sessions must have valid start/end ordering, and report date ranges must be ordered.
