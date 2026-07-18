@@ -13,7 +13,8 @@
 - Restored deterministic optional-image inventory probes and made caller and startup cancellation win over a stalled optional filesystem operation.
 - Built Debug and Release successfully with 0 errors and 3 existing warnings in each configuration.
 - Verified logger formatting, redaction, configured-folder logging, concurrent writes, contained logger failure, task observation, AppDomain termination classification, optional image timeout/cancellation, required configuration failure, database timeout, and dispatcher responsiveness with temporary probes.
-- The sandbox did not expose the real WPF windows or LocalAppData folder reliably, so a manual interactive splash/login launch, visible fatal dialog confirmation, and fallback-file inspection remain required outside this environment.
+- Verified an actual terminating AppDomain exception in a bounded child probe. The test-only child set `SEM_NOGPFAULTERRORBOX`, exited with the expected non-zero CLR fatal code, and wrote exactly one terminating entry; this expected probe termination is distinct from a normal application failure.
+- The sandbox did not expose the real WPF windows reliably, so a manual interactive splash/login launch and visible dispatcher fatal-dialog confirmation remain required outside this environment.
 
 ## 2026-07-14
 
