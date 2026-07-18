@@ -40,4 +40,8 @@
 
 # Sprint 7
 
-- [ ] Result Module (Issue #10 implementation complete; draft review and manual testing pending)
+- [x] Result Module (Issue #10, delivered by merged PR #41 and manually accepted after diagnostic-dialog correction `bee4eb0`)
+
+# Sprint 8
+
+- [ ] Dashboard Analytics (Issue #11, next planned task; not started)
