@@ -4,6 +4,10 @@
 
 ### Result Module
 
+- Delivered the Result Module through merged PR #41.
+- Removed the accidental quiz-startup diagnostic dialog in commit `bee4eb0` and retained one fixed, non-sensitive startup failure message with safe application-error logging.
+- Completed manual acceptance for real login and ten-question quiz completion, exactly one ResultWindow, pending statistics and filters, selected-image preview and closing, a controlled six-answer reviewed dataset, and MySQL session and answer-row persistence.
+- Confirmed the reviewed-data calculations, NG analysis, and filters remain correct and that pending answers are not treated as wrong.
 - Added snapshot-based result statistics for answer distribution, review coverage, reviewed-only accuracy, valid timing, and NG analysis.
 - Added read-only All, Reviewed Wrong, User NG, and Pending Review answer filters with selected-answer details.
 - Added asynchronous, detached single-image result previews that release source files and reject stale or post-close updates.
