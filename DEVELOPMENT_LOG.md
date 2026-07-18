@@ -7,10 +7,12 @@
 - Reworked quiz bitmap display so the active image is decoded off the WPF UI thread and only the active image plus one upcoming image are retained in a bounded two-entry least-recently-used cache.
 - Bitmap loading reads the source into memory, uses `BitmapCacheOption.OnLoad`, and freezes each image before it crosses threads, releasing source files after successful or failed decode attempts.
 - Added cancellation, generation checks, cache clearing, and one-time `IDisposable` cleanup so stale preload completion cannot replace a newer question or survive window closure.
+- Corrected a post-decode cleanup race: active and upcoming image continuations now validate cancellation, disposal, generation, quiz state, and image ownership before caching, then validate again while holding the cache lock so cleanup cannot be followed by a stale cache insertion.
 - Disabled answer commands while the active image is loading, unavailable, completed, or shutting down. Missing or corrupt images stop the incomplete quiz without saving it as completed.
 - Hardened local G, N, and Escape handling to reuse existing commands, ignore repeat and queued shortcut input, handle the key once, and retain one exit confirmation.
 - Added bindable question, total, answered, remaining, and answered-percentage values. The percentage is derived only from accepted answers and ranges from 0% before the first answer to 100% after the last answer.
 - Verified bitmap detachment, missing/corrupt image failures, bounded cache eviction and cleanup, cache reuse, progress boundaries, duplicate protection, and incomplete-session save guarding with a temporary non-UI probe.
+- Verified the active and upcoming cache-continuation cleanup races with a temporary non-UI probe that paused each continuation at cache validation, disposed the view model, and confirmed the settled task could not alter image state, status, progress, or the cleared cache. The probe also reconfirmed normal current/next caching, frozen image file release, decode failures, and pending-review engine state.
 - Launched the real WPF application after correcting a discovered progress-binding error and observed the splash and Home windows remain running without a new application-error log. User input then occurred before login or quiz interaction could be verified; interactive quiz verification remains required.
 
 ### Global Error Handling

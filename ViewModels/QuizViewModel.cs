@@ -452,14 +452,26 @@ namespace VisualInspectionTrainingSystem.ViewModels
                         },
                         cancellation.Token);
 
-                    CacheImage(
-                        image.FilePath,
-                        bitmap,
-                        image.FilePath,
-                        GetUpcomingImagePath());
+                    if (!IsCurrentImageLoad(
+                            generation,
+                            image,
+                            cancellation.Token) ||
+                        !CacheImageIfCurrent(
+                            image.FilePath,
+                            bitmap,
+                            image.FilePath,
+                            GetUpcomingImagePath(),
+                            delegate
+                            {
+                                return IsCurrentImageLoad(
+                                    generation,
+                                    image,
+                                    cancellation.Token);
+                            }))
+                    {
+                        return;
+                    }
                 }
-
-                cancellation.Token.ThrowIfCancellationRequested();
 
                 if (!IsCurrentImageLoad(
                         generation,
@@ -559,24 +571,28 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     },
                     cancellationToken).ConfigureAwait(false);
 
-                if (cancellationToken.IsCancellationRequested ||
-                    generation != Interlocked.CompareExchange(
-                        ref _imageLoadGeneration,
-                        0,
-                        0) ||
-                    Interlocked.CompareExchange(
-                        ref _isDisposed,
-                        0,
-                        0) != 0)
+                if (!IsCurrentImagePreload(
+                        generation,
+                        image,
+                        currentImagePath,
+                        cancellationToken))
                 {
                     return;
                 }
 
-                CacheImage(
+                CacheImageIfCurrent(
                     image.FilePath,
                     bitmap,
                     currentImagePath,
-                    image.FilePath);
+                    image.FilePath,
+                    delegate
+                    {
+                        return IsCurrentImagePreload(
+                            generation,
+                            image,
+                            currentImagePath,
+                            cancellationToken);
+                    });
             }
             catch (OperationCanceledException)
             {
@@ -696,44 +712,77 @@ namespace VisualInspectionTrainingSystem.ViewModels
         }
 
         /// <summary>
-        /// Caches a frozen bitmap and evicts only stale entries when the bounded capacity is exceeded.
+        /// Caches a bitmap only while the owning operation still belongs to the active quiz state.
+        /// The second validation is performed under the cache lock so cleanup cannot clear the cache
+        /// and then allow a late continuation to add a stale bitmap.
         /// </summary>
         /// <param name="filePath">The bitmap cache key.</param>
         /// <param name="bitmap">The frozen bitmap to cache.</param>
         /// <param name="currentImagePath">The current image that must remain available.</param>
         /// <param name="upcomingImagePath">The upcoming image that must remain available.</param>
-        private void CacheImage(
+        /// <param name="isCurrent">Returns whether the image operation still owns the cache.</param>
+        /// <returns>True when the bitmap was added to the cache.</returns>
+        private bool CacheImageIfCurrent(
+            string filePath,
+            BitmapImage bitmap,
+            string currentImagePath,
+            string upcomingImagePath,
+            Func<bool> isCurrent)
+        {
+            if (bitmap == null ||
+                string.IsNullOrWhiteSpace(filePath) ||
+                isCurrent == null)
+            {
+                return false;
+            }
+
+            lock (_imageCacheSyncRoot)
+            {
+                if (!isCurrent())
+                {
+                    return false;
+                }
+
+                CacheImageCore(
+                    filePath,
+                    bitmap,
+                    currentImagePath,
+                    upcomingImagePath);
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Adds a bitmap to the bounded cache while the caller owns the cache lock.
+        /// </summary>
+        /// <param name="filePath">The bitmap cache key.</param>
+        /// <param name="bitmap">The frozen bitmap to cache.</param>
+        /// <param name="currentImagePath">The current image that must remain available.</param>
+        /// <param name="upcomingImagePath">The upcoming image that must remain available.</param>
+        private void CacheImageCore(
             string filePath,
             BitmapImage bitmap,
             string currentImagePath,
             string upcomingImagePath)
         {
-            if (bitmap == null ||
-                string.IsNullOrWhiteSpace(filePath))
-            {
-                return;
-            }
+            _imageCache[filePath] = bitmap;
+            _imageCacheOrder.Remove(filePath);
+            _imageCacheOrder.AddLast(filePath);
 
-            lock (_imageCacheSyncRoot)
+            while (_imageCache.Count > MaximumCachedImages)
             {
-                _imageCache[filePath] = bitmap;
-                _imageCacheOrder.Remove(filePath);
-                _imageCacheOrder.AddLast(filePath);
+                string evictionKey = FindEvictionKey(
+                    currentImagePath,
+                    upcomingImagePath);
 
-                while (_imageCache.Count > MaximumCachedImages)
+                if (evictionKey == null)
                 {
-                    string evictionKey = FindEvictionKey(
-                        currentImagePath,
-                        upcomingImagePath);
-
-                    if (evictionKey == null)
-                    {
-                        break;
-                    }
-
-                    _imageCache.Remove(evictionKey);
-                    _imageCacheOrder.Remove(evictionKey);
+                    break;
                 }
+
+                _imageCache.Remove(evictionKey);
+                _imageCacheOrder.Remove(evictionKey);
             }
         }
 
@@ -826,6 +875,44 @@ namespace VisualInspectionTrainingSystem.ViewModels
                    !_isFinished &&
                    _quizEngine != null &&
                    ReferenceEquals(_quizEngine.CurrentImage, image);
+        }
+
+        /// <summary>
+        /// Determines whether a completed preload still belongs to the current image and its next question.
+        /// </summary>
+        /// <param name="generation">The image task generation.</param>
+        /// <param name="image">The image requested for preload.</param>
+        /// <param name="currentImagePath">The active image path captured when the preload was queued.</param>
+        /// <param name="cancellationToken">The task cancellation token.</param>
+        /// <returns>True when the preload may add its bitmap to the cache.</returns>
+        private bool IsCurrentImagePreload(
+            int generation,
+            QuizImage image,
+            string currentImagePath,
+            CancellationToken cancellationToken)
+        {
+            QuizImage currentImage = _quizEngine == null
+                ? null
+                : _quizEngine.CurrentImage;
+
+            return !cancellationToken.IsCancellationRequested &&
+                   generation == Interlocked.CompareExchange(
+                       ref _imageLoadGeneration,
+                       0,
+                       0) &&
+                   Interlocked.CompareExchange(
+                       ref _isDisposed,
+                       0,
+                       0) == 0 &&
+                   !_isFinished &&
+                   _quizEngine != null &&
+                   string.Equals(
+                       currentImage == null
+                           ? null
+                           : currentImage.FilePath,
+                       currentImagePath,
+                       StringComparison.OrdinalIgnoreCase) &&
+                   ReferenceEquals(GetUpcomingImage(), image);
         }
 
         /// <summary>
