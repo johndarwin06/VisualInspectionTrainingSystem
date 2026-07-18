@@ -33,3 +33,7 @@
 - [x] Splash Screen Improvement
 - [x] Splash Timeout Hardening
 - [x] Global Error Handling
+
+# Sprint 6
+
+- [ ] Quiz Optimization (Issue #9 implementation complete; draft review pending)

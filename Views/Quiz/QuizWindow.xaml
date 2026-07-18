@@ -16,7 +16,7 @@
 
     <Grid Margin="18">
         <Grid.RowDefinitions>
-            <RowDefinition Height="104" />
+            <RowDefinition Height="120" />
             <RowDefinition Height="14" />
             <RowDefinition Height="*" />
             <RowDefinition Height="16" />
@@ -33,7 +33,7 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="360" />
+                    <ColumnDefinition Width="390" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel VerticalAlignment="Center">
@@ -77,10 +77,29 @@
                         <TextBlock
                             Margin="0,2,0,0"
                             HorizontalAlignment="Right"
-                            FontSize="40"
+                            FontSize="28"
                             FontWeight="Bold"
                             Foreground="#38BDF8"
-                            Text="{Binding Progress}" />
+                            Text="{Binding QuestionProgressText}" />
+                        <Grid Margin="0,4,0,0">
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                FontSize="13"
+                                Foreground="#CBD5E1"
+                                Text="{Binding AnsweredRemainingText}" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Foreground="#E2E8F0"
+                                Text="{Binding CompletionPercentage, StringFormat={}{0:0}%}" />
+                        </Grid>
+                        <ProgressBar
+                            Width="350"
+                            Height="8"
+                            Margin="0,6,0,0"
+                            Maximum="100"
+                            Value="{Binding CompletionPercentage, Mode=OneWay}" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -95,17 +114,23 @@
             CornerRadius="4">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="34" />
+                    <RowDefinition Height="42" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0">
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontSize="14"
-                        FontWeight="SemiBold"
-                        Foreground="#CBD5E1"
-                        Text="INSPECTION IMAGE" />
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="#CBD5E1"
+                            Text="INSPECTION IMAGE" />
+                        <TextBlock
+                            Margin="0,2,0,0"
+                            FontSize="12"
+                            Foreground="#94A3B8"
+                            Text="{Binding ImageStatus}" />
+                    </StackPanel>
 
                     <StackPanel
                         HorizontalAlignment="Right"
