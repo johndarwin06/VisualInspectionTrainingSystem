@@ -1,4 +1,4 @@
-﻿#region Namespaces
+#region Namespaces
 
 using System;
 using System.Windows;
@@ -15,13 +15,35 @@ using VisualInspectionTrainingSystem.Views.Quiz;
 namespace VisualInspectionTrainingSystem.ViewModels
 {
     /// <summary>
-    /// Home screen ViewModel.
+    /// Provides commands and display state for the application home screen.
     /// </summary>
     public class HomeViewModel : BaseViewModel
     {
-        #region Constructor
+        #region Constants
+
+        private const string TrainingStartupErrorMessage =
+            "Training could not be opened. Please try again. " +
+            "Contact support if the problem continues.";
+
+        private const string TrainingStartupErrorTitle =
+            "Training Unavailable";
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Occurs when a training session is requested by a host that subscribes to the event.
+        /// </summary>
         public event Action StartTrainingRequested;
 
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HomeViewModel"/> class.
+        /// </summary>
         public HomeViewModel()
         {
             StartTrainingCommand = new RelayCommand(StartTraining);
@@ -35,6 +57,9 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         #region Properties
 
+        /// <summary>
+        /// Gets the personalized welcome message for the signed-in user.
+        /// </summary>
         public string WelcomeMessage
         {
             get
@@ -43,6 +68,9 @@ namespace VisualInspectionTrainingSystem.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets the visibility of the administration command for the signed-in user.
+        /// </summary>
         public Visibility AdminVisibility
         {
             get
@@ -58,16 +86,28 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         #region Commands
 
+        /// <summary>
+        /// Gets the command that opens a new quiz window.
+        /// </summary>
         public ICommand StartTrainingCommand { get; }
 
+        /// <summary>
+        /// Gets the command that opens the administration window.
+        /// </summary>
         public ICommand AdminCommand { get; }
 
+        /// <summary>
+        /// Gets the command that signs out the current user.
+        /// </summary>
         public ICommand LogoutCommand { get; }
 
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Creates and displays one quiz window for the requested training session.
+        /// </summary>
         private void StartTraining()
         {
             try
@@ -75,22 +115,25 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 QuizWindow window = new QuizWindow();
 
                 window.Show();
-
-                MessageBox.Show(
-                    "Quiz Is Visible = " + window.IsVisible +
-                    "\nLoaded = " + window.IsLoaded +
-                    "\nState = " + window.WindowState);
             }
             catch (Exception ex)
             {
+                ApplicationErrorLogger.LogUnhandledException(
+                    "Home Start Training",
+                    ex,
+                    false);
+
                 MessageBox.Show(
-                    ex.ToString(),
-                    "Quiz Startup Error",
+                    TrainingStartupErrorMessage,
+                    TrainingStartupErrorTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
         }
 
+        /// <summary>
+        /// Opens the administration window and closes the current home window.
+        /// </summary>
         private void OpenAdmin()
         {
             AdminWindow window = new AdminWindow();
@@ -100,6 +143,9 @@ namespace VisualInspectionTrainingSystem.ViewModels
             CloseCurrentWindow<VisualInspectionTrainingSystem.Views.Home.HomeWindow>();
         }
 
+        /// <summary>
+        /// Clears the current session, opens the login window, and closes the home window.
+        /// </summary>
         private void Logout()
         {
             SessionService.Logout();
@@ -115,6 +161,10 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         #region Helpers
 
+        /// <summary>
+        /// Closes the first open application window of the requested type.
+        /// </summary>
+        /// <typeparam name="T">The window type to close.</typeparam>
         private void CloseCurrentWindow<T>()
             where T : Window
         {
