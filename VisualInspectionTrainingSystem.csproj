@@ -161,6 +161,7 @@
     <Compile Include="Models\QuizState.cs" />
     <Compile Include="Models\ReportSessionRow.cs" />
     <Compile Include="Models\ReportSummary.cs" />
+    <Compile Include="Models\ResultStatistics.cs" />
     <Compile Include="Models\TrainingSession.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserRoles.cs" />

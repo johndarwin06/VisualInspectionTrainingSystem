@@ -36,4 +36,8 @@
 
 # Sprint 6
 
-- [ ] Quiz Optimization (Issue #9 implementation complete; draft review pending)
+- [x] Quiz Optimization (Issue #9, merged as PR #40)
+
+# Sprint 7
+
+- [ ] Result Module (Issue #10 implementation complete; draft review and manual testing pending)

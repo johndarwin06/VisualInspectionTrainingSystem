@@ -2,6 +2,21 @@
 
 ## 2026-07-18
 
+### Result Module
+
+- Moved cohesive result calculations into `StatisticsService` and added an immutable `ResultStatistics` snapshot so caller list or answer mutations cannot silently alter a displayed result.
+- Added total, GOOD/NG distribution, review coverage, reviewed-only accuracy, valid timing, and NG-classification metrics with safe zero denominators and pending-review handling.
+- Defined reviewed accuracy as correct reviewed answers divided by reviewed answers. Pending answers remain available for distribution and timing but are excluded from correct, wrong, detection, and false-NG classifications.
+- Added read-only All, Reviewed Wrong, User NG, and Pending Review filters without modifying the source snapshot.
+- Added a selected-answer detail view with one asynchronous detached preview. The shared decoder uses `BitmapCacheOption.OnLoad` and `Freeze`; cancellation, selection generation, and disposal checks prevent stale or post-close publication.
+- Added native labeled WPF bars for GOOD/NG distribution, reviewed/pending coverage, reviewed correct/wrong outcomes, reviewed accuracy, NG detection, and false-NG rate. Each visual includes text rather than relying on color alone.
+- Preserved the existing `ResultWindow(List<QuizAnswer>)` entry point, read-only result behavior, transactional save flow, and Issue #9 current/next cache.
+- Built Debug after each completed C# or XAML change with 0 errors and only the existing Toolkit configuration and unused Home event warnings.
+- Passed a temporary Result Module probe with 76 assertions covering explicit empty, pending, reviewed-correct, mixed, and invalid-timing datasets; snapshot isolation; filters; preview detachment and file release; missing/corrupt images; rapid selection; close cancellation; WPF window lifecycle; and binding diagnostics.
+- Passed a temporary Issue #9 decoder regression probe with 29 assertions covering current and next loading, the two-entry cache bound, eviction, stale-image prevention, G/N action paths, progress, file release, and close-during-load cleanup.
+- The automated probe instantiated, showed, pumped, and closed the real `ResultWindow` class with a controlled reviewed dataset. Full splash, login, quiz, MySQL persistence, and human visual checks in the real application remain to be run before merge.
+- Issue #10 is awaiting draft pull request review and required manual application testing. Issue #9 was merged as PR #40 and is complete.
+
 ### Quiz Optimization
 
 - Reworked quiz bitmap display so the active image is decoded off the WPF UI thread and only the active image plus one upcoming image are retained in a bounded two-entry least-recently-used cache.
