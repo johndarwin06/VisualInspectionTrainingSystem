@@ -74,6 +74,16 @@ Optional image inventory checks run behind their own short bounded wait. If the 
 
 The login window is opened only by the splash window after a successful startup result, and `Application.Current.MainWindow` is updated to the login window before the splash closes.
 
+## Quiz Image Lifecycle
+
+`QuizViewModel` remains the owner of quiz display state and continues to submit answers only through `QuizEngine`. It loads the active bitmap off the WPF UI thread and preloads only one upcoming image. The cache is a two-entry least-recently-used cache that retains the current and upcoming images; it never loads an entire quiz into memory.
+
+Each bitmap is read into memory, decoded with `BitmapCacheOption.OnLoad`, and frozen before it is shared with the UI or cache. This releases the source file without reducing image decode fidelity. The ViewModel attaches a cancellation token and generation value to image work, observes task failures, and ignores late completion after a question changes or the window closes.
+
+Answer commands are enabled only when the active bitmap is ready. A failed active-image load stops and cleans up the incomplete quiz without persisting it as completed. `QuizWindow` routes local G and N input through the existing commands, prevents repeated/queued keyboard input from becoming a second answer, and retains one Escape exit confirmation. It owns and disposes its ViewModel once when closed.
+
+Quiz progress is derived from accepted answers: `CurrentQuestion`, `TotalQuestions`, `AnsweredQuestions`, `RemainingQuestions`, and `CompletionPercentage` are synchronized by the ViewModel. The percentage is zero before the first accepted answer, 100 after the final accepted answer, and `AnsweredQuestions + RemainingQuestions` always equals `TotalQuestions`.
+
 ## Repository Validation
 
 Repository public methods validate parameters before opening MySQL connections wherever applicable. Numeric identities must be greater than zero, EmployeeNo values must be present, answer collections must be non-null and contain no null elements, answer values must be GOOD or NG, completed sessions must have valid start/end ordering, and report date ranges must be ordered.

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Quiz Experience
+
+- Added bounded asynchronous quiz image loading with a two-image current/next cache, frozen detached bitmaps, cancellation, stale-load protection, and lifecycle cleanup.
+- Disabled answers until the current image is ready, prevented incomplete image-failure sessions from saving, and retained the existing engine duplicate-answer protection.
+- Added answered-based quiz progress values and display for question, total, answered, remaining, and completion percentage.
+- Hardened local G, N, and Escape shortcuts so repeated input cannot create duplicate answer paths and confirmed exit cleans up incomplete quizzes.
+
 ### Application Reliability
 
 - Added controlled WPF dispatcher, task scheduler, and AppDomain global exception handling.

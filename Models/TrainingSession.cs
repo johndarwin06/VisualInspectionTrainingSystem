@@ -95,7 +95,9 @@ namespace VisualInspectionTrainingSystem.Models
                 if (Images.Count == 0)
                     return 0;
 
-                return CurrentIndex + 1;
+                return Math.Min(
+                    CurrentIndex + 1,
+                    Images.Count);
             }
         }
 
