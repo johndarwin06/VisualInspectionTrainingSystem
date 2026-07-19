@@ -44,4 +44,4 @@
 
 # Sprint 8
 
-- [ ] Dashboard Analytics (Issue #11, next planned task; not started)
+- [x] Dashboard Analytics (Issue #11, implemented and verified on the feature branch; awaiting pull-request review)
