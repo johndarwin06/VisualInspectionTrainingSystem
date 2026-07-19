@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Dashboard Analytics
+
+- Added five local-day dashboard metrics: completed training sessions, reviewed-only average accuracy, valid completed-session time, trainee GOOD selections, and trainee NG selections.
+- Applied parameterized half-open local-day boundaries without wrapping `StartTime` in a SQL date function.
+- Separated session and answer conditional aggregates so answer joins cannot multiply duration totals.
+- Excluded incomplete, negative, and malformed durations from Time Spent and displayed N/A when no reviewed answers exist.
+- Kept pending answers out of reviewed accuracy and wrong counts while retaining pending trainee GOOD and NG selections.
+- Added asynchronous refresh with a busy guard, atomic metric/session replacement, deterministic recent-session ordering, and stale-state clearing after failure.
+- Replaced raw dashboard database failures with existing technical logging and one fixed non-sensitive status message.
+- Updated the native WPF dashboard cards with explicit Today and reviewed-only labels while preserving resizing and normal administrator navigation.
+
 ### Result Module
 
 - Delivered the Result Module through merged PR #41.

@@ -2,6 +2,20 @@
 
 ## 2026-07-19
 
+### Dashboard Analytics
+
+- Replaced the dashboard's all-time summary cards with five consistently scoped local-day metrics: Today's Training, reviewed-only Average Accuracy, Time Spent, GOOD Count, and NG Count.
+- Used parameterized half-open boundaries (`StartTime >= @DayStart` and `StartTime < @DayEnd`) instead of applying a date function to the indexed session column.
+- Kept session duration aggregation separate from answer aggregation so joining answer rows cannot multiply completed-session time.
+- Excluded null, negative, and malformed completed durations; returned N/A for a zero reviewed-answer denominator; and retained pending trainee GOOD/NG selections without counting them as wrong.
+- Preserved the deterministic recent-session order and limit, safe null mapping, existing public dashboard properties, and native WPF styling.
+- Moved dashboard loading off the dispatcher, disabled repeated refresh while busy, replaced rather than appended recent rows, cleared stale values after failure, logged technical exceptions, and showed only a fixed non-sensitive error status.
+- Passed the controlled MySQL dashboard probe with 49 assertions covering the expected 1 session, 10 minutes, GOOD 3, NG 3, reviewed 4, correct 2, wrong 2, and 50% reviewed accuracy, plus yesterday exclusion, incomplete sessions, empty days, half-open boundaries, invalid durations, refresh deduplication, safe failures, and recent ordering/limit.
+- Passed the Result Module regression probe with 76 assertions and the Issue #9 regression probe with 29 assertions.
+- Built Debug with 0 errors and 1 existing warning and Release with 0 errors and 3 existing warnings.
+- In a visible WPF run, administrator login and normal navigation opened exactly one Dashboard. The live MySQL-backed values were 1 completed session, N/A reviewed accuracy with 0 reviewed and 10 pending, 4 seconds, GOOD 3, and NG 7. Refresh preserved the same values and newest-first rows without duplication, and closing Dashboard returned safely to Administration.
+- The trainee quiz and ResultWindow workflow was covered by automated regressions but was not rerun visibly during this dashboard session. Computer control stopped after detecting user input during the separate application-close attempt.
+
 ### Issue #10 Result Module Acceptance Finalization
 
 - Confirmed merged PR #41 delivered the Result Module and that `origin/main` contains diagnostic-dialog correction commit `bee4eb0`.

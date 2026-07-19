@@ -20,6 +20,103 @@ namespace VisualInspectionTrainingSystem.Repositories
 
         private const int MaximumRecentSessionLimit = 500;
 
+        private const string DailyMetricsSql = @"
+SELECT
+    IFNULL(sessionTotals.TodaysTraining, 0) AS TodaysTraining,
+    IFNULL(sessionTotals.TimeSpentSeconds, 0) AS TimeSpentSeconds,
+    IFNULL(sessionTotals.ActiveTrainees, 0) AS ActiveTrainees,
+    sessionTotals.LatestSessionTime AS LatestSessionTime,
+    IFNULL(answerTotals.GoodCount, 0) AS GoodCount,
+    IFNULL(answerTotals.NgCount, 0) AS NgCount,
+    IFNULL(answerTotals.ReviewedAnswers, 0) AS ReviewedAnswers,
+    IFNULL(answerTotals.CorrectReviewedAnswers, 0) AS CorrectReviewedAnswers,
+    IFNULL(answerTotals.WrongReviewedAnswers, 0) AS WrongReviewedAnswers,
+    IFNULL(answerTotals.PendingAnswers, 0) AS PendingAnswers,
+    CASE
+        WHEN IFNULL(answerTotals.ReviewedAnswers, 0) = 0 THEN NULL
+        ELSE ROUND(
+            answerTotals.CorrectReviewedAnswers * 100.0 /
+            answerTotals.ReviewedAnswers,
+            2)
+    END AS AverageReviewedAccuracy
+FROM
+(
+    SELECT
+        SUM(CASE
+            WHEN EndTime IS NOT NULL THEN 1
+            ELSE 0
+        END) AS TodaysTraining,
+        SUM(CASE
+            WHEN EndTime IS NOT NULL AND EndTime >= StartTime
+                THEN TIMESTAMPDIFF(SECOND, StartTime, EndTime)
+            ELSE 0
+        END) AS TimeSpentSeconds,
+        COUNT(DISTINCT CASE
+            WHEN EndTime IS NOT NULL THEN EmployeeNo
+            ELSE NULL
+        END) AS ActiveTrainees,
+        MAX(CASE
+            WHEN EndTime IS NOT NULL THEN StartTime
+            ELSE NULL
+        END) AS LatestSessionTime
+    FROM tbl_training_session
+    WHERE StartTime >= @DayStart
+      AND StartTime < @DayEnd
+) sessionTotals
+CROSS JOIN
+(
+    SELECT
+        SUM(CASE
+            WHEN UPPER(a.UserAnswer) = 'GOOD' THEN 1
+            ELSE 0
+        END) AS GoodCount,
+        SUM(CASE
+            WHEN UPPER(a.UserAnswer) = 'NG' THEN 1
+            ELSE 0
+        END) AS NgCount,
+        SUM(CASE
+            WHEN a.CorrectAnswer IS NOT NULL THEN 1
+            ELSE 0
+        END) AS ReviewedAnswers,
+        SUM(CASE
+            WHEN a.CorrectAnswer IS NOT NULL
+             AND UPPER(a.UserAnswer) = UPPER(a.CorrectAnswer) THEN 1
+            ELSE 0
+        END) AS CorrectReviewedAnswers,
+        SUM(CASE
+            WHEN a.CorrectAnswer IS NOT NULL
+             AND
+             (
+                 a.UserAnswer IS NULL OR
+                 UPPER(a.UserAnswer) <> UPPER(a.CorrectAnswer)
+             ) THEN 1
+            ELSE 0
+        END) AS WrongReviewedAnswers,
+        SUM(CASE
+            WHEN a.CorrectAnswer IS NULL THEN 1
+            ELSE 0
+        END) AS PendingAnswers
+    FROM tbl_quiz_answer a
+    INNER JOIN tbl_training_session s
+        ON s.SessionID = a.SessionID
+    WHERE s.StartTime >= @DayStart
+      AND s.StartTime < @DayEnd
+) answerTotals;";
+
+        private const string RecentSessionsSql = @"
+SELECT
+    SessionID,
+    EmployeeNo,
+    StartTime,
+    EndTime,
+    TotalQuestions,
+    CorrectAnswers,
+    WrongAnswers,
+    Accuracy
+FROM tbl_training_session
+ORDER BY StartTime DESC, SessionID DESC
+LIMIT @Limit;";
+
         #endregion
 
         #region Fields
@@ -38,6 +135,10 @@ namespace VisualInspectionTrainingSystem.Repositories
         {
         }
 
+        /// <summary>
+        /// Initializes the dashboard repository with an existing database service.
+        /// </summary>
+        /// <param name="database">The database service used for read-only queries.</param>
         internal DashboardRepository(MySqlService database)
         {
             if (database == null)
@@ -51,40 +152,36 @@ namespace VisualInspectionTrainingSystem.Repositories
         #region Public Methods
 
         /// <summary>
-        /// Loads high-level training and review metrics.
+        /// Loads dashboard metrics for the current local calendar day.
         /// </summary>
-        public DashboardMetrics GetMetrics()
+        /// <returns>Daily dashboard metrics.</returns>
+        public virtual DashboardMetrics GetMetrics()
         {
-            const string sql = @"
-SELECT
-    IFNULL(sessionTotals.TotalSessions, 0) AS TotalSessions,
-    IFNULL(answerTotals.TotalAnswers, 0) AS TotalAnswers,
-    IFNULL(answerTotals.ReviewedAnswers, 0) AS ReviewedAnswers,
-    IFNULL(answerTotals.PendingAnswers, 0) AS PendingAnswers,
-    IFNULL(sessionTotals.ActiveTrainees, 0) AS ActiveTrainees,
-    IFNULL(sessionTotals.AverageAccuracy, 0) AS AverageAccuracy,
-    sessionTotals.LatestSessionTime AS LatestSessionTime
-FROM
-(
-    SELECT
-        COUNT(*) AS TotalSessions,
-        COUNT(DISTINCT EmployeeNo) AS ActiveTrainees,
-        IFNULL(ROUND(AVG(Accuracy), 2), 0) AS AverageAccuracy,
-        MAX(StartTime) AS LatestSessionTime
-    FROM tbl_training_session
-) sessionTotals
-CROSS JOIN
-(
-    SELECT
-        COUNT(*) AS TotalAnswers,
-        SUM(CASE WHEN CorrectAnswer IS NOT NULL THEN 1 ELSE 0 END) AS ReviewedAnswers,
-        SUM(CASE WHEN CorrectAnswer IS NULL THEN 1 ELSE 0 END) AS PendingAnswers
-    FROM tbl_quiz_answer
-) answerTotals;";
+            DateTime dayStart = DateTime.Today;
+
+            return GetMetrics(
+                dayStart,
+                dayStart.AddDays(1));
+        }
+
+        /// <summary>
+        /// Loads dashboard metrics within a parameterized half-open local time range.
+        /// </summary>
+        /// <param name="dayStart">Inclusive local start boundary.</param>
+        /// <param name="dayEnd">Exclusive local end boundary.</param>
+        /// <returns>Dashboard metrics for the requested range.</returns>
+        public virtual DashboardMetrics GetMetrics(
+            DateTime dayStart,
+            DateTime dayEnd)
+        {
+            ValidateDayRange(dayStart, dayEnd);
 
             try
             {
-                DataTable table = _database.ExecuteDataTable(sql);
+                DataTable table = _database.ExecuteDataTable(
+                    DailyMetricsSql,
+                    CreateDateParameter("@DayStart", dayStart),
+                    CreateDateParameter("@DayEnd", dayEnd));
 
                 if (table.Rows.Count == 0)
                     return new DashboardMetrics();
@@ -98,30 +195,18 @@ CROSS JOIN
         }
 
         /// <summary>
-        /// Loads the most recent training sessions.
+        /// Loads the most recent training sessions in deterministic order.
         /// </summary>
-        public List<DashboardSessionSummary> GetRecentSessions(int limit)
+        /// <param name="limit">Maximum number of sessions to return.</param>
+        /// <returns>Recent session summaries.</returns>
+        public virtual List<DashboardSessionSummary> GetRecentSessions(int limit)
         {
             ValidateLimit(limit);
-
-            const string sql = @"
-SELECT
-    SessionID,
-    EmployeeNo,
-    StartTime,
-    EndTime,
-    TotalQuestions,
-    CorrectAnswers,
-    WrongAnswers,
-    Accuracy
-FROM tbl_training_session
-ORDER BY StartTime DESC, SessionID DESC
-LIMIT @Limit;";
 
             try
             {
                 DataTable table = _database.ExecuteDataTable(
-                    sql,
+                    RecentSessionsSql,
                     new MySqlParameter("@Limit", limit));
 
                 List<DashboardSessionSummary> sessions =
@@ -145,18 +230,36 @@ LIMIT @Limit;";
         #region Mapping
 
         /// <summary>
-        /// Maps aggregate dashboard values.
+        /// Maps one aggregate dashboard row.
         /// </summary>
+        /// <param name="row">Aggregate row returned by MySQL.</param>
+        /// <returns>Mapped dashboard metrics.</returns>
         private static DashboardMetrics MapMetrics(DataRow row)
         {
+            int todaysTraining = ToInt(row["TodaysTraining"]);
+            int goodCount = ToInt(row["GoodCount"]);
+            int ngCount = ToInt(row["NgCount"]);
+            int reviewedAnswers = ToInt(row["ReviewedAnswers"]);
+            int correctReviewedAnswers = ToInt(row["CorrectReviewedAnswers"]);
+            int wrongReviewedAnswers = ToInt(row["WrongReviewedAnswers"]);
+            decimal? averageReviewedAccuracy =
+                ToNullableDecimal(row["AverageReviewedAccuracy"]);
+
             return new DashboardMetrics
             {
-                TotalSessions = ToInt(row["TotalSessions"]),
-                TotalAnswers = ToInt(row["TotalAnswers"]),
-                ReviewedAnswers = ToInt(row["ReviewedAnswers"]),
+                TodaysTraining = todaysTraining,
+                AverageReviewedAccuracy = averageReviewedAccuracy,
+                TimeSpentSeconds = ToLong(row["TimeSpentSeconds"]),
+                GoodCount = goodCount,
+                NgCount = ngCount,
+                ReviewedAnswers = reviewedAnswers,
+                CorrectReviewedAnswers = correctReviewedAnswers,
+                WrongReviewedAnswers = wrongReviewedAnswers,
                 PendingAnswers = ToInt(row["PendingAnswers"]),
+                TotalSessions = todaysTraining,
+                TotalAnswers = goodCount + ngCount,
                 ActiveTrainees = ToInt(row["ActiveTrainees"]),
-                AverageAccuracy = ToDecimal(row["AverageAccuracy"]),
+                AverageAccuracy = averageReviewedAccuracy ?? 0,
                 LatestSessionTime = ToNullableDate(row["LatestSessionTime"])
             };
         }
@@ -164,6 +267,8 @@ LIMIT @Limit;";
         /// <summary>
         /// Maps one recent session row.
         /// </summary>
+        /// <param name="row">Session row returned by MySQL.</param>
+        /// <returns>Mapped recent session summary.</returns>
         private static DashboardSessionSummary MapSession(DataRow row)
         {
             return new DashboardSessionSummary
@@ -184,8 +289,26 @@ LIMIT @Limit;";
         #region Validation
 
         /// <summary>
+        /// Validates a half-open dashboard range.
+        /// </summary>
+        /// <param name="dayStart">Inclusive start boundary.</param>
+        /// <param name="dayEnd">Exclusive end boundary.</param>
+        private static void ValidateDayRange(
+            DateTime dayStart,
+            DateTime dayEnd)
+        {
+            if (dayEnd <= dayStart)
+            {
+                throw new ArgumentException(
+                    "Dashboard day end must be later than day start.",
+                    nameof(dayEnd));
+            }
+        }
+
+        /// <summary>
         /// Validates the requested recent-session limit.
         /// </summary>
+        /// <param name="limit">Requested row limit.</param>
         private static void ValidateLimit(int limit)
         {
             if (limit <= 0)
@@ -205,6 +328,26 @@ LIMIT @Limit;";
 
         #endregion
 
+        #region Parameter Helpers
+
+        /// <summary>
+        /// Creates a strongly typed MySQL date parameter.
+        /// </summary>
+        /// <param name="name">Parameter name.</param>
+        /// <param name="value">Local date boundary.</param>
+        /// <returns>Configured MySQL parameter.</returns>
+        private static MySqlParameter CreateDateParameter(
+            string name,
+            DateTime value)
+        {
+            return new MySqlParameter(name, MySqlDbType.DateTime)
+            {
+                Value = value
+            };
+        }
+
+        #endregion
+
         #region Conversion Helpers
 
         /// <summary>
@@ -219,6 +362,22 @@ LIMIT @Limit;";
             }
 
             return Convert.ToInt32(value);
+        }
+
+        /// <summary>
+        /// Converts a nullable numeric value to a long integer.
+        /// </summary>
+        private static long ToLong(object value)
+        {
+            if (value == null ||
+                value == DBNull.Value)
+            {
+                return 0;
+            }
+
+            long converted = Convert.ToInt64(value);
+
+            return converted < 0 ? 0 : converted;
         }
 
         /// <summary>
@@ -247,6 +406,20 @@ LIMIT @Limit;";
                 value == DBNull.Value)
             {
                 return 0;
+            }
+
+            return Convert.ToDecimal(value);
+        }
+
+        /// <summary>
+        /// Converts a nullable numeric value to a nullable decimal.
+        /// </summary>
+        private static decimal? ToNullableDecimal(object value)
+        {
+            if (value == null ||
+                value == DBNull.Value)
+            {
+                return null;
             }
 
             return Convert.ToDecimal(value);
