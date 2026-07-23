@@ -67,33 +67,36 @@ CROSS JOIN
 (
     SELECT
         SUM(CASE
-            WHEN UPPER(a.UserAnswer) = 'GOOD' THEN 1
+            WHEN UPPER(TRIM(a.UserAnswer)) = 'GOOD' THEN 1
             ELSE 0
         END) AS GoodCount,
         SUM(CASE
-            WHEN UPPER(a.UserAnswer) = 'NG' THEN 1
+            WHEN UPPER(TRIM(a.UserAnswer)) = 'NG' THEN 1
             ELSE 0
         END) AS NgCount,
         SUM(CASE
-            WHEN a.CorrectAnswer IS NOT NULL THEN 1
+            WHEN UPPER(TRIM(a.CorrectAnswer)) IN ('GOOD', 'NG') THEN 1
             ELSE 0
         END) AS ReviewedAnswers,
         SUM(CASE
-            WHEN a.CorrectAnswer IS NOT NULL
-             AND UPPER(a.UserAnswer) = UPPER(a.CorrectAnswer) THEN 1
+            WHEN UPPER(TRIM(a.CorrectAnswer)) IN ('GOOD', 'NG')
+             AND UPPER(TRIM(a.UserAnswer)) IN ('GOOD', 'NG')
+             AND UPPER(TRIM(a.UserAnswer)) = UPPER(TRIM(a.CorrectAnswer)) THEN 1
             ELSE 0
         END) AS CorrectReviewedAnswers,
         SUM(CASE
-            WHEN a.CorrectAnswer IS NOT NULL
+            WHEN UPPER(TRIM(a.CorrectAnswer)) IN ('GOOD', 'NG')
              AND
              (
                  a.UserAnswer IS NULL OR
-                 UPPER(a.UserAnswer) <> UPPER(a.CorrectAnswer)
+                 UPPER(TRIM(a.UserAnswer)) NOT IN ('GOOD', 'NG') OR
+                 UPPER(TRIM(a.UserAnswer)) <> UPPER(TRIM(a.CorrectAnswer))
              ) THEN 1
             ELSE 0
         END) AS WrongReviewedAnswers,
         SUM(CASE
-            WHEN a.CorrectAnswer IS NULL THEN 1
+            WHEN a.CorrectAnswer IS NULL
+              OR UPPER(TRIM(a.CorrectAnswer)) NOT IN ('GOOD', 'NG') THEN 1
             ELSE 0
         END) AS PendingAnswers
     FROM tbl_quiz_answer a

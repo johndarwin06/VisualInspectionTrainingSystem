@@ -44,4 +44,4 @@
 
 # Sprint 8
 
-- [x] Dashboard Analytics (Issue #11, implemented and verified on the feature branch; awaiting pull-request review)
+- [x] Dashboard Analytics (Issue #11, delivered by merged PR #43; implemented, tested, and complete)
