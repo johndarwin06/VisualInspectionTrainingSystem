@@ -34,6 +34,10 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         private readonly SessionRepository _sessionRepository;
 
+        private readonly int _requestedQuizSize;
+
+        private readonly string _imageFolderPath;
+
         private readonly RelayCommand _goodCommand;
 
         private readonly RelayCommand _ngCommand;
@@ -60,6 +64,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         private string _currentUser;
 
+        private string _quizNotice;
+
         private int _currentQuestion;
 
         private int _totalQuestions;
@@ -82,15 +88,55 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
-        /// Creates the quiz dependencies and begins the first bounded image load.
+        /// Creates a quiz using the default ten-question request.
         /// </summary>
         public QuizViewModel()
+            : this(ImageService.DefaultQuizSize)
         {
-            _imageService = new ImageService();
-            _sessionRepository = new SessionRepository();
+        }
+
+        /// <summary>
+        /// Creates a quiz using one supported requested sample size.
+        /// </summary>
+        /// <param name="requestedQuizSize">Requested quiz size of 10 or 20.</param>
+        public QuizViewModel(int requestedQuizSize)
+            : this(
+                ValidateAndReturnQuizSize(requestedQuizSize),
+                new ImageService(),
+                new SessionRepository(),
+                AppConstants.QuizImageFolder)
+        {
+        }
+
+        /// <summary>
+        /// Creates the quiz with explicit dependencies for deterministic verification.
+        /// </summary>
+        internal QuizViewModel(
+            int requestedQuizSize,
+            ImageService imageService,
+            SessionRepository sessionRepository,
+            string imageFolderPath)
+        {
+            ValidateRequestedQuizSize(requestedQuizSize);
+
+            if (imageService == null)
+                throw new ArgumentNullException(nameof(imageService));
+
+            if (sessionRepository == null)
+                throw new ArgumentNullException(nameof(sessionRepository));
+
+            if (string.IsNullOrWhiteSpace(imageFolderPath))
+                throw new ArgumentException(
+                    "Image folder path cannot be empty.",
+                    nameof(imageFolderPath));
+
+            _requestedQuizSize = requestedQuizSize;
+            _imageService = imageService;
+            _sessionRepository = sessionRepository;
+            _imageFolderPath = imageFolderPath;
             _imageCacheSyncRoot = new object();
             _imageCache = new Dictionary<string, BitmapImage>(
                 StringComparer.OrdinalIgnoreCase);
@@ -106,6 +152,9 @@ namespace VisualInspectionTrainingSystem.ViewModels
             GoodCommand = _goodCommand;
             NgCommand = _ngCommand;
             ImageStatus = "Preparing inspection image...";
+            QuizNotice = "Preparing a " +
+                         requestedQuizSize +
+                         "-question quiz...";
 
             InitializeQuiz();
         }
@@ -295,6 +344,32 @@ namespace VisualInspectionTrainingSystem.ViewModels
         }
 
         /// <summary>
+        /// Gets the supported quiz size requested from the trainee start screen.
+        /// </summary>
+        public int RequestedQuizSize
+        {
+            get
+            {
+                return _requestedQuizSize;
+            }
+        }
+
+        /// <summary>
+        /// Gets a fixed non-sensitive notice describing the actual quiz sample.
+        /// </summary>
+        public string QuizNotice
+        {
+            get
+            {
+                return _quizNotice;
+            }
+            private set
+            {
+                SetProperty(ref _quizNotice, value);
+            }
+        }
+
+        /// <summary>
         /// Gets the command that records a GOOD answer.
         /// </summary>
         public ICommand GoodCommand
@@ -328,12 +403,15 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 CurrentUser = user.FullName;
 
                 List<QuizImage> images =
-                    _imageService.LoadImages(AppConstants.QuizImageFolder);
+                    _imageService.LoadQuizImages(
+                        _imageFolderPath,
+                        _requestedQuizSize);
 
                 _quizEngine = new QuizEngine(
                     user,
                     images);
 
+                QuizNotice = BuildQuizNotice(images.Count);
                 UpdateProgress();
 
                 if (_quizEngine.IsCompleted())
@@ -348,12 +426,18 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
                 BeginDisplayCurrentImage();
             }
-            catch
+            catch (Exception ex)
             {
                 _isFinished = true;
                 CurrentImage = null;
                 ImageStatus = "The quiz could not be started.";
+                QuizNotice = "Training is unavailable.";
                 UpdateProgress();
+
+                ApplicationErrorLogger.LogUnhandledException(
+                    "Quiz Initialization",
+                    ex,
+                    false);
 
                 MessageBox.Show(
                     "The quiz could not be started. Verify that the training images are available and try again.",
@@ -1136,8 +1220,13 @@ namespace VisualInspectionTrainingSystem.ViewModels
             {
                 _sessionRepository.Save(session);
             }
-            catch
+            catch (Exception ex)
             {
+                ApplicationErrorLogger.LogUnhandledException(
+                    "Quiz Session Persistence",
+                    ex,
+                    false);
+
                 MessageBox.Show(
                     "Training completed, but the result could not be saved. Please contact support if the problem continues.",
                     "Save Result Warning",
@@ -1193,6 +1282,51 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #endregion
 
         #region Helpers
+
+        /// <summary>
+        /// Validates and returns a supported size before other constructor arguments are evaluated.
+        /// </summary>
+        private static int ValidateAndReturnQuizSize(int requestedQuizSize)
+        {
+            ValidateRequestedQuizSize(requestedQuizSize);
+
+            return requestedQuizSize;
+        }
+
+        /// <summary>
+        /// Rejects unsupported quiz sizes before normal initialization begins.
+        /// </summary>
+        private static void ValidateRequestedQuizSize(int requestedQuizSize)
+        {
+            if (!ImageService.IsSupportedQuizSize(requestedQuizSize))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(requestedQuizSize),
+                    requestedQuizSize,
+                    "Quiz size must be 10 or 20.");
+            }
+        }
+
+        /// <summary>
+        /// Builds the persistent safe notice for the requested and actual sample sizes.
+        /// </summary>
+        private string BuildQuizNotice(int actualQuizSize)
+        {
+            if (actualQuizSize <= 0)
+                return "No inspection images are available.";
+
+            if (actualQuizSize < _requestedQuizSize)
+            {
+                return "Only " +
+                       actualQuizSize +
+                       " unique inspection images are available. " +
+                       "This training will use all available images.";
+            }
+
+            return "This training uses " +
+                   actualQuizSize +
+                   " unique inspection images.";
+        }
 
         /// <summary>
         /// Refreshes answer-command enabled states after image, lifecycle, or engine changes.

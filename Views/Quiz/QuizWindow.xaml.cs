@@ -4,6 +4,7 @@ using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using VisualInspectionTrainingSystem.Services;
 using VisualInspectionTrainingSystem.ViewModels;
 
 #endregion
@@ -29,16 +30,25 @@ namespace VisualInspectionTrainingSystem.Views.Quiz
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
-        /// Creates the quiz view model and subscribes to this window's local keyboard events.
+        /// Creates a quiz window using the default ten-question request.
         /// </summary>
         public QuizWindow()
+            : this(ImageService.DefaultQuizSize)
+        {
+        }
+
+        /// <summary>
+        /// Creates the quiz view model with the explicitly selected sample size.
+        /// </summary>
+        /// <param name="requestedQuizSize">Requested quiz size of 10 or 20.</param>
+        public QuizWindow(int requestedQuizSize)
         {
             InitializeComponent();
 
-            _viewModel = new QuizViewModel();
+            _viewModel = new QuizViewModel(requestedQuizSize);
             DataContext = _viewModel;
 
             PreviewKeyDown += QuizWindow_PreviewKeyDown;
