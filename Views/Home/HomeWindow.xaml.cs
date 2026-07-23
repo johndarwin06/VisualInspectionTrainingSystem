@@ -1,5 +1,6 @@
 #region Namespaces
 
+using System;
 using System.Windows;
 using VisualInspectionTrainingSystem.ViewModels;
 using VisualInspectionTrainingSystem.Views.Quiz;
@@ -9,7 +10,7 @@ using VisualInspectionTrainingSystem.Views.Quiz;
 namespace VisualInspectionTrainingSystem.Views.Home
 {
     /// <summary>
-    /// Hosts the trainee home screen and its navigation-only event bridge.
+    /// Hosts the trainee home screen and owns single-flight quiz-window navigation.
     /// </summary>
     public partial class HomeWindow : Window
     {
@@ -17,12 +18,16 @@ namespace VisualInspectionTrainingSystem.Views.Home
 
         private readonly HomeViewModel _viewModel;
 
+        private QuizWindow _activeQuizWindow;
+
+        private bool _isClosing;
+
         #endregion
 
         #region Constructor
 
         /// <summary>
-        /// Creates the home view model and attaches the existing training-request event.
+        /// Creates the Home view model and attaches its training-navigation request.
         /// </summary>
         public HomeWindow()
         {
@@ -39,16 +44,80 @@ namespace VisualInspectionTrainingSystem.Views.Home
         #region Navigation
 
         /// <summary>
-        /// Opens a quiz with the explicitly selected sample size when the existing event is raised.
+        /// Opens at most one quiz with the explicitly selected sample size and hides Home while it is active.
         /// </summary>
         private void Vm_StartTrainingRequested()
         {
-            QuizWindow quiz = new QuizWindow(
-                _viewModel.SelectedQuizSize);
+            if (_isClosing)
+                return;
 
-            quiz.Show();
+            if (_activeQuizWindow != null)
+            {
+                if (_activeQuizWindow.IsVisible)
+                    _activeQuizWindow.Activate();
 
-            Hide();
+                return;
+            }
+
+            QuizWindow quiz = null;
+
+            try
+            {
+                quiz = new QuizWindow(
+                    _viewModel.SelectedQuizSize);
+
+                _activeQuizWindow = quiz;
+                quiz.Closed += QuizWindow_Closed;
+
+                quiz.Show();
+                Hide();
+            }
+            catch
+            {
+                if (quiz != null)
+                {
+                    quiz.Closed -= QuizWindow_Closed;
+
+                    try
+                    {
+                        quiz.Close();
+                    }
+                    catch
+                    {
+                        // Preserve the original startup failure for the view model's safe handler.
+                    }
+                }
+
+                _activeQuizWindow = null;
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Restores the existing Home window after normal completion or early cancellation.
+        /// </summary>
+        /// <param name="sender">The quiz window that closed.</param>
+        /// <param name="e">Close event data.</param>
+        private void QuizWindow_Closed(object sender, EventArgs e)
+        {
+            QuizWindow closedQuiz = sender as QuizWindow;
+
+            if (!ReferenceEquals(
+                    closedQuiz,
+                    _activeQuizWindow))
+            {
+                return;
+            }
+
+            closedQuiz.Closed -= QuizWindow_Closed;
+            _activeQuizWindow = null;
+
+            if (_isClosing)
+                return;
+
+            Show();
+            Activate();
         }
 
         #endregion
@@ -56,11 +125,16 @@ namespace VisualInspectionTrainingSystem.Views.Home
         #region Window Lifecycle
 
         /// <summary>
-        /// Detaches the navigation bridge when the home window closes.
+        /// Detaches navigation handlers without reopening Home during application shutdown.
         /// </summary>
-        protected override void OnClosed(System.EventArgs e)
+        /// <param name="e">Close event data.</param>
+        protected override void OnClosed(EventArgs e)
         {
+            _isClosing = true;
             _viewModel.StartTrainingRequested -= Vm_StartTrainingRequested;
+
+            if (_activeQuizWindow != null)
+                _activeQuizWindow.Closed -= QuizWindow_Closed;
 
             DataContext = null;
 

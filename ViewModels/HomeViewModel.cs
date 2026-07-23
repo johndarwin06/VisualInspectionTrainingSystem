@@ -9,7 +9,6 @@ using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Services;
 using VisualInspectionTrainingSystem.Views.Admin;
 using VisualInspectionTrainingSystem.Views.Login;
-using VisualInspectionTrainingSystem.Views.Quiz;
 
 #endregion
 
@@ -42,7 +41,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #region Events
 
         /// <summary>
-        /// Occurs when a training session is requested by a host that subscribes to the event.
+        /// Occurs when the Home view should open one quiz using the selected sample size.
         /// </summary>
         public event Action StartTrainingRequested;
 
@@ -199,7 +198,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #region Methods
 
         /// <summary>
-        /// Creates and displays one quiz window with the explicitly selected size.
+        /// Validates the selected size and requests quiz navigation from the Home view.
         /// </summary>
         private void StartTraining()
         {
@@ -207,9 +206,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             {
                 ValidateQuizSize(SelectedQuizSize);
 
-                QuizWindow window = new QuizWindow(SelectedQuizSize);
-
-                window.Show();
+                StartTrainingRequested?.Invoke();
             }
             catch (Exception ex)
             {
