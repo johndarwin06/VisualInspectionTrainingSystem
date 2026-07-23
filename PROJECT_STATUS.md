@@ -4,11 +4,11 @@ Project: Visual Inspection Training System
 
 Current Version: 0.9 Beta
 
-Current Module: Issue #11 Dashboard Analytics — implemented and verified; awaiting pull-request review
+Current Module: Issue #11 Dashboard Analytics — merged, implemented, tested, and complete
 
 Build Status: Debug and Release successful
 
-Last Build: 2026-07-19
+Last Build: 2026-07-23
 
 Build Warnings: 3 existing warnings in each configuration
 
@@ -39,15 +39,16 @@ Completed:
 - Dashboard Analytics
 
 In Progress:
-- Issue #11 Dashboard Analytics is implemented and tested on its feature branch. It is awaiting pull-request review and merge.
+- None. Issue #11 is merged, implemented, tested, and complete.
 
 Issue #11 Verification:
-- Today's Training counts completed sessions in the local half-open day range.
-- Average Accuracy uses reviewed answers only and displays N/A when no reviewed rows exist; pending answers are never treated as wrong.
-- Time Spent sums only valid completed-session durations, while GOOD and NG counts include pending trainee selections.
-- Controlled database, empty-day, boundary, invalid-duration, refresh, error-handling, ordering, and limit checks passed 49 automated assertions.
+- Merged PR #43 delivered Dashboard Analytics.
+- Today's Training counts completed sessions in the local half-open day range, and Time Spent sums only valid completed-session durations.
+- Reviewed truth requires a normalized supported GOOD or NG value. Null, empty, whitespace, and unsupported truth values remain pending and never count as wrong.
+- Average Accuracy uses reviewed answers only and displays N/A when no reviewed rows exist; normalized trainee GOOD and NG counts include valid pending selections.
+- The complete Dashboard Analytics recovery probe passed 111 assertions, including malformed truth values, the controlled six-answer dataset, empty days, boundaries, invalid durations, refresh behavior, failure handling, ordering, and limits.
 - Result Module and Issue #9 regression probes passed 76 and 29 assertions respectively.
-- Visible administrator navigation opened one Dashboard, displayed the five live MySQL-backed metrics, refreshed without duplicate rows, and returned safely to Administration when closed.
+- Visible administrator navigation opened exactly one Dashboard. Its five values matched an independent SQL query (1 training session, 50.00% reviewed accuracy, 10 minutes, GOOD 3, NG 3), Refresh did not duplicate rows, Dashboard closed safely, and normal application shutdown succeeded.
 
 Next Task:
 - None. No subsequent project issue has started.

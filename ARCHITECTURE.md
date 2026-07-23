@@ -113,7 +113,7 @@ Selected-answer preview uses the shared `ImageService` decoder. It reads the req
 
 Session metrics and answer metrics are calculated in separate aggregate subqueries and combined only after each produces one row. This prevents the session-to-answer relationship from multiplying session durations. Today's Training counts only sessions with an `EndTime`; Time Spent sums only completed rows whose end is not earlier than their start. Incomplete and negative durations contribute no time.
 
-Answer distribution counts trainee GOOD and NG selections for sessions started in the selected day, including pending review rows. Reviewed accuracy divides matching `UserAnswer` and `CorrectAnswer` rows by rows with non-null administrator truth. Pending rows are excluded from reviewed correct and wrong counts, and a zero reviewed denominator maps to null so the ViewModel displays N/A.
+Answer distribution counts normalized supported trainee GOOD and NG selections for sessions started in the selected day, including valid pending review selections. An answer is reviewed only when `UPPER(TRIM(CorrectAnswer))` is supported GOOD or NG. Correct requires a supported normalized `UserAnswer` that matches the supported truth; a supported truth with a null, unsupported, or mismatching user answer is reviewed wrong. Null, empty, whitespace, and unsupported truth values remain pending and never count as wrong. A zero reviewed denominator maps to null so the ViewModel displays N/A.
 
 `DashboardViewModel` loads the metric snapshot and deterministic recent-session list on a worker task so normal WPF navigation remains responsive. One busy flag disables repeated command refresh, and successful refresh replaces the entire recent collection instead of appending rows. A failed refresh records the technical exception through `ApplicationErrorLogger`, clears stale values, and exposes only a fixed non-sensitive status message.
 
@@ -125,7 +125,7 @@ Completed quiz persistence still runs through `SessionRepository.Save` and `Answ
 
 The duplicate rule is also enforced by the database. `SessionRepository.EnsureTable` upgrades `tbl_training_session` with a nullable `DuplicateKey VARCHAR(64)` column and the unique index `UX_tbl_training_session_DuplicateKey`. The key is a SHA-256 hash of EmployeeNo, StartTime second, EndTime second, TotalQuestions, and answer count. Existing unique historical completion rows are backfilled before the index is created; historical duplicate groups are left with a null `DuplicateKey` so the unique index can be created without deleting data. A legacy duplicate lookup remains in the save transaction to reject new saves that match those historical null-key rows.
 
-Pending review answers are represented by `CorrectAnswer IS NULL`. Repository statistics count correct answers only when `CorrectAnswer IS NOT NULL AND IsCorrect = 1`, and wrong answers only when `CorrectAnswer IS NOT NULL AND IsCorrect = 0`.
+Reviewed truth is represented only by normalized supported GOOD or NG `CorrectAnswer` values. Null, empty, whitespace, and unsupported truth values remain pending. Dashboard correctness requires a supported normalized `UserAnswer` and `CorrectAnswer` that match; a supported truth with a null, unsupported, or mismatching user answer is reviewed wrong, while unsupported truth never counts as wrong.
 
 Report session rows aggregate answer data directly instead of relying only on stored summary columns, which keeps pending answers out of wrong-answer totals even when old session rows have stale summary values.
 
