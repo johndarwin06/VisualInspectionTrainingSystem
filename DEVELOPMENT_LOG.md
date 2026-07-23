@@ -2,6 +2,15 @@
 
 ## 2026-07-23
 
+### Issue #46 Post-Merge Finalization
+
+- PR #47 merged Configurable Quiz Sample Size into `main` at merge commit `a13fbbea4d6d0ff27201a9378bca5109c259298c`, delivering feature commit `493848b1dda83cff0b361bd0a5e89facc1b4fa51` and navigation correction `b3f84152219ac60ffe1343f1fda4c98671d82f1f`.
+- GitHub automatically closed Issue #46 as completed, and the remote feature branch was deleted after the merge.
+- The navigation correction makes `HomeViewModel` validate and raise the training-navigation event while `HomeWindow` exclusively creates `QuizWindow`. One active quiz is permitted; Home hides during training and returns after completion or cancellation.
+- The correction passed 280 focused assertions in addition to the original 1,140-assertion feature suite. Visible verification passed rapid-click duplicate prevention, selected sizes 10 and 20, Home restoration, early cancellation, one ResultWindow after completion, and normal shutdown.
+- Local `main` was fast-forwarded to the merge commit, the local `issue-46-quiz-sample-size` branch was deleted, and this documentation branch was created from the merged baseline.
+- The protected `stash@{0}` remained untouched. No Reports production work was started.
+
 ### Configurable Quiz Sample Size
 
 - Created and assigned GitHub issue #46, `Feature - Configurable Quiz Sample Size`, then implemented it on `issue-46-quiz-sample-size` from `origin/main` commit `07fb441fb5262c10a189650c41affd64f6bd5e79`.
@@ -16,7 +25,7 @@
 - Visible administrator acceptance passed unrestricted access to all 30 created answer rows, selected-image remapping between image IDs 8 and 18, Dashboard navigation, existing Reports navigation without modification, normal window closing, and normal application shutdown. The configured folder contained 20 BMP files, while the controlled 105-image automated catalog remained unrestricted.
 - Controlled visible fewer-image folder tests were not run because they require preparing a separate local configured folder. Deterministic automation passed 7-of-10, 14-of-20, empty-folder, missing-folder, uniqueness, progress, result, and persistence behavior.
 - Removed the two visible acceptance sessions and all 30 answer rows, verified zero remnants, and removed all temporary probe sources and executables. The known `stash@{0}` remained untouched and Reports was not modified.
-- Issue #46 is implemented and verified but remains in progress pending draft pull-request review and merge.
+- At the end of the initial implementation run, Issue #46 awaited pull-request review and merge; the post-merge finalization entry above records its subsequent completion through PR #47.
 
 ## 2026-07-19
 
