@@ -4,7 +4,7 @@ Project: Visual Inspection Training System
 
 Current Version: 0.9 Beta
 
-Current Module: Issue #11 Dashboard Analytics — merged, implemented, tested, and complete
+Current Module: Issue #46 Configurable Quiz Sample Size - implementation and testing complete; awaiting draft pull-request review
 
 Build Status: Debug and Release successful
 
@@ -39,7 +39,17 @@ Completed:
 - Dashboard Analytics
 
 In Progress:
-- None. Issue #11 is merged, implemented, tested, and complete.
+- Issue #46 Configurable Quiz Sample Size is implemented and verified on `issue-46-quiz-sample-size`; it is not merged or complete until pull-request review and merge.
+
+Issue #46 Verification:
+- GitHub issue #46 tracks the configurable 10- or 20-question trainee quiz feature; 10 is the default.
+- `ImageService.LoadImages(string, bool)` retains its complete-catalog behavior. The separate quiz sampler removes case-insensitive duplicate paths, applies one Fisher-Yates shuffle, and returns at most the requested 10 or 20 metadata rows.
+- A valid request with fewer unique images uses every available image once and drives progress, completion, results, and persistence from the actual count. Zero images retain the existing safe no-image flow.
+- Administrator inventory remains unrestricted and continues to use the complete catalog. The two-entry current/upcoming bitmap cache remains bounded.
+- The configurable quiz probe passed 1,140 assertions: ImageService 828, Home selection 15, progress/completion 212, cache/cancellation 25, persistence 42, administrator inventory/preview 4, and login/Result/Dashboard regressions 14.
+- Visible WPF testing passed trainee and administrator login, Home selection, real 10- and 20-question quizzes, unique displayed images within each quiz, exact completion and ResultWindow totals, early cancellation, administrator review/preview mapping, Dashboard and Reports navigation, and normal shutdown.
+- MySQL verification passed 9 assertions: the visible sessions persisted totals, answer counts, and distinct image counts of 10 and 20; the cancelled quiz did not persist. The two sessions and all 30 answer rows were then removed and verified absent.
+- Controlled visible fewer-image folder tests were not run because they require temporary local folder configuration; the 7-of-10, 14-of-20, empty-folder, and missing-folder cases passed deterministic automation.
 
 Issue #11 Verification:
 - Merged PR #43 delivered Dashboard Analytics.
@@ -51,4 +61,4 @@ Issue #11 Verification:
 - Visible administrator navigation opened exactly one Dashboard. Its five values matched an independent SQL query (1 training session, 50.00% reviewed accuracy, 10 minutes, GOOD 3, NG 3), Refresh did not duplicate rows, Dashboard closed safely, and normal application shutdown succeeded.
 
 Next Task:
-- None. No subsequent project issue has started.
+- None. No subsequent project issue has started, and Reports was not modified as part of Issue #46.

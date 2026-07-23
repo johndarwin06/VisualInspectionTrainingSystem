@@ -1,5 +1,23 @@
 # DEVELOPMENT LOG
 
+## 2026-07-23
+
+### Configurable Quiz Sample Size
+
+- Created and assigned GitHub issue #46, `Feature - Configurable Quiz Sample Size`, then implemented it on `issue-46-quiz-sample-size` from `origin/main` commit `07fb441fb5262c10a189650c41affd64f6bd5e79`.
+- Preserved the public `ImageService.LoadImages(string, bool)` signature and complete-catalog behavior. Added a quiz-only API that accepts only 10 or 20, rejects unsupported values before folder access, removes case-insensitive duplicate paths, performs one Fisher-Yates shuffle, and takes a bounded metadata sample.
+- Added a native MVVM-bound 10/20 selector to Home with a default of 10 and passed the selected size explicitly through `QuizWindow` into `QuizViewModel`.
+- Kept progress, completion, ResultWindow totals, session totals, and answer persistence driven by the actual sampled image count. Valid requests use every available unique image when fewer than requested are present and show a fixed non-sensitive notice.
+- Preserved the current/upcoming two-bitmap cache and unrestricted administrator catalog loading; `AdminViewModel` was not changed and does not use the quiz sampler.
+- Built Debug after every modified C# and XAML file. Final Debug and Release rebuilds each passed with 0 errors and the same 3 existing warning lines: one `MVVMTKCFG0002` line and two `CS0067` lines from temporary and final WPF compilation.
+- Passed a temporary deterministic configurable-quiz probe with 1,140 assertions: ImageService 828, Home selection 15, quiz progress/completion 212, cache/cancellation 25, session/answer persistence 42, administrator inventory/preview 4, and login/Result/Dashboard regressions 14.
+- Visible WPF acceptance passed normal startup to Login, trainee login, the Home 10/20 options and default, real 10- and 20-question quizzes, all images visibly distinct within each quiz, dynamic progress, exact final completion, one ResultWindow per quiz, Result totals of 10 and 20, and safe early cancellation.
+- A temporary MySQL probe passed 9 assertions for the visible sessions: `TotalQuestions`, answer rows, and distinct image IDs were 10/10/10 and 20/20/20; the cancelled quiz created no incomplete session.
+- Visible administrator acceptance passed unrestricted access to all 30 created answer rows, selected-image remapping between image IDs 8 and 18, Dashboard navigation, existing Reports navigation without modification, normal window closing, and normal application shutdown. The configured folder contained 20 BMP files, while the controlled 105-image automated catalog remained unrestricted.
+- Controlled visible fewer-image folder tests were not run because they require preparing a separate local configured folder. Deterministic automation passed 7-of-10, 14-of-20, empty-folder, missing-folder, uniqueness, progress, result, and persistence behavior.
+- Removed the two visible acceptance sessions and all 30 answer rows, verified zero remnants, and removed all temporary probe sources and executables. The known `stash@{0}` remained untouched and Reports was not modified.
+- Issue #46 is implemented and verified but remains in progress pending draft pull-request review and merge.
+
 ## 2026-07-19
 
 ### Dashboard Analytics

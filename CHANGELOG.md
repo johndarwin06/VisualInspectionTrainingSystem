@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Configurable Quiz Sample Size
+
+- Added a native MVVM-bound 10/20 trainee quiz-size selector with a default of 10.
+- Added a separate quiz-only metadata sampler that validates supported sizes, removes case-insensitive duplicate paths, performs one Fisher-Yates shuffle, and returns at most the selected count.
+- Preserved the existing `LoadImages(string, bool)` API and its complete-catalog behavior for administrator review and inventory workflows.
+- Made quiz notices, progress, completion, ResultWindow totals, session totals, and answer persistence use the actual selected count, including safe fewer-image and empty-folder handling.
+- Preserved the bounded current/upcoming bitmap cache; only metadata is sampled, and the full quiz is not decoded into memory.
+- Added fixed non-sensitive quiz startup and persistence diagnostics through the existing application logger.
+- Verified the feature with 1,140 automated assertions, 9 visible-session MySQL assertions, final Debug/Release rebuilds, and real 10- and 20-question WPF quizzes. Controlled visible fewer-image folder tests remain Not Run; their behavior passed deterministic automation.
+
 ### Dashboard Analytics
 
 - Added five local-day dashboard metrics: completed training sessions, reviewed-only average accuracy, valid completed-session time, trainee GOOD selections, and trainee NG selections.

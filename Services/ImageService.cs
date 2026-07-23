@@ -13,24 +13,50 @@ using VisualInspectionTrainingSystem.Models;
 namespace VisualInspectionTrainingSystem.Services
 {
     /// <summary>
-    /// Loads quiz image metadata and creates detached WPF bitmap instances.
+    /// Loads quiz image metadata, creates quiz-specific samples, and decodes detached WPF bitmaps.
     /// </summary>
     public class ImageService
     {
+        #region Constants
+
+        /// <summary>
+        /// Default number of questions offered to trainees.
+        /// </summary>
+        public const int DefaultQuizSize = 10;
+
+        /// <summary>
+        /// Extended number of questions offered to trainees.
+        /// </summary>
+        public const int ExtendedQuizSize = 20;
+
+        #endregion
+
         #region Fields
 
         private readonly Random _random;
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
         /// Creates the image service and its quiz-order randomizer.
         /// </summary>
         public ImageService()
+            : this(new Random())
         {
-            _random = new Random();
+        }
+
+        /// <summary>
+        /// Creates the image service with a supplied random source for deterministic verification.
+        /// </summary>
+        /// <param name="random">Random source used by Fisher-Yates ordering.</param>
+        internal ImageService(Random random)
+        {
+            if (random == null)
+                throw new ArgumentNullException(nameof(random));
+
+            _random = random;
         }
 
         #endregion
@@ -42,7 +68,7 @@ namespace VisualInspectionTrainingSystem.Services
         /// </summary>
         /// <param name="folderPath">Folder containing quiz images.</param>
         /// <param name="shuffle">Whether to shuffle images before returning.</param>
-        /// <returns>Quiz image metadata.</returns>
+        /// <returns>Complete quiz image metadata for the folder.</returns>
         public List<QuizImage> LoadImages(
             string folderPath,
             bool shuffle = true)
@@ -86,6 +112,38 @@ namespace VisualInspectionTrainingSystem.Services
         }
 
         /// <summary>
+        /// Loads a randomized unique metadata sample for one trainee quiz.
+        /// </summary>
+        /// <param name="folderPath">Folder containing quiz images.</param>
+        /// <param name="requestedCount">Supported requested size of 10 or 20.</param>
+        /// <returns>At most the requested number of unique image metadata rows.</returns>
+        public List<QuizImage> LoadQuizImages(
+            string folderPath,
+            int requestedCount)
+        {
+            ValidateQuizSize(requestedCount);
+
+            List<QuizImage> candidates = LoadImages(
+                folderPath,
+                false);
+
+            return CreateUniqueQuizSample(
+                candidates,
+                requestedCount);
+        }
+
+        /// <summary>
+        /// Returns whether a value is a supported trainee quiz size.
+        /// </summary>
+        /// <param name="requestedCount">Requested number of questions.</param>
+        /// <returns>True only for 10 or 20.</returns>
+        public static bool IsSupportedQuizSize(int requestedCount)
+        {
+            return requestedCount == DefaultQuizSize ||
+                   requestedCount == ExtendedQuizSize;
+        }
+
+        /// <summary>
         /// Decodes one bitmap on a worker thread and releases its source file before completion.
         /// </summary>
         /// <param name="filePath">Bitmap file path.</param>
@@ -108,6 +166,66 @@ namespace VisualInspectionTrainingSystem.Services
                         cancellationToken);
                 },
                 cancellationToken);
+        }
+
+        #endregion
+
+        #region Quiz Sampling
+
+        /// <summary>
+        /// Rejects unsupported quiz sizes before folder access or quiz execution.
+        /// </summary>
+        private static void ValidateQuizSize(int requestedCount)
+        {
+            if (!IsSupportedQuizSize(requestedCount))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(requestedCount),
+                    requestedCount,
+                    "Quiz size must be 10 or 20.");
+            }
+        }
+
+        /// <summary>
+        /// Removes case-insensitive duplicate paths, shuffles once, and takes a bounded sample.
+        /// </summary>
+        private List<QuizImage> CreateUniqueQuizSample(
+            IEnumerable<QuizImage> candidates,
+            int requestedCount)
+        {
+            ValidateQuizSize(requestedCount);
+
+            List<QuizImage> uniqueImages = new List<QuizImage>();
+            HashSet<string> uniquePaths = new HashSet<string>(
+                StringComparer.OrdinalIgnoreCase);
+
+            if (candidates != null)
+            {
+                foreach (QuizImage image in candidates)
+                {
+                    if (image == null ||
+                        string.IsNullOrWhiteSpace(image.FilePath) ||
+                        !uniquePaths.Add(image.FilePath))
+                    {
+                        continue;
+                    }
+
+                    uniqueImages.Add(image);
+                }
+            }
+
+            Shuffle(uniqueImages);
+
+            int selectedCount = Math.Min(
+                requestedCount,
+                uniqueImages.Count);
+
+            if (selectedCount == uniqueImages.Count)
+                return uniqueImages;
+
+            return uniqueImages.GetRange(
+                0,
+                selectedCount);
         }
 
         #endregion

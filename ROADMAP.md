@@ -45,3 +45,7 @@
 # Sprint 8
 
 - [x] Dashboard Analytics (Issue #11, delivered by merged PR #43; implemented, tested, and complete)
+
+# Sprint 9
+
+- [ ] Configurable Quiz Sample Size (Issue #46; implemented and verified on `issue-46-quiz-sample-size`, awaiting draft pull-request review and merge)

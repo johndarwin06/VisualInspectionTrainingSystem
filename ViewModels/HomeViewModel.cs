@@ -1,6 +1,7 @@
 #region Namespaces
 
 using System;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using VisualInspectionTrainingSystem.Commands;
@@ -15,7 +16,7 @@ using VisualInspectionTrainingSystem.Views.Quiz;
 namespace VisualInspectionTrainingSystem.ViewModels
 {
     /// <summary>
-    /// Provides commands and display state for the application home screen.
+    /// Provides commands, quiz-size selection, and display state for the application home screen.
     /// </summary>
     public class HomeViewModel : BaseViewModel
     {
@@ -27,6 +28,14 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         private const string TrainingStartupErrorTitle =
             "Training Unavailable";
+
+        #endregion
+
+        #region Fields
+
+        private readonly ReadOnlyCollection<int> _quizSizeOptions;
+
+        private int _selectedQuizSize;
 
         #endregion
 
@@ -42,10 +51,18 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HomeViewModel"/> class.
+        /// Initializes commands and defaults the trainee quiz size to ten questions.
         /// </summary>
         public HomeViewModel()
         {
+            _quizSizeOptions = new ReadOnlyCollection<int>(
+                new[]
+                {
+                    ImageService.DefaultQuizSize,
+                    ImageService.ExtendedQuizSize
+                });
+            _selectedQuizSize = ImageService.DefaultQuizSize;
+
             StartTrainingCommand = new RelayCommand(StartTraining);
 
             AdminCommand = new RelayCommand(OpenAdmin);
@@ -65,6 +82,82 @@ namespace VisualInspectionTrainingSystem.ViewModels
             get
             {
                 return $"Welcome, {SessionService.CurrentUser.FullName}";
+            }
+        }
+
+        /// <summary>
+        /// Gets the two supported trainee quiz sizes.
+        /// </summary>
+        public ReadOnlyCollection<int> QuizSizeOptions
+        {
+            get
+            {
+                return _quizSizeOptions;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the explicitly selected trainee quiz size.
+        /// </summary>
+        public int SelectedQuizSize
+        {
+            get
+            {
+                return _selectedQuizSize;
+            }
+            set
+            {
+                ValidateQuizSize(value);
+
+                if (SetProperty(ref _selectedQuizSize, value))
+                {
+                    OnPropertyChanged(nameof(IsTenQuestionQuizSelected));
+                    OnPropertyChanged(nameof(IsTwentyQuestionQuizSelected));
+                    OnPropertyChanged(nameof(QuizSizeSummary));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the ten-question option is selected.
+        /// </summary>
+        public bool IsTenQuestionQuizSelected
+        {
+            get
+            {
+                return SelectedQuizSize == ImageService.DefaultQuizSize;
+            }
+            set
+            {
+                if (value)
+                    SelectedQuizSize = ImageService.DefaultQuizSize;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the twenty-question option is selected.
+        /// </summary>
+        public bool IsTwentyQuestionQuizSelected
+        {
+            get
+            {
+                return SelectedQuizSize == ImageService.ExtendedQuizSize;
+            }
+            set
+            {
+                if (value)
+                    SelectedQuizSize = ImageService.ExtendedQuizSize;
+            }
+        }
+
+        /// <summary>
+        /// Gets a clear summary of the selected quiz size.
+        /// </summary>
+        public string QuizSizeSummary
+        {
+            get
+            {
+                return "Selected: " + SelectedQuizSize + " questions";
             }
         }
 
@@ -106,13 +199,15 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #region Methods
 
         /// <summary>
-        /// Creates and displays one quiz window for the requested training session.
+        /// Creates and displays one quiz window with the explicitly selected size.
         /// </summary>
         private void StartTraining()
         {
             try
             {
-                QuizWindow window = new QuizWindow();
+                ValidateQuizSize(SelectedQuizSize);
+
+                QuizWindow window = new QuizWindow(SelectedQuizSize);
 
                 window.Show();
             }
@@ -160,6 +255,20 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #endregion
 
         #region Helpers
+
+        /// <summary>
+        /// Rejects unsupported values before a quiz window is created.
+        /// </summary>
+        private static void ValidateQuizSize(int requestedQuizSize)
+        {
+            if (!ImageService.IsSupportedQuizSize(requestedQuizSize))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(requestedQuizSize),
+                    requestedQuizSize,
+                    "Quiz size must be 10 or 20.");
+            }
+        }
 
         /// <summary>
         /// Closes the first open application window of the requested type.

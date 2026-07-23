@@ -76,7 +76,11 @@ The login window is opened only by the splash window after a successful startup 
 
 ## Quiz Image Lifecycle
 
-`QuizViewModel` remains the owner of quiz display state and continues to submit answers only through `QuizEngine`. It loads the active bitmap off the WPF UI thread and preloads only one upcoming image. The cache is a two-entry least-recently-used cache that retains the current and upcoming images; it never loads an entire quiz into memory.
+`ImageService.LoadImages(string, bool)` remains the complete-catalog API used by administrator and inventory workflows. Trainee initialization uses the separate `LoadQuizImages(string, int)` API, which accepts only 10 or 20, loads complete metadata through the existing API without an initial shuffle, removes case-insensitive duplicate paths, applies one Fisher-Yates shuffle, and takes at most the requested count. Metadata sampling does not decode every bitmap. If fewer unique images are available, the sample contains every available image once; the default requested size is 10.
+
+`HomeViewModel` exposes the supported 10/20 choices and owns the selected value. Home passes that value explicitly through `QuizWindow` to `QuizViewModel`; unsupported values are rejected before normal quiz initialization. `QuizViewModel` remains the owner of quiz display state and continues to submit answers only through `QuizEngine`. It builds progress, completion, results, and persistence from the actual sample count, so fewer-image sessions never duplicate questions or persist a requested count that was not used.
+
+`QuizViewModel` loads the active bitmap off the WPF UI thread and preloads only one upcoming image. The cache is a two-entry least-recently-used cache that retains the current and upcoming images; it never loads an entire quiz into memory.
 
 Each bitmap is read into memory, decoded with `BitmapCacheOption.OnLoad`, and frozen before it is shared with the UI or cache. This releases the source file without reducing image decode fidelity. The ViewModel attaches a cancellation token and generation value to image work, observes task failures, and ignores late completion after a question changes or the window closes.
 

@@ -1,4 +1,4 @@
-﻿<Window
+<Window
     x:Class="VisualInspectionTrainingSystem.Views.Home.HomeWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,7 +14,11 @@
 
             <RowDefinition Height="Auto" />
 
-            <RowDefinition Height="30" />
+            <RowDefinition Height="24" />
+
+            <RowDefinition Height="Auto" />
+
+            <RowDefinition Height="16" />
 
             <RowDefinition Height="Auto" />
 
@@ -41,10 +45,70 @@
             FontWeight="Bold"
             Text="{Binding WelcomeMessage}" />
 
+        <!--  Quiz Size  -->
+
+        <Border
+            Grid.Row="2"
+            Padding="18,14"
+            Background="#F4F6F8"
+            BorderBrush="#CBD5E1"
+            BorderThickness="1"
+            CornerRadius="4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock
+                        FontSize="16"
+                        FontWeight="SemiBold"
+                        Text="Quiz sample size" />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        Foreground="#475569"
+                        Text="Choose 10 or 20 unique inspection images for this training." />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        FontSize="12"
+                        Foreground="#64748B"
+                        Text="If fewer images are available, the quiz safely uses every available image once." />
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="28,0,0,0"
+                    VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton
+                            MinWidth="105"
+                            VerticalContentAlignment="Center"
+                            Content="10 questions"
+                            GroupName="QuizSize"
+                            IsChecked="{Binding IsTenQuestionQuizSelected, Mode=TwoWay}" />
+                        <RadioButton
+                            MinWidth="105"
+                            Margin="16,0,0,0"
+                            VerticalContentAlignment="Center"
+                            Content="20 questions"
+                            GroupName="QuizSize"
+                            IsChecked="{Binding IsTwentyQuestionQuizSelected, Mode=TwoWay}" />
+                    </StackPanel>
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Right"
+                        FontWeight="SemiBold"
+                        Foreground="#0369A1"
+                        Text="{Binding QuizSizeSummary}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <!--  Start Quiz  -->
 
         <Button
-            Grid.Row="2"
+            Grid.Row="4"
             Height="50"
             Command="{Binding StartTrainingCommand}"
             Content="Start Training" />
@@ -52,7 +116,7 @@
         <!--  History  -->
 
         <Button
-            Grid.Row="4"
+            Grid.Row="6"
             Height="50"
             Command="{Binding HistoryCommand}"
             Content="Training History" />
@@ -60,7 +124,7 @@
         <!--  Admin  -->
 
         <Button
-            Grid.Row="6"
+            Grid.Row="8"
             Height="50"
             Command="{Binding AdminCommand}"
             Content="Administration"
@@ -69,7 +133,7 @@
         <!--  Logout  -->
 
         <Button
-            Grid.Row="8"
+            Grid.Row="10"
             Height="50"
             Command="{Binding LogoutCommand}"
             Content="Logout" />
