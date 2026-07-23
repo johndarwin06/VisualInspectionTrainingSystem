@@ -48,4 +48,8 @@
 
 # Sprint 9
 
-- [ ] Configurable Quiz Sample Size (Issue #46; implemented and verified on `issue-46-quiz-sample-size`, awaiting draft pull-request review and merge)
+- [x] Configurable Quiz Sample Size (Issue #46, delivered by merged PR #47; implemented, tested, and complete)
+
+# Sprint 10
+
+- [ ] Reports enhancements (Issue #12 / GitHub issue #16; planned, not started)
