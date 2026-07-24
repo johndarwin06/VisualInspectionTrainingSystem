@@ -1,5 +1,19 @@
 # DEVELOPMENT LOG
 
+## 2026-07-24
+
+### Issue #12 - Reports
+
+- Implemented explicit Daily, true Monday-to-Sunday This Week, rolling Last 7 Days, This Month, inclusive Custom, and All Dates periods. Every bounded query uses parameterized `StartTime >= @StartTime` and `StartTime < @EndTime` predicates without applying a date function to `StartTime`.
+- Reworked report SQL to aggregate answers before joining sessions, preserving deterministic `StartTime DESC, SessionID DESC` ordering without multiplying session totals. Only normalized GOOD or NG truth is reviewed; malformed truth is pending, valid truth with a missing/invalid/mismatching trainee answer is wrong, and no reviewed denominator maps to N/A.
+- Retained a 500-row interactive list with explicit limit disclosure and added a separate complete export snapshot with a 10,000-session safeguard so CSV, Excel, and PDF never silently inherit the display limit.
+- Added asynchronous refresh and export coordination with disabled overlapping commands, operation generations, stale-result rejection, observed abandoned tasks, lifecycle cancellation, fixed non-sensitive UI messages, and `ApplicationErrorLogger` diagnostics.
+- Added `DocumentFormat.OpenXml` 3.5.1 for real three-sheet `.xlsx` documents and `PDFsharp-WPF` 6.2.4 for real A4 landscape multipage PDFs. Both packages support .NET Framework 4.8.1, work with `packages.config` and C# 7.3, and use the MIT license.
+- Passed the temporary Issue #12 probe with 240 assertions: periods 25, models 10, Result regression 16, quiz regressions 76, Administration regression 8, MySQL reports 18, independent SQL 5, Dashboard parity 9, normalization 10, boundaries 8, CSV 10, Excel 6, PDF 4, N/A exports 3, export safety 3, ViewModel 11, ViewModel safety 17, and cleanup 1.
+- Controlled MySQL verification covered daily/weekly/monthly/custom/all-date periods, completed and open sessions, multiple trainees, correct and wrong GOOD/NG answers, null/empty/whitespace/unsupported/lowercase/padded values, zero-reviewed behavior, independent aggregate comparison, and deterministic ordering. Cleanup reported zero residual probe sessions.
+- Visible WPF acceptance passed administrator login, exactly one Reports window, every period action, empty and invalid ranges, N/A accuracy, repeated Refresh, a real close during a blocked database refresh, all save-dialog cancellations, CSV/XLSX/PDF generation and opening, four-page PDF rendering, Administration and Dashboard regressions, normal Reports close, and normal application shutdown.
+- Final verification removed temporary database data, report files, render output, lock probes, and generated artifacts. Issue #12 Reports is implemented and verified on `issue-12-reports` and is awaiting pull-request review and merge; GitHub issue #16 remains open.
+
 ## 2026-07-23
 
 ### Issue #46 Post-Merge Finalization

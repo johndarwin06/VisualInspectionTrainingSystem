@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Reports
+
+- Added explicit local-calendar Daily, Monday-to-Sunday This Week, rolling Last 7 Days, This Month, inclusive Custom, and All Dates report periods with parameterized half-open MySQL boundaries.
+- Aligned summaries, session rows, and all exports with Dashboard Analytics review semantics: only normalized GOOD or NG truth is reviewed, malformed truth remains pending, valid truth with a missing or unsupported trainee answer is wrong, and empty reviewed denominators display N/A.
+- Preserved the bounded 500-row interactive session list with visible disclosure while loading a separate complete export snapshot in deterministic order, subject to a documented 10,000-session safeguard.
+- Moved database loading and CSV/XLSX/PDF generation off the WPF dispatcher, disabled overlapping commands, rejected stale results, observed abandoned work, and made Reports safe to close while an operation is blocked.
+- Added complete UTF-8 CSV export, a real three-sheet Open XML `.xlsx` workbook with typed values and frozen headers, and a real A4 landscape multipage PDF with repeated table headers and page numbers.
+- Replaced report and export exception disclosure with existing technical logging and fixed non-sensitive user messages; save-dialog cancellation remains a normal non-error outcome.
+- Verified the feature with 240 automated assertions, controlled and independently checked MySQL data, real Excel opening without repair, four-page PDF rendering, full visible WPF acceptance, final Debug/Release rebuilds, and zero residual test sessions.
+
 ### Configurable Quiz Sample Size
 
 - Added a native MVVM-bound 10/20 trainee quiz-size selector with a default of 10.

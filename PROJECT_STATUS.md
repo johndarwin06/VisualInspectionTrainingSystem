@@ -4,11 +4,11 @@ Project: Visual Inspection Training System
 
 Current Version: 0.9 Beta
 
-Current Module: Issue #46 Configurable Quiz Sample Size - merged, implemented, tested, and complete
+Current Module: Issue #12 Reports - implemented and verified on `issue-12-reports`; awaiting pull-request review and merge
 
 Build Status: Debug and Release successful
 
-Last Build: 2026-07-23
+Last Build: 2026-07-24
 
 Build Warnings: 1 existing `MVVMTKCFG0002` warning in each configuration
 
@@ -40,7 +40,18 @@ Completed:
 - Configurable Quiz Sample Size (Issue #46, delivered by merged PR #47)
 
 In Progress:
-- None. Issue #46 is merged, implemented, tested, and complete.
+- Issue #12 Reports is implemented and verified on `issue-12-reports` and is awaiting pull-request review and merge.
+
+Issue #12 Verification:
+- Added explicit Daily, Monday-to-Sunday This Week, rolling Last 7 Days, This Month, inclusive Custom, and All Dates periods using parameterized half-open database boundaries.
+- Aligned report summaries, session rows, and every export with Dashboard Analytics: only normalized GOOD or NG truth is reviewed, malformed truth remains pending, and zero reviewed answers display N/A.
+- Preserved the 500-row interactive display with visible limit disclosure. CSV, Excel, and PDF load a separate complete snapshot with a documented 10,000-session safety limit and deterministic `StartTime DESC, SessionID DESC` ordering.
+- Added background report loading and document generation with busy guards, stale-result rejection, observed abandoned tasks, safe close-during-refresh behavior, fixed non-sensitive errors, and existing technical logging.
+- Added complete UTF-8 CSV export, a validated three-sheet Open XML workbook, and a real A4 landscape multipage PDF with repeated headers and page numbers.
+- The Issue #12 probe passed 240 assertions, including controlled MySQL periods and normalization, independent SQL comparison, Dashboard parity, document validation, asynchronous lifecycle behavior, Result Module regression, 10/20-question quiz regression, and Administration regression.
+- Visible WPF acceptance passed every required Reports period and state, all three save-dialog cancellation paths, CSV/XLSX/PDF export and opening, four-page PDF layout, close during a genuinely blocked refresh, Administration and Dashboard navigation, normal Reports close, and normal shutdown.
+- Temporary report rows were removed with zero residual sessions. Generated exports, probes, rendered pages, and build output are excluded from the change set.
+- GitHub issue #16 remains open until the draft pull request is reviewed and merged.
 
 Issue #46 Verification:
 - GitHub issue #46 tracks the configurable 10- or 20-question trainee quiz feature; 10 is the default.
@@ -68,4 +79,4 @@ Issue #11 Verification:
 - Visible administrator navigation opened exactly one Dashboard. Its five values matched an independent SQL query (1 training session, 50.00% reviewed accuracy, 10 minutes, GOOD 3, NG 3), Refresh did not duplicate rows, Dashboard closed safely, and normal application shutdown succeeded.
 
 Next Task:
-- Issue #12 - Reports is the next planned development issue. Implementation has not started.
+- No subsequent project issue has started. Issue #12 awaits pull-request review and merge.
