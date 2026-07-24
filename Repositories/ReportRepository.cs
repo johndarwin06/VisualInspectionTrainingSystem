@@ -199,64 +199,116 @@ LIMIT @Limit;";
         /// Loads an interactive report snapshot bounded to the disclosed display limit.
         /// </summary>
         /// <param name="period">The selected half-open report period.</param>
-        /// <returns>The display report snapshot.</returns>
+        /// <returns>The internally consistent display report snapshot.</returns>
         public ReportSnapshot GetDisplaySnapshot(ReportPeriod period)
         {
-            ValidatePeriod(period);
-
-            ReportSummary summary = GetSummary(
-                period.StartInclusive,
-                period.EndExclusive);
-            List<ReportSessionRow> sessions = LoadSessions(
-                period.StartInclusive,
-                period.EndExclusive,
-                InteractiveDisplayLimit);
-
-            return new ReportSnapshot
-            {
-                Period = period,
-                Summary = summary,
-                Sessions = sessions,
-                GeneratedAtLocal = DateTime.Now,
-                IsDisplayLimited = summary.SessionCount > sessions.Count
-            };
+            return LoadConsistentSnapshot(period, false);
         }
 
         /// <summary>
         /// Loads all matching export rows when the documented safeguard permits it.
         /// </summary>
         /// <param name="period">The selected half-open report period.</param>
-        /// <returns>A complete or explicitly over-limit export snapshot.</returns>
+        /// <returns>An internally consistent complete or over-limit export snapshot.</returns>
         public ReportSnapshot GetExportSnapshot(ReportPeriod period)
+        {
+            return LoadConsistentSnapshot(period, true);
+        }
+
+        /// <summary>
+        /// Loads summary and row data through one repeatable-read transaction.
+        /// </summary>
+        private ReportSnapshot LoadConsistentSnapshot(
+            ReportPeriod period,
+            bool isExport)
         {
             ValidatePeriod(period);
 
-            ReportSummary summary = GetSummary(
-                period.StartInclusive,
-                period.EndExclusive);
+            MySqlTransaction transaction = null;
+            bool transactionCompleted = false;
 
-            if (summary.SessionCount > MaximumExportSessionCount)
+            try
             {
-                return CreateExportLimitSnapshot(period, summary);
+                _database.OpenConnection();
+
+                MySqlConnection connection = _database.GetConnection();
+
+                transaction = connection.BeginTransaction(
+                    IsolationLevel.RepeatableRead);
+
+                ReportSummary summary = LoadSummary(
+                    connection,
+                    transaction,
+                    period.StartInclusive,
+                    period.EndExclusive);
+
+                ReportSnapshot snapshot;
+
+                if (isExport &&
+                    summary.SessionCount > MaximumExportSessionCount)
+                {
+                    snapshot = CreateExportLimitSnapshot(period, summary);
+                }
+                else
+                {
+                    int limit = isExport
+                        ? MaximumExportSessionCount + 1
+                        : InteractiveDisplayLimit;
+                    List<ReportSessionRow> sessions = LoadSessions(
+                        connection,
+                        transaction,
+                        period.StartInclusive,
+                        period.EndExclusive,
+                        limit);
+
+                    if (isExport &&
+                        sessions.Count > MaximumExportSessionCount)
+                    {
+                        snapshot = CreateExportLimitSnapshot(period, summary);
+                    }
+                    else
+                    {
+                        snapshot = new ReportSnapshot
+                        {
+                            Period = period,
+                            Summary = summary,
+                            Sessions = sessions,
+                            GeneratedAtLocal = DateTime.Now,
+                            IsDisplayLimited =
+                                !isExport &&
+                                summary.SessionCount > sessions.Count
+                        };
+                    }
+                }
+
+                transaction.Commit();
+                transactionCompleted = true;
+
+                return snapshot;
             }
-
-            List<ReportSessionRow> sessions = LoadSessions(
-                period.StartInclusive,
-                period.EndExclusive,
-                MaximumExportSessionCount + 1);
-
-            if (sessions.Count > MaximumExportSessionCount)
+            catch (Exception exception)
             {
-                return CreateExportLimitSnapshot(period, summary);
+                if (!transactionCompleted)
+                {
+                    RollbackReadTransaction(transaction, exception);
+                }
+
+                throw;
             }
-
-            return new ReportSnapshot
+            finally
             {
-                Period = period,
-                Summary = summary,
-                Sessions = sessions,
-                GeneratedAtLocal = DateTime.Now
-            };
+                try
+                {
+                    if (transaction != null)
+                    {
+                        transaction.Dispose();
+                    }
+                }
+                finally
+                {
+                    _database.CloseConnection();
+                }
+            }
         }
 
         #endregion
@@ -277,17 +329,13 @@ LIMIT @Limit;";
 
             try
             {
-                DataTable table = _database.ExecuteDataTable(
-                    SummarySql,
-                    CreateDateParameter("@StartDate", startDate),
-                    CreateDateParameter("@EndDate", endDateExclusive));
+                _database.OpenConnection();
 
-                if (table.Rows.Count == 0)
-                {
-                    return new ReportSummary();
-                }
-
-                return MapSummary(table.Rows[0]);
+                return LoadSummary(
+                    _database.GetConnection(),
+                    null,
+                    startDate,
+                    endDateExclusive);
             }
             finally
             {
@@ -305,10 +353,23 @@ LIMIT @Limit;";
             DateTime? startDate,
             DateTime? endDateExclusive)
         {
-            return LoadSessions(
-                startDate,
-                endDateExclusive,
-                InteractiveDisplayLimit);
+            ValidateDateRange(startDate, endDateExclusive);
+
+            try
+            {
+                _database.OpenConnection();
+
+                return LoadSessions(
+                    _database.GetConnection(),
+                    null,
+                    startDate,
+                    endDateExclusive,
+                    InteractiveDisplayLimit);
+            }
+            finally
+            {
+                _database.CloseConnection();
+            }
         }
 
         #endregion
@@ -316,44 +377,93 @@ LIMIT @Limit;";
         #region Query Helpers
 
         /// <summary>
-        /// Loads a bounded session set for display or export.
+        /// Loads aggregate values through the supplied connection and transaction.
         /// </summary>
-        private List<ReportSessionRow> LoadSessions(
+        private static ReportSummary LoadSummary(
+            MySqlConnection connection,
+            MySqlTransaction transaction,
+            DateTime? startDate,
+            DateTime? endDateExclusive)
+        {
+            DataTable table = ExecuteDataTable(
+                SummarySql,
+                connection,
+                transaction,
+                CreateDateParameter("@StartDate", startDate),
+                CreateDateParameter("@EndDate", endDateExclusive));
+
+            if (table.Rows.Count == 0)
+            {
+                return new ReportSummary();
+            }
+
+            return MapSummary(table.Rows[0]);
+        }
+
+        /// <summary>
+        /// Loads a bounded session set through the supplied connection and transaction.
+        /// </summary>
+        private static List<ReportSessionRow> LoadSessions(
+            MySqlConnection connection,
+            MySqlTransaction transaction,
             DateTime? startDate,
             DateTime? endDateExclusive,
             int limit)
         {
-            ValidateDateRange(startDate, endDateExclusive);
-
             if (limit <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(limit));
             }
 
-            try
-            {
-                DataTable table = _database.ExecuteDataTable(
-                    SessionsSql,
-                    CreateDateParameter("@StartDate", startDate),
-                    CreateDateParameter("@EndDate", endDateExclusive),
-                    new MySqlParameter("@Limit", MySqlDbType.Int32)
-                    {
-                        Value = limit
-                    });
-
-                List<ReportSessionRow> sessions =
-                    new List<ReportSessionRow>(table.Rows.Count);
-
-                foreach (DataRow row in table.Rows)
+            DataTable table = ExecuteDataTable(
+                SessionsSql,
+                connection,
+                transaction,
+                CreateDateParameter("@StartDate", startDate),
+                CreateDateParameter("@EndDate", endDateExclusive),
+                new MySqlParameter("@Limit", MySqlDbType.Int32)
                 {
-                    sessions.Add(MapSession(row));
+                    Value = limit
+                });
+
+            List<ReportSessionRow> sessions =
+                new List<ReportSessionRow>(table.Rows.Count);
+
+            foreach (DataRow row in table.Rows)
+            {
+                sessions.Add(MapSession(row));
+            }
+
+            return sessions;
+        }
+
+        /// <summary>
+        /// Executes one read command within the caller-owned connection scope.
+        /// </summary>
+        private static DataTable ExecuteDataTable(
+            string sql,
+            MySqlConnection connection,
+            MySqlTransaction transaction,
+            params MySqlParameter[] parameters)
+        {
+            using (MySqlCommand command = new MySqlCommand(
+                sql,
+                connection,
+                transaction))
+            {
+                if (parameters != null)
+                {
+                    command.Parameters.AddRange(parameters);
                 }
 
-                return sessions;
-            }
-            finally
-            {
-                _database.CloseConnection();
+                using (MySqlDataAdapter adapter = new MySqlDataAdapter(command))
+                {
+                    DataTable table = new DataTable();
+
+                    adapter.Fill(table);
+
+                    return table;
+                }
             }
         }
 
@@ -371,6 +481,32 @@ LIMIT @Limit;";
                 GeneratedAtLocal = DateTime.Now,
                 IsExportLimitExceeded = true
             };
+        }
+
+        /// <summary>
+        /// Rolls back an incomplete read transaction and preserves rollback failures.
+        /// </summary>
+        private static void RollbackReadTransaction(
+            MySqlTransaction transaction,
+            Exception originalException)
+        {
+            if (transaction == null)
+            {
+                return;
+            }
+
+            try
+            {
+                transaction.Rollback();
+            }
+            catch (Exception rollbackException)
+            {
+                throw new InvalidOperationException(
+                    "Failed to end the report read transaction safely.",
+                    new AggregateException(
+                        originalException,
+                        rollbackException));
+            }
         }
 
         #endregion

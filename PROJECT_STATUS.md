@@ -46,10 +46,13 @@ Issue #12 Verification:
 - Added explicit Daily, Monday-to-Sunday This Week, rolling Last 7 Days, This Month, inclusive Custom, and All Dates periods using parameterized half-open database boundaries.
 - Aligned report summaries, session rows, and every export with Dashboard Analytics: only normalized GOOD or NG truth is reviewed, malformed truth remains pending, and zero reviewed answers display N/A.
 - Preserved the 500-row interactive display with visible limit disclosure. CSV, Excel, and PDF load a separate complete snapshot with a documented 10,000-session safety limit and deterministic `StartTime DESC, SessionID DESC` ordering.
+- Display and export snapshots now read their summary and session rows through one repository-owned MySQL connection and `RepeatableRead` transaction, commit only after constructing the in-memory snapshot, roll back failures, and end the database scope before document generation.
 - Added background report loading and document generation with busy guards, stale-result rejection, observed abandoned tasks, safe close-during-refresh behavior, fixed non-sensitive errors, and existing technical logging.
 - Added complete UTF-8 CSV export, a validated three-sheet Open XML workbook, and a real A4 landscape multipage PDF with repeated headers and page numbers.
 - The Issue #12 probe passed 240 assertions, including controlled MySQL periods and normalization, independent SQL comparison, Dashboard parity, document validation, asynchronous lifecycle behavior, Result Module regression, 10/20-question quiz regression, and Administration regression.
+- The PR #49 consistency correction passed 426 deterministic assertions, including concurrent answer-review and session-insertion changes, rollback and connection closure, both row safeguards, document validation, and regressions. After removing the temporary synchronization hook, the final repository passed 394 seam-free regression assertions.
 - Visible WPF acceptance passed every required Reports period and state, all three save-dialog cancellation paths, CSV/XLSX/PDF export and opening, four-page PDF layout, close during a genuinely blocked refresh, Administration and Dashboard navigation, normal Reports close, and normal shutdown.
+- The correction retest visibly confirmed Today and This Week against controlled MySQL data, opened the real three-sheet workbook in Excel, rendered the real PDF, returned to Administration, and shut down without a crash, freeze, unexpected dialog, or sensitive error.
 - Temporary report rows were removed with zero residual sessions. Generated exports, probes, rendered pages, and build output are excluded from the change set.
 - GitHub issue #16 remains open until the draft pull request is reviewed and merged.
 

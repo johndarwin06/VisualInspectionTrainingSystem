@@ -7,10 +7,11 @@
 - Added explicit local-calendar Daily, Monday-to-Sunday This Week, rolling Last 7 Days, This Month, inclusive Custom, and All Dates report periods with parameterized half-open MySQL boundaries.
 - Aligned summaries, session rows, and all exports with Dashboard Analytics review semantics: only normalized GOOD or NG truth is reviewed, malformed truth remains pending, valid truth with a missing or unsupported trainee answer is wrong, and empty reviewed denominators display N/A.
 - Preserved the bounded 500-row interactive session list with visible disclosure while loading a separate complete export snapshot in deterministic order, subject to a documented 10,000-session safeguard.
+- Made each display and export snapshot internally consistent by reading its summary and session rows through one repository-owned MySQL `RepeatableRead` transaction, with rollback and connection cleanup on failure and no transaction held during document generation.
 - Moved database loading and CSV/XLSX/PDF generation off the WPF dispatcher, disabled overlapping commands, rejected stale results, observed abandoned work, and made Reports safe to close while an operation is blocked.
 - Added complete UTF-8 CSV export, a real three-sheet Open XML `.xlsx` workbook with typed values and frozen headers, and a real A4 landscape multipage PDF with repeated table headers and page numbers.
 - Replaced report and export exception disclosure with existing technical logging and fixed non-sensitive user messages; save-dialog cancellation remains a normal non-error outcome.
-- Verified the feature with 240 automated assertions, controlled and independently checked MySQL data, real Excel opening without repair, four-page PDF rendering, full visible WPF acceptance, final Debug/Release rebuilds, and zero residual test sessions.
+- Verified the original 240-assertion Reports coverage plus a 426-assertion consistency/regression probe, including deterministic answer-review and session-insertion concurrency, transaction cleanup, controlled MySQL data, real Excel opening without repair, PDF rendering, visible Today/This Week reports, final Debug/Release rebuilds, and zero residual test sessions.
 
 ### Configurable Quiz Sample Size
 
