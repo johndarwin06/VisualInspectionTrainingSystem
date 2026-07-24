@@ -52,4 +52,6 @@
 
 # Sprint 10
 
-- [ ] Reports enhancements (Issue #12 / GitHub issue #16; planned, not started)
+- [ ] Reports enhancements (Issue #12 / GitHub issue #16; implemented and verified on `issue-12-reports`, awaiting pull-request review and merge)
+
+No subsequent project issue has started.

@@ -121,6 +121,18 @@ Answer distribution counts normalized supported trainee GOOD and NG selections f
 
 `DashboardViewModel` loads the metric snapshot and deterministic recent-session list on a worker task so normal WPF navigation remains responsive. One busy flag disables repeated command refresh, and successful refresh replaces the entire recent collection instead of appending rows. A failed refresh records the technical exception through `ApplicationErrorLogger`, clears stale values, and exposes only a fixed non-sensitive status message.
 
+## Reports
+
+`ReportsViewModel` owns period selection, asynchronous loading, export coordination, and presentation state. `ReportPeriod` converts Daily, Monday-to-Sunday Weekly, rolling Last Seven Days, Monthly, inclusive Custom, and All Dates selections into local half-open boundaries. `ReportRepository` applies those boundaries with parameters and preserves deterministic `StartTime DESC, SessionID DESC` ordering.
+
+The report query aggregates normalized answers by session before joining them to training sessions, so answer cardinality cannot multiply session totals. Reviewed truth is only normalized GOOD or NG. Unsupported, empty, whitespace, and null truth remains pending; valid truth with a missing, unsupported, or mismatching trainee answer is reviewed wrong. Summary, session-row, CSV, Excel, and PDF accuracy all use correct reviewed answers divided by reviewed answers and represent an empty denominator as N/A.
+
+Interactive display and export loading are intentionally separate. The window shows at most 500 sessions and discloses when more matching sessions exist. Export requests load the complete deterministic snapshot and reject a selection over the 10,000-session safeguard instead of silently truncating it. For either path, `ReportRepository` owns one MySQL connection and one `RepeatableRead` transaction for the summary and session-row queries. The in-memory `ReportSnapshot` is constructed before commit, failures roll back, and the transaction and connection end before CSV, Excel, or PDF generation begins.
+
+`ReportExportService` is the single document-generation boundary. CSV uses UTF-8 with a byte-order mark and RFC-style field escaping. Excel uses Open XML to produce Report Information, Summary, and Sessions sheets with typed numeric/date cells, percentage formats, fixed column widths, and a frozen session header. PDFsharp produces a real A4 landscape PDF with summary metadata, repeated session headers, page numbers, and continuation pages.
+
+Database queries and document generation run on worker tasks. One operation version and lifecycle cancellation prevent stale or post-close UI publication; abandoned tasks are observed, and commands remain disabled while work is active. Technical failures use `ApplicationErrorLogger`, while the window exposes only fixed non-sensitive database/export messages. Code-behind is limited to window lifecycle and save-dialog interaction.
+
 ## Repository Validation
 
 Repository public methods validate parameters before opening MySQL connections wherever applicable. Numeric identities must be greater than zero, EmployeeNo values must be present, answer collections must be non-null and contain no null elements, answer values must be GOOD or NG, completed sessions must have valid start/end ordering, and report date ranges must be ordered.
