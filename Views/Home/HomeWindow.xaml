@@ -17,7 +17,7 @@
     <ScrollViewer
         HorizontalScrollBarVisibility="Disabled"
         VerticalScrollBarVisibility="Auto">
-        <Grid Margin="32">
+        <Grid Margin="32" Style="{StaticResource ContentEntranceGridStyle}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="24" />
@@ -53,7 +53,8 @@
                 Background="{StaticResource App.LightSurfaceBrush}"
                 BorderBrush="{StaticResource App.LightBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="8">
+                CornerRadius="8"
+                Style="{StaticResource InteractiveCardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -127,14 +128,14 @@
             <Button
                 Grid.Row="6"
                 TabIndex="3"
-                AutomationProperties.HelpText="Training history is not available from this screen."
-                AutomationProperties.Name="Training history unavailable"
-                IsEnabled="False"
+                AutomationProperties.HelpText="Open your completed training sessions and reviewed results."
+                AutomationProperties.Name="Open my training history"
+                Command="{Binding HistoryCommand}"
                 Style="{StaticResource SecondaryActionButtonStyle}"
-                ToolTip="Training history is not available from this screen.">
+                ToolTip="Open your completed training sessions and reviewed results">
                 <StackPanel Orientation="Horizontal">
                     <materialDesign:PackIcon Kind="History" Style="{StaticResource AppIconStyle}" />
-                    <TextBlock VerticalAlignment="Center" Text="Training History" />
+                    <TextBlock VerticalAlignment="Center" Text="My Training History" />
                 </StackPanel>
             </Button>
 

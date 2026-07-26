@@ -64,6 +64,6 @@
 
 # Sprint 13
 
-- [x] UI Polish (Issue #15 / GitHub issue #19; implemented, tested, and manually accepted)
+- [x] UI Polish and secure trainee My Training History (Issue #15 / GitHub issue #19; implemented, tested, and manually accepted)
 
 No subsequent project issue has started.

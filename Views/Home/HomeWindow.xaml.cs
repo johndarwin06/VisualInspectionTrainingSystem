@@ -3,6 +3,7 @@
 using System;
 using System.Windows;
 using VisualInspectionTrainingSystem.ViewModels;
+using VisualInspectionTrainingSystem.Views.History;
 using VisualInspectionTrainingSystem.Views.Quiz;
 
 #endregion
@@ -10,43 +11,42 @@ using VisualInspectionTrainingSystem.Views.Quiz;
 namespace VisualInspectionTrainingSystem.Views.Home
 {
     /// <summary>
-    /// Hosts the trainee home screen and owns single-flight quiz-window navigation.
+    /// Hosts trainee Home and owns single-flight quiz and history navigation.
     /// </summary>
     public partial class HomeWindow : Window
     {
         #region Fields
 
         private readonly HomeViewModel _viewModel;
-
         private QuizWindow _activeQuizWindow;
-
+        private TrainingHistoryWindow _activeHistoryWindow;
         private bool _isClosing;
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
-        /// Creates the Home view model and attaches its training-navigation request.
+        /// Creates Home state and attaches view-owned navigation requests.
         /// </summary>
         public HomeWindow()
         {
             InitializeComponent();
 
             _viewModel = new HomeViewModel();
-            _viewModel.StartTrainingRequested += Vm_StartTrainingRequested;
-
+            _viewModel.StartTrainingRequested += ViewModel_StartTrainingRequested;
+            _viewModel.HistoryRequested += ViewModel_HistoryRequested;
             DataContext = _viewModel;
         }
 
         #endregion
 
-        #region Navigation
+        #region Quiz Navigation
 
         /// <summary>
-        /// Opens at most one quiz with the explicitly selected sample size and hides Home while it is active.
+        /// Opens at most one quiz and hides Home while it is active.
         /// </summary>
-        private void Vm_StartTrainingRequested()
+        private void ViewModel_StartTrainingRequested()
         {
             if (_isClosing)
                 return;
@@ -63,56 +63,140 @@ namespace VisualInspectionTrainingSystem.Views.Home
 
             try
             {
-                quiz = new QuizWindow(
-                    _viewModel.SelectedQuizSize);
-
+                quiz = new QuizWindow(_viewModel.SelectedQuizSize);
                 _activeQuizWindow = quiz;
                 quiz.Closed += QuizWindow_Closed;
-
                 quiz.Show();
                 Hide();
             }
             catch
             {
-                if (quiz != null)
-                {
-                    quiz.Closed -= QuizWindow_Closed;
-
-                    try
-                    {
-                        quiz.Close();
-                    }
-                    catch
-                    {
-                        // Preserve the original startup failure for the view model's safe handler.
-                    }
-                }
-
-                _activeQuizWindow = null;
-
+                CleanupFailedQuiz(quiz);
                 throw;
             }
         }
 
         /// <summary>
-        /// Restores the existing Home window after normal completion or early cancellation.
+        /// Restores Home after normal quiz completion or cancellation.
         /// </summary>
-        /// <param name="sender">The quiz window that closed.</param>
-        /// <param name="e">Close event data.</param>
         private void QuizWindow_Closed(object sender, EventArgs e)
         {
             QuizWindow closedQuiz = sender as QuizWindow;
 
-            if (!ReferenceEquals(
-                    closedQuiz,
-                    _activeQuizWindow))
-            {
+            if (!ReferenceEquals(closedQuiz, _activeQuizWindow))
                 return;
-            }
 
             closedQuiz.Closed -= QuizWindow_Closed;
             _activeQuizWindow = null;
+            RestoreHome();
+        }
 
+        /// <summary>
+        /// Releases a quiz that failed during window startup.
+        /// </summary>
+        private void CleanupFailedQuiz(QuizWindow quiz)
+        {
+            if (quiz != null)
+            {
+                quiz.Closed -= QuizWindow_Closed;
+
+                try
+                {
+                    quiz.Close();
+                }
+                catch
+                {
+                    // Preserve the original startup failure for the safe Home handler.
+                }
+            }
+
+            _activeQuizWindow = null;
+        }
+
+        #endregion
+
+        #region History Navigation
+
+        /// <summary>
+        /// Opens at most one current-user training-history window.
+        /// </summary>
+        private void ViewModel_HistoryRequested()
+        {
+            if (_isClosing)
+                return;
+
+            if (_activeHistoryWindow != null)
+            {
+                if (_activeHistoryWindow.IsVisible)
+                    _activeHistoryWindow.Activate();
+
+                return;
+            }
+
+            TrainingHistoryWindow historyWindow = null;
+
+            try
+            {
+                historyWindow = new TrainingHistoryWindow();
+                _activeHistoryWindow = historyWindow;
+                historyWindow.Closed += HistoryWindow_Closed;
+                historyWindow.Show();
+                Hide();
+            }
+            catch
+            {
+                CleanupFailedHistory(historyWindow);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Restores Home after history closes.
+        /// </summary>
+        private void HistoryWindow_Closed(object sender, EventArgs e)
+        {
+            TrainingHistoryWindow closedHistory =
+                sender as TrainingHistoryWindow;
+
+            if (!ReferenceEquals(closedHistory, _activeHistoryWindow))
+                return;
+
+            closedHistory.Closed -= HistoryWindow_Closed;
+            _activeHistoryWindow = null;
+            RestoreHome();
+        }
+
+        /// <summary>
+        /// Releases a history window that failed during startup.
+        /// </summary>
+        private void CleanupFailedHistory(TrainingHistoryWindow historyWindow)
+        {
+            if (historyWindow != null)
+            {
+                historyWindow.Closed -= HistoryWindow_Closed;
+
+                try
+                {
+                    historyWindow.Close();
+                }
+                catch
+                {
+                    // Preserve the original startup failure for the safe Home handler.
+                }
+            }
+
+            _activeHistoryWindow = null;
+        }
+
+        #endregion
+
+        #region Navigation Helpers
+
+        /// <summary>
+        /// Restores and activates Home unless application shutdown is underway.
+        /// </summary>
+        private void RestoreHome()
+        {
             if (_isClosing)
                 return;
 
@@ -125,19 +209,21 @@ namespace VisualInspectionTrainingSystem.Views.Home
         #region Window Lifecycle
 
         /// <summary>
-        /// Detaches navigation handlers without reopening Home during application shutdown.
+        /// Detaches navigation handlers without reopening Home during shutdown.
         /// </summary>
-        /// <param name="e">Close event data.</param>
         protected override void OnClosed(EventArgs e)
         {
             _isClosing = true;
-            _viewModel.StartTrainingRequested -= Vm_StartTrainingRequested;
+            _viewModel.StartTrainingRequested -= ViewModel_StartTrainingRequested;
+            _viewModel.HistoryRequested -= ViewModel_HistoryRequested;
 
             if (_activeQuizWindow != null)
                 _activeQuizWindow.Closed -= QuizWindow_Closed;
 
-            DataContext = null;
+            if (_activeHistoryWindow != null)
+                _activeHistoryWindow.Closed -= HistoryWindow_Closed;
 
+            DataContext = null;
             base.OnClosed(e);
         }
 

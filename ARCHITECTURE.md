@@ -143,6 +143,16 @@ The ResultWindow uses native labeled WPF bars for user answer distribution, revi
 
 Selected-answer preview uses the shared `ImageService` decoder. It reads the requested file on a worker task, uses `BitmapCacheOption.OnLoad`, freezes the bitmap, and releases the source stream before publication. `ResultViewModel` keeps only one preview, cancels the previous selection token, checks a generation and selected-answer identity, observes task completion, and disposes preview work when the window closes. Missing, unreadable, deleted, or corrupt images produce a fixed non-sensitive unavailable status.
 
+## Trainee Training History
+
+`TrainingHistoryService` is the public authorization boundary for read-only trainee history. It accepts only a query or session ID, captures the active `SessionService.CurrentUser` internally, validates the active canonical role and employee number, and passes that identity to the internal repository. Callers cannot supply another employee number. `TrainingHistoryRepository` repeats the employee constraint in completed-session list, session-summary, and answer-detail queries so direct navigation to another session returns no data; administrator access still resolves only the administrator's own history.
+
+The list uses parameterized half-open completion-date boundaries, bounded exact-session or image-name search, normalized review-status filtering, deterministic `StartTime DESC, SessionID DESC` ordering, and 50-row incremental pages with a bounded offset. Refresh replaces the collection and Load More appends only unseen session IDs. Detail summary and ordered answer rows use one connection and a repository-owned `RepeatableRead` transaction, producing one internally consistent read-only snapshot before the transaction and connection close.
+
+Reviewed truth is only normalized GOOD or NG. Null, empty, whitespace, and unsupported truth remains pending and never counts as wrong. Correct requires matching supported user and truth values; valid truth with a null, unsupported, or mismatching user value is reviewed wrong. Accuracy is correct reviewed answers divided by reviewed answers and remains null for an empty reviewed denominator. The UI shows automatic or administrator review provenance without reviewer identity.
+
+`TrainingHistoryViewModel` and `TrainingHistoryDetailViewModel` perform database and file work away from the WPF dispatcher, serialize repeated loading, race blocking work against cancellation, observe abandoned tasks, and use operation versions to reject late publication after refresh or close. Detail images load lazily for the current selection, reduce stored paths to the filename, enforce the configured image-folder boundary, release source files, and expose only fixed non-sensitive unavailable/error states. Window code-behind owns single-window navigation, ownership restoration, and ViewModel disposal only.
+
 ## Dashboard Analytics
 
 `DashboardRepository` calculates the five dashboard cards for one local calendar day using caller-supplied `@DayStart` and `@DayEnd` parameters. The range is half-open: `StartTime >= @DayStart` and `StartTime < @DayEnd`. SQL does not apply `DATE()` or another function to `StartTime`, preserving index-friendly filtering.

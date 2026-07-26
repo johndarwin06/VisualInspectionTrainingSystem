@@ -15,7 +15,7 @@ using VisualInspectionTrainingSystem.Views.Login;
 namespace VisualInspectionTrainingSystem.ViewModels
 {
     /// <summary>
-    /// Provides commands, quiz-size selection, and display state for the application home screen.
+    /// Provides commands, quiz-size selection, and navigation requests for the home screen.
     /// </summary>
     public class HomeViewModel : BaseViewModel
     {
@@ -28,12 +28,18 @@ namespace VisualInspectionTrainingSystem.ViewModels
         private const string TrainingStartupErrorTitle =
             "Training Unavailable";
 
+        private const string HistoryStartupErrorMessage =
+            "Training history could not be opened. Please try again. " +
+            "Contact support if the problem continues.";
+
+        private const string HistoryStartupErrorTitle =
+            "Training History Unavailable";
+
         #endregion
 
         #region Fields
 
         private readonly ReadOnlyCollection<int> _quizSizeOptions;
-
         private int _selectedQuizSize;
 
         #endregion
@@ -41,16 +47,21 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #region Events
 
         /// <summary>
-        /// Occurs when the Home view should open one quiz using the selected sample size.
+        /// Occurs when Home should open one quiz using the selected sample size.
         /// </summary>
         public event Action StartTrainingRequested;
 
+        /// <summary>
+        /// Occurs when Home should open the current user's training history.
+        /// </summary>
+        public event Action HistoryRequested;
+
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
-        /// Initializes commands and defaults the trainee quiz size to ten questions.
+        /// Initializes home commands and defaults trainee quiz size to ten questions.
         /// </summary>
         public HomeViewModel()
         {
@@ -63,15 +74,14 @@ namespace VisualInspectionTrainingSystem.ViewModels
             _selectedQuizSize = ImageService.DefaultQuizSize;
 
             StartTrainingCommand = new RelayCommand(StartTraining);
-
+            HistoryCommand = new RelayCommand(OpenHistory);
             AdminCommand = new RelayCommand(OpenAdmin);
-
             LogoutCommand = new RelayCommand(Logout);
         }
 
         #endregion
 
-        #region Properties
+        #region Display Properties
 
         /// <summary>
         /// Gets the personalized welcome message for the signed-in user.
@@ -80,7 +90,13 @@ namespace VisualInspectionTrainingSystem.ViewModels
         {
             get
             {
-                return $"Welcome, {SessionService.CurrentUser.FullName}";
+                User currentUser = SessionService.CurrentUser;
+                string name = currentUser == null ||
+                              string.IsNullOrWhiteSpace(currentUser.FullName)
+                    ? "Trainee"
+                    : currentUser.FullName.Trim();
+
+                return "Welcome, " + name;
             }
         }
 
@@ -89,10 +105,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
         /// </summary>
         public ReadOnlyCollection<int> QuizSizeOptions
         {
-            get
-            {
-                return _quizSizeOptions;
-            }
+            get { return _quizSizeOptions; }
         }
 
         /// <summary>
@@ -100,10 +113,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
         /// </summary>
         public int SelectedQuizSize
         {
-            get
-            {
-                return _selectedQuizSize;
-            }
+            get { return _selectedQuizSize; }
             set
             {
                 ValidateQuizSize(value);
@@ -118,14 +128,11 @@ namespace VisualInspectionTrainingSystem.ViewModels
         }
 
         /// <summary>
-        /// Gets or sets whether the ten-question option is selected.
+        /// Gets or sets whether ten questions are selected.
         /// </summary>
         public bool IsTenQuestionQuizSelected
         {
-            get
-            {
-                return SelectedQuizSize == ImageService.DefaultQuizSize;
-            }
+            get { return SelectedQuizSize == ImageService.DefaultQuizSize; }
             set
             {
                 if (value)
@@ -134,14 +141,11 @@ namespace VisualInspectionTrainingSystem.ViewModels
         }
 
         /// <summary>
-        /// Gets or sets whether the twenty-question option is selected.
+        /// Gets or sets whether twenty questions are selected.
         /// </summary>
         public bool IsTwentyQuestionQuizSelected
         {
-            get
-            {
-                return SelectedQuizSize == ImageService.ExtendedQuizSize;
-            }
+            get { return SelectedQuizSize == ImageService.ExtendedQuizSize; }
             set
             {
                 if (value)
@@ -154,23 +158,25 @@ namespace VisualInspectionTrainingSystem.ViewModels
         /// </summary>
         public string QuizSizeSummary
         {
-            get
-            {
-                return "Selected: " + SelectedQuizSize + " questions";
-            }
+            get { return "Selected: " + SelectedQuizSize + " questions"; }
         }
 
         /// <summary>
-        /// Gets the visibility of the administration command for the signed-in user.
+        /// Gets administration-command visibility for an administrator session.
         /// </summary>
         public Visibility AdminVisibility
         {
             get
             {
-                if (SessionService.CurrentUser.Role == UserRoles.Admin)
-                    return Visibility.Visible;
+                User currentUser = SessionService.CurrentUser;
 
-                return Visibility.Collapsed;
+                return currentUser != null &&
+                       string.Equals(
+                           UserRoles.Normalize(currentUser.Role),
+                           UserRoles.Admin,
+                           StringComparison.Ordinal)
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
             }
         }
 
@@ -179,33 +185,37 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #region Commands
 
         /// <summary>
-        /// Gets the command that opens a new quiz window.
+        /// Gets the command that requests a new quiz window.
         /// </summary>
-        public ICommand StartTrainingCommand { get; }
+        public ICommand StartTrainingCommand { get; private set; }
 
         /// <summary>
-        /// Gets the command that opens the administration window.
+        /// Gets the command that requests current-user training history.
         /// </summary>
-        public ICommand AdminCommand { get; }
+        public ICommand HistoryCommand { get; private set; }
+
+        /// <summary>
+        /// Gets the command that opens administrator tools.
+        /// </summary>
+        public ICommand AdminCommand { get; private set; }
 
         /// <summary>
         /// Gets the command that signs out the current user.
         /// </summary>
-        public ICommand LogoutCommand { get; }
+        public ICommand LogoutCommand { get; private set; }
 
         #endregion
 
-        #region Methods
+        #region Command Methods
 
         /// <summary>
-        /// Validates the selected size and requests quiz navigation from the Home view.
+        /// Validates the selected size and requests quiz navigation from Home.
         /// </summary>
         private void StartTraining()
         {
             try
             {
                 ValidateQuizSize(SelectedQuizSize);
-
                 StartTrainingRequested?.Invoke();
             }
             catch (Exception ex)
@@ -214,7 +224,6 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     "Home Start Training",
                     ex,
                     false);
-
                 ApplicationDialogService.Show(
                     TrainingStartupErrorMessage,
                     TrainingStartupErrorTitle,
@@ -224,28 +233,49 @@ namespace VisualInspectionTrainingSystem.ViewModels
         }
 
         /// <summary>
-        /// Opens the administration window and closes the current home window.
+        /// Requests one current-user training history window.
+        /// </summary>
+        private void OpenHistory()
+        {
+            try
+            {
+                if (!SessionService.IsLoggedIn)
+                    throw new UnauthorizedAccessException("A signed-in user is required.");
+
+                HistoryRequested?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                ApplicationErrorLogger.LogUnhandledException(
+                    "Home Training History",
+                    ex,
+                    false);
+                ApplicationDialogService.Show(
+                    HistoryStartupErrorMessage,
+                    HistoryStartupErrorTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Opens administrator tools and closes the current Home window.
         /// </summary>
         private void OpenAdmin()
         {
             AdminWindow window = new AdminWindow();
-
             window.Show();
-
             CloseCurrentWindow<VisualInspectionTrainingSystem.Views.Home.HomeWindow>();
         }
 
         /// <summary>
-        /// Clears the current session, opens the login window, and closes the home window.
+        /// Clears the session, opens Login, and closes the current Home window.
         /// </summary>
         private void Logout()
         {
             SessionService.Logout();
-
             LoginWindow window = new LoginWindow();
-
             window.Show();
-
             CloseCurrentWindow<VisualInspectionTrainingSystem.Views.Home.HomeWindow>();
         }
 
@@ -270,10 +300,12 @@ namespace VisualInspectionTrainingSystem.ViewModels
         /// <summary>
         /// Closes the first open application window of the requested type.
         /// </summary>
-        /// <typeparam name="T">The window type to close.</typeparam>
-        private void CloseCurrentWindow<T>()
+        private static void CloseCurrentWindow<T>()
             where T : Window
         {
+            if (Application.Current == null)
+                return;
+
             foreach (Window window in Application.Current.Windows)
             {
                 if (window is T)

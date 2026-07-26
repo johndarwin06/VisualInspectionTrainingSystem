@@ -12,6 +12,11 @@
     <SolidColorBrush x:Key="App.SuccessBrush" Color="#15803D" />
     <SolidColorBrush x:Key="App.DangerBrush" Color="#B42318" />
     <SolidColorBrush x:Key="App.WarningBrush" Color="#B45309" />
+    <SolidColorBrush x:Key="App.InfoBrush" Color="#0369A1" />
+    <SolidColorBrush x:Key="App.SuccessSurfaceBrush" Color="#DCFCE7" />
+    <SolidColorBrush x:Key="App.DangerSurfaceBrush" Color="#FEE2E2" />
+    <SolidColorBrush x:Key="App.WarningSurfaceBrush" Color="#FEF3C7" />
+    <SolidColorBrush x:Key="App.InfoSurfaceBrush" Color="#E0F2FE" />
     <SolidColorBrush x:Key="App.LightSurfaceBrush" Color="#FFFFFF" />
     <SolidColorBrush x:Key="App.LightMutedSurfaceBrush" Color="#F4F7FA" />
     <SolidColorBrush x:Key="App.LightBorderBrush" Color="#CBD5E1" />
@@ -62,7 +67,41 @@
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1" />
+            </Setter.Value>
+        </Setter>
+        <Style.Resources>
+            <Storyboard x:Key="ButtonHoverInStoryboard">
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                    To="1.012"
+                    Duration="0:0:0.16" />
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                    To="1.012"
+                    Duration="0:0:0.16" />
+            </Storyboard>
+            <Storyboard x:Key="ButtonHoverOutStoryboard">
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                    To="1"
+                    Duration="0:0:0.16" />
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                    To="1"
+                    Duration="0:0:0.16" />
+            </Storyboard>
+        </Style.Resources>
         <Style.Triggers>
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard Storyboard="{StaticResource ButtonHoverInStoryboard}" />
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard Storyboard="{StaticResource ButtonHoverOutStoryboard}" />
+            </EventTrigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Opacity" Value="0.55" />
                 <Setter Property="Cursor" Value="Arrow" />
@@ -201,6 +240,78 @@
         <Setter Property="Background" Value="{StaticResource App.DarkRaisedSurfaceBrush}" />
         <Setter Property="Foreground" Value="{StaticResource App.DarkTextBrush}" />
         <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="ContentEntranceGridStyle" TargetType="{x:Type Grid}">
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <TranslateTransform Y="10" />
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation
+                            Storyboard.TargetProperty="Opacity"
+                            To="1"
+                            Duration="0:0:0.2" />
+                        <DoubleAnimation
+                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                            To="0"
+                            Duration="0:0:0.2">
+                            <DoubleAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseOut" />
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="InteractiveCardStyle" TargetType="{x:Type Border}">
+        <Setter Property="Background" Value="{StaticResource App.LightSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource App.LightBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1" />
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation
+                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                            To="1.006"
+                            Duration="0:0:0.18" />
+                        <DoubleAnimation
+                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                            To="1.006"
+                            Duration="0:0:0.18" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation
+                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                            To="1"
+                            Duration="0:0:0.18" />
+                        <DoubleAnimation
+                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                            To="1"
+                            Duration="0:0:0.18" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="FieldLabelStyle" TargetType="{x:Type TextBlock}">

@@ -195,6 +195,7 @@
     <Compile Include="Models\ReportSummary.cs" />
     <Compile Include="Models\ResultStatistics.cs" />
     <Compile Include="Models\TrainingSession.cs" />
+    <Compile Include="Models\TrainingHistoryModels.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserRoles.cs" />
     <Compile Include="Repositories\AnswerRepository.cs" />
@@ -204,6 +205,7 @@
     <Compile Include="Repositories\QuizRepository.cs" />
     <Compile Include="Repositories\ReportRepository.cs" />
     <Compile Include="Repositories\SessionRepository.cs" />
+    <Compile Include="Repositories\TrainingHistoryRepository.cs" />
     <Compile Include="Repositories\UserRepository.cs" />
     <Compile Include="Services\AuthenticationService.cs" />
     <Compile Include="Services\ApplicationDialogService.cs" />
@@ -221,6 +223,7 @@
     <Compile Include="Services\SessionService.cs" />
     <Compile Include="Services\StatisticsService.cs" />
     <Compile Include="Services\SystemInitializerService.cs" />
+    <Compile Include="Services\TrainingHistoryService.cs" />
     <Compile Include="Services\UserManagementException.cs" />
     <Compile Include="Services\UserManagementService.cs" />
     <Compile Include="ViewModels\AdminViewModel.cs" />
@@ -233,6 +236,8 @@
     <Compile Include="ViewModels\RegistrationViewModel.cs" />
     <Compile Include="ViewModels\ResultViewModel.cs" />
     <Compile Include="ViewModels\SplashViewModel.cs" />
+    <Compile Include="ViewModels\TrainingHistoryViewModel.cs" />
+    <Compile Include="ViewModels\TrainingHistoryDetailViewModel.cs" />
     <Compile Include="ViewModels\UserManagementViewModel.cs" />
     <Compile Include="Views\Admin\AdminWindow.xaml.cs">
       <DependentUpon>AdminWindow.xaml</DependentUpon>
@@ -248,6 +253,12 @@
     </Compile>
     <Compile Include="Views\Home\HomeWindow.xaml.cs">
       <DependentUpon>HomeWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\History\TrainingHistoryWindow.xaml.cs">
+      <DependentUpon>TrainingHistoryWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\History\TrainingHistoryDetailWindow.xaml.cs">
+      <DependentUpon>TrainingHistoryDetailWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\LoadingWindow.xaml.cs">
       <DependentUpon>LoadingWindow.xaml</DependentUpon>
@@ -388,6 +399,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Home\HomeWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\History\TrainingHistoryWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\History\TrainingHistoryDetailWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
