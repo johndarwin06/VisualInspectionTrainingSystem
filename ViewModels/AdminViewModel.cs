@@ -70,6 +70,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
         private readonly RelayCommand _bulkNgCommand;
         private readonly RelayCommand _openDashboardCommand;
         private readonly RelayCommand _openReportsCommand;
+        private readonly RelayCommand _openUserManagementCommand;
         private readonly RelayCommand _logoutCommand;
         private readonly RelayCommand _markGoodCommand;
         private readonly RelayCommand _markNgCommand;
@@ -136,6 +137,9 @@ namespace VisualInspectionTrainingSystem.ViewModels
             _bulkNgCommand = new RelayCommand(BeginBulkNg, CanBulkReview);
             _openDashboardCommand = new RelayCommand(OpenDashboard, CanRunCommand);
             _openReportsCommand = new RelayCommand(OpenReports, CanRunCommand);
+            _openUserManagementCommand = new RelayCommand(
+                OpenUserManagement,
+                CanOpenUserManagement);
             _logoutCommand = new RelayCommand(Logout, CanRunCommand);
             _markGoodCommand = new RelayCommand(BeginMarkSelectedGood, CanReviewSelectedAnswer);
             _markNgCommand = new RelayCommand(BeginMarkSelectedNg, CanReviewSelectedAnswer);
@@ -152,6 +156,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             BulkNgCommand = _bulkNgCommand;
             OpenDashboardCommand = _openDashboardCommand;
             OpenReportsCommand = _openReportsCommand;
+            OpenUserManagementCommand = _openUserManagementCommand;
             LogoutCommand = _logoutCommand;
             MarkGoodCommand = _markGoodCommand;
             MarkNgCommand = _markNgCommand;
@@ -391,6 +396,12 @@ namespace VisualInspectionTrainingSystem.ViewModels
         public ICommand BulkNgCommand { get; private set; }
         public ICommand OpenDashboardCommand { get; private set; }
         public ICommand OpenReportsCommand { get; private set; }
+
+        /// <summary>
+        /// Gets the administrator-only command that opens one User Management window.
+        /// </summary>
+        public ICommand OpenUserManagementCommand { get; private set; }
+
         public ICommand LogoutCommand { get; private set; }
         public ICommand MarkGoodCommand { get; private set; }
         public ICommand MarkNgCommand { get; private set; }
@@ -1043,12 +1054,76 @@ namespace VisualInspectionTrainingSystem.ViewModels
             new ReportsWindow().Show();
         }
 
+        /// <summary>
+        /// Opens exactly one administrator-authorized User Management window.
+        /// </summary>
+        private void OpenUserManagement()
+        {
+            if (!SessionService.IsCurrentUserAdministrator ||
+                Application.Current == null)
+            {
+                MessageBox.Show(
+                    "Administrator authorization is required for User Management.",
+                    "User Management",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+
+            UserManagementWindow existing = Application.Current.Windows
+                .OfType<UserManagementWindow>()
+                .FirstOrDefault();
+
+            if (existing != null)
+            {
+                if (existing.WindowState == WindowState.Minimized)
+                    existing.WindowState = WindowState.Normal;
+
+                existing.Activate();
+                return;
+            }
+
+            try
+            {
+                UserManagementWindow window = new UserManagementWindow();
+                window.Owner = Application.Current.Windows
+                    .OfType<AdminWindow>()
+                    .FirstOrDefault();
+                window.Show();
+            }
+            catch (UserManagementException ex)
+            {
+                ApplicationErrorLogger.LogUnhandledException(
+                    "Open User Management",
+                    ex,
+                    false);
+                MessageBox.Show(
+                    ex.Message,
+                    "User Management",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                ApplicationErrorLogger.LogUnhandledException(
+                    "Open User Management",
+                    ex,
+                    false);
+                MessageBox.Show(
+                    "User Management could not be opened. Please try again or contact support if the problem continues.",
+                    "User Management",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
         private void Logout()
         {
             SessionService.Logout();
             new LoginWindow().Show();
             CloseWindow<DashboardWindow>();
             CloseWindow<ReportsWindow>();
+            CloseWindow<UserManagementWindow>();
             CloseWindow<AdminWindow>();
         }
 
@@ -1057,6 +1132,12 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #region Command State
 
         private bool CanRunCommand() { return !IsBusy && !IsDisposed; }
+
+        private bool CanOpenUserManagement()
+        {
+            return CanRunCommand() &&
+                   SessionService.IsCurrentUserAdministrator;
+        }
 
         private bool CanReviewSelectedAnswer()
         {
@@ -1092,6 +1173,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             _bulkNgCommand.RaiseCanExecuteChanged();
             _openDashboardCommand.RaiseCanExecuteChanged();
             _openReportsCommand.RaiseCanExecuteChanged();
+            _openUserManagementCommand.RaiseCanExecuteChanged();
             _logoutCommand.RaiseCanExecuteChanged();
             _markGoodCommand.RaiseCanExecuteChanged();
             _markNgCommand.RaiseCanExecuteChanged();

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### User Management
+
+- Added administrator workflows for account creation, activation, deactivation, canonical Admin/User role changes, and password resets with BCrypt hashing and repository-owned transactions.
+- Added public trainee registration from Login. Registration accepts no role or activation choice, creates an inactive User account, and requires administrator activation before login.
+- Added safe duplicate Employee Number handling, input validation, self/final-administrator protection, fail-closed authorization, fixed non-sensitive user messages, and technical error logging.
+- Kept Login and registration responsive with asynchronous work, busy guards, cancellation, observed abandoned tasks, and protection against late UI updates or duplicate registration windows.
+- Verified User Management and registration with 186 automated assertions, final Debug and Release rebuilds, and real WPF acceptance covering registration, activation, authorization, Review Workflow, Dashboard, Reports, 10/20-question quizzes, logout, and normal shutdown.
+
 ### Review Workflow
 
 - Added SHA-256 identity over exact image bytes and persisted the stable hash plus display filename with every new quiz answer.

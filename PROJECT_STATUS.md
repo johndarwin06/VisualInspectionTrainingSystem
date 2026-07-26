@@ -4,7 +4,7 @@ Project: Visual Inspection Training System
 
 Current Version: 0.9 Beta
 
-Current Module: Issue #13 Review Workflow - implemented and verified on `issue-13-review-workflow`; awaiting pull-request review and merge
+Current Module: Issue #14 User Management - implemented, tested, and manually accepted
 
 Build Status: Debug and Release successful
 
@@ -38,9 +38,20 @@ Completed:
 - Quiz Optimization
 - Dashboard Analytics
 - Configurable Quiz Sample Size (Issue #46, delivered by merged PR #47)
+- Review Workflow (Issue #13, delivered by merged PR #50)
+- User Management (Issue #14 / GitHub issue #18)
 
 In Progress:
-- Issue #13 Review Workflow is implemented and verified on `issue-13-review-workflow` and is awaiting pull-request review and merge.
+- None. Issue #14 User Management is implemented, tested, and manually accepted.
+
+Issue #14 Verification:
+- Added administrator user management for canonical Admin and User roles, including account creation, activation, deactivation, role changes, and password resets with serialized repository transactions and BCrypt password hashing.
+- Added secure public trainee registration from Login. Registration always creates an inactive User account, provides no role or activation controls, does not sign the applicant in automatically, and requires administrator activation before authentication succeeds.
+- Added duplicate Employee Number protection, safe validation, self/final-administrator safeguards, fail-closed authorization, fixed non-sensitive UI messages, and technical exception logging through `ApplicationErrorLogger`.
+- The temporary User Management, Registration, and cross-module regression probes passed 60, 45, and 81 assertions respectively (186 total), including rollback, concurrency, authentication, role, activation, Dashboard, Reports, Review Workflow, Result Module, and 10/20-question quiz coverage.
+- Visible WPF acceptance passed registration and administrator activation, pre-activation login rejection, post-activation trainee login, trainee authorization boundaries, Review Workflow refresh, Dashboard navigation, Today and This Week Reports, exactly one ResultWindow for both 10- and 20-question quizzes, logout, and normal shutdown.
+- No crash, freeze, raw database error, unexpected diagnostic dialog, or sensitive message appeared during visible acceptance. The newly registered accepted trainee account is intentional application data and was preserved.
+- GitHub issue #18 remains open until the draft delivery pull request is reviewed and merged.
 
 Issue #13 Verification:
 - Added a stable SHA-256 identity for exact image bytes. Quiz persistence stores both the hash and display filename, while administrator preview continues to use the configured image inventory.
@@ -95,4 +106,4 @@ Issue #11 Verification:
 - Visible administrator navigation opened exactly one Dashboard. Its five values matched an independent SQL query (1 training session, 50.00% reviewed accuracy, 10 minutes, GOOD 3, NG 3), Refresh did not duplicate rows, Dashboard closed safely, and normal application shutdown succeeded.
 
 Next Task:
-- No subsequent project issue has started. Issue #13 awaits pull-request review and merge.
+- No subsequent project issue has started. Issue #15 has not started.

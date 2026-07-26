@@ -1,0 +1,119 @@
+<Window
+    x:Class="VisualInspectionTrainingSystem.Views.Login.RegistrationWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="clr-namespace:VisualInspectionTrainingSystem.Helpers"
+    Title="Create Account - Visual Inspection Training System"
+    Width="560"
+    Height="690"
+    MinWidth="520"
+    MinHeight="650"
+    Background="#F5F7FA"
+    ResizeMode="CanResize"
+    WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="FontSize" Value="15" />
+        </Style>
+        <Style TargetType="PasswordBox">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="FontSize" Value="15" />
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,12,0,5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#263238" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="88" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Padding="28,18" Background="#0F4C81">
+            <StackPanel>
+                <TextBlock FontSize="26" FontWeight="Bold" Foreground="White" Text="CREATE ACCOUNT" />
+                <TextBlock Margin="0,5,0,0" Foreground="#DCEBFA" Text="Trainee registration requires administrator activation" />
+            </StackPanel>
+        </Border>
+
+        <Border
+            Grid.Row="1"
+            Margin="28,22,28,26"
+            Padding="24,16"
+            Background="White"
+            BorderBrush="#D7DEE7"
+            BorderThickness="1"
+            CornerRadius="4">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="Employee Number" />
+                    <TextBox MaxLength="20" Text="{Binding EmployeeNo, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="Full Name" />
+                    <TextBox MaxLength="100" Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="Department" />
+                    <TextBox MaxLength="50" Text="{Binding Department, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="Password (8-72 UTF-8 bytes)" />
+                    <PasswordBox
+                        MaxLength="72"
+                        helpers:PasswordBoxHelper.BindPassword="True"
+                        helpers:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay}" />
+
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="Confirm Password" />
+                    <PasswordBox
+                        MaxLength="72"
+                        helpers:PasswordBoxHelper.BindPassword="True"
+                        helpers:PasswordBoxHelper.BoundPassword="{Binding ConfirmPassword, Mode=TwoWay}" />
+
+                    <TextBlock
+                        Margin="0,14,0,0"
+                        MinHeight="38"
+                        Foreground="#B42318"
+                        FontWeight="SemiBold"
+                        Text="{Binding StatusMessage}"
+                        TextWrapping="Wrap" />
+
+                    <Grid Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            Grid.Column="0"
+                            Height="44"
+                            Background="#0F4C81"
+                            BorderThickness="0"
+                            Command="{Binding SubmitCommand}"
+                            Content="SUBMIT REGISTRATION"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            Foreground="White" />
+                        <Button
+                            Grid.Column="2"
+                            Height="44"
+                            Command="{Binding CancelCommand}"
+                            Content="CANCEL"
+                            Cursor="Hand"
+                            FontWeight="SemiBold" />
+                    </Grid>
+
+                    <TextBlock
+                        Margin="0,16,0,0"
+                        Foreground="#5F6B76"
+                        Text="Accounts cannot sign in until an administrator activates them. Registration never grants administrator access."
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>

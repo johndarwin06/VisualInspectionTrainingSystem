@@ -1,0 +1,272 @@
+<Window
+    x:Class="VisualInspectionTrainingSystem.Views.Admin.UserManagementWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="clr-namespace:VisualInspectionTrainingSystem.Helpers"
+    Title="Administration - User Management"
+    Width="1420"
+    Height="840"
+    MinWidth="1180"
+    MinHeight="700"
+    Background="#0F1720"
+    FontFamily="Segoe UI"
+    ResizeMode="CanResize"
+    SnapsToDevicePixels="True"
+    UseLayoutRounding="True"
+    WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="Background" Value="#1F2937" />
+            <Setter Property="BorderBrush" Value="#4B5563" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,8,0,4" />
+            <Setter Property="Foreground" Value="#9FB2C3" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="Background" Value="#0F1720" />
+            <Setter Property="BorderBrush" Value="#4B5563" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="CaretBrush" Value="#F8FAFC" />
+        </Style>
+        <Style TargetType="PasswordBox">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="Background" Value="#0F1720" />
+            <Setter Property="BorderBrush" Value="#4B5563" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="CaretBrush" Value="#F8FAFC" />
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="Foreground" Value="#111827" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="76" />
+            <RowDefinition Height="12" />
+            <RowDefinition Height="82" />
+            <RowDefinition Height="12" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="12" />
+            <RowDefinition Height="58" />
+        </Grid.RowDefinitions>
+
+        <Border
+            Grid.Row="0"
+            Padding="20,12"
+            Background="#17212B"
+            BorderBrush="#2D4050"
+            BorderThickness="1"
+            CornerRadius="4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="120" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock
+                        FontSize="27"
+                        FontWeight="SemiBold"
+                        Foreground="#F8FAFC"
+                        Text="User Management" />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        Foreground="#9FB2C3"
+                        Text="Administrator-only account creation, activation, roles, and password reset" />
+                </StackPanel>
+                <Button
+                    Grid.Column="1"
+                    Style="{StaticResource ActionButton}"
+                    Background="#1D4ED8"
+                    BorderBrush="#60A5FA"
+                    Command="{Binding RefreshCommand}"
+                    Content="Refresh" />
+                <Button
+                    Grid.Column="3"
+                    Style="{StaticResource ActionButton}"
+                    Command="{Binding CloseCommand}"
+                    Content="Close" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Padding="14" Background="#17212B" BorderBrush="#2D4050" BorderThickness="1" CornerRadius="4">
+                <StackPanel>
+                    <TextBlock Foreground="#9FB2C3" Text="TOTAL USERS" />
+                    <TextBlock FontSize="27" FontWeight="Bold" Foreground="#F8FAFC" Text="{Binding UserCount, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="2" Padding="14" Background="#17212B" BorderBrush="#2D4050" BorderThickness="1" CornerRadius="4">
+                <StackPanel>
+                    <TextBlock Foreground="#9FB2C3" Text="ACTIVE USERS" />
+                    <TextBlock FontSize="27" FontWeight="Bold" Foreground="#22C55E" Text="{Binding ActiveUserCount, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="4" Padding="14" Background="#17212B" BorderBrush="#2D4050" BorderThickness="1" CornerRadius="4">
+                <StackPanel>
+                    <TextBlock Foreground="#9FB2C3" Text="ACTIVE ADMINISTRATORS" />
+                    <TextBlock FontSize="27" FontWeight="Bold" Foreground="#60A5FA" Text="{Binding ActiveAdministratorCount, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.8*" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Padding="12" Background="#17212B" BorderBrush="#2D4050" BorderThickness="1" CornerRadius="4">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="42" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Foreground="#F8FAFC"
+                        Text="Existing Users" />
+                    <DataGrid
+                        Grid.Row="1"
+                        AutoGenerateColumns="False"
+                        Background="#0F1720"
+                        BorderBrush="#2D4050"
+                        CanUserAddRows="False"
+                        CanUserDeleteRows="False"
+                        CanUserReorderColumns="True"
+                        CanUserResizeColumns="True"
+                        CanUserSortColumns="True"
+                        ColumnHeaderHeight="36"
+                        Foreground="#E5E7EB"
+                        GridLinesVisibility="Horizontal"
+                        HorizontalGridLinesBrush="#263746"
+                        ItemsSource="{Binding Users}"
+                        RowBackground="#0F1720"
+                        AlternatingRowBackground="#17212B"
+                        RowHeight="34"
+                        SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
+                        SelectionMode="Single"
+                        SelectionUnit="FullRow">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Width="110" IsReadOnly="True" Binding="{Binding EmployeeNo}" Header="Employee No." />
+                            <DataGridTextColumn Width="*" IsReadOnly="True" Binding="{Binding FullName}" Header="Full Name" />
+                            <DataGridTextColumn Width="140" IsReadOnly="True" Binding="{Binding Department}" Header="Department" />
+                            <DataGridTextColumn Width="80" IsReadOnly="True" Binding="{Binding Role}" Header="Role" />
+                            <DataGridTextColumn Width="130" IsReadOnly="True" Binding="{Binding ActivationStatus}" Header="Status" />
+                            <DataGridTextColumn Width="145" IsReadOnly="True" Binding="{Binding CreatedDate, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Header="Created" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Padding="16" Background="#17212B" BorderBrush="#2D4050" BorderThickness="1" CornerRadius="4">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#F8FAFC" Text="Add User" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="EMPLOYEE NUMBER (20 MAX)" />
+                        <TextBox MaxLength="20" Text="{Binding NewEmployeeNo, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="FULL NAME (100 MAX)" />
+                        <TextBox MaxLength="100" Text="{Binding NewFullName, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="DEPARTMENT (50 MAX)" />
+                        <TextBox MaxLength="50" Text="{Binding NewDepartment, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="ROLE" />
+                        <ComboBox ItemsSource="{Binding RoleOptions}" SelectedItem="{Binding NewRole, Mode=TwoWay}" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="PASSWORD (8-72 UTF-8 BYTES)" />
+                        <PasswordBox
+                            MaxLength="72"
+                            helpers:PasswordBoxHelper.BindPassword="True"
+                            helpers:PasswordBoxHelper.BoundPassword="{Binding NewPassword, Mode=TwoWay}" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="CONFIRM PASSWORD" />
+                        <PasswordBox
+                            MaxLength="72"
+                            helpers:PasswordBoxHelper.BindPassword="True"
+                            helpers:PasswordBoxHelper.BoundPassword="{Binding NewConfirmPassword, Mode=TwoWay}" />
+                        <Button
+                            Margin="0,12,0,0"
+                            Style="{StaticResource ActionButton}"
+                            Background="#166534"
+                            BorderBrush="#22C55E"
+                            Command="{Binding AddUserCommand}"
+                            Content="Create User" />
+
+                        <Border Margin="0,18,0,14" BorderBrush="#334155" BorderThickness="0,1,0,0" />
+                        <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#F8FAFC" Text="Selected User" />
+                        <TextBlock Margin="0,6,0,4" Foreground="#9FB2C3" Text="{Binding SelectedUserSummary}" TextWrapping="Wrap" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="ROLE FOR NEXT LOGIN" />
+                        <ComboBox ItemsSource="{Binding RoleOptions}" SelectedItem="{Binding EditedRole, Mode=TwoWay}" />
+                        <Button
+                            Margin="0,10,0,0"
+                            Style="{StaticResource ActionButton}"
+                            Background="#1D4ED8"
+                            BorderBrush="#60A5FA"
+                            Command="{Binding UpdateRoleCommand}"
+                            Content="Update Role" />
+                        <Button
+                            Margin="0,10,0,0"
+                            Style="{StaticResource ActionButton}"
+                            Background="#7F1D1D"
+                            BorderBrush="#EF4444"
+                            Command="{Binding ToggleActiveCommand}"
+                            Content="{Binding ActivationActionText}" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="NEW PASSWORD" />
+                        <PasswordBox
+                            MaxLength="72"
+                            helpers:PasswordBoxHelper.BindPassword="True"
+                            helpers:PasswordBoxHelper.BoundPassword="{Binding ResetPassword, Mode=TwoWay}" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="CONFIRM NEW PASSWORD" />
+                        <PasswordBox
+                            MaxLength="72"
+                            helpers:PasswordBoxHelper.BindPassword="True"
+                            helpers:PasswordBoxHelper.BoundPassword="{Binding ResetConfirmPassword, Mode=TwoWay}" />
+                        <Button
+                            Margin="0,10,0,0"
+                            Style="{StaticResource ActionButton}"
+                            Background="#92400E"
+                            BorderBrush="#F59E0B"
+                            Command="{Binding ResetPasswordCommand}"
+                            Content="Reset Password" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="6" Padding="14" Background="#17212B" BorderBrush="#2D4050" BorderThickness="1" CornerRadius="4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock VerticalAlignment="Center" Foreground="#F8FAFC" Text="{Binding StatusMessage}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" Foreground="#9FB2C3" Text="Passwords are hashed with BCrypt and are never displayed." />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

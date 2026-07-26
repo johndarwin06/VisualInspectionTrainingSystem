@@ -56,6 +56,10 @@
 
 # Sprint 11
 
-- [ ] Review Workflow (Issue #13 / GitHub issue #17; implemented and verified on `issue-13-review-workflow`, awaiting pull-request review and merge)
+- [x] Review Workflow (Issue #13 / GitHub issue #17, delivered by merged PR #50)
 
-No subsequent project issue has started.
+# Sprint 12
+
+- [x] User Management (Issue #14 / GitHub issue #18; implemented, tested, and manually accepted)
+
+No subsequent project issue has started. Issue #15 has not started.
