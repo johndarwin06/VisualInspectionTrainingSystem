@@ -60,6 +60,16 @@ A dispatcher exception is treated as fatal: the application records a sanitized 
 
 Each error entry is serialized under one process lock and includes a UTC timestamp, unique ID, handler source, termination status, exception type, redacted bounded message, stack trace when available, bounded inner-exception details, and flattened aggregate exception types. Credential-like values, full connection strings, tokens, and configuration secrets are redacted before storage.
 
+## Application UI Resources and Dialogs
+
+`App.xaml` loads the existing `LightTheme`, which composes the established design-token dictionaries, Material Design resources, reusable button/card styles, and `Resources/Styles/ApplicationStyles.xaml`. The application dictionary centralizes shared light-surface colors, typography, spacing, focus visuals, inputs, action/status styles, ToolTips, and virtualized DataGrid behavior. Feature windows consume those shared resources instead of introducing separate theme systems; the existing `Resources/DesignTokems` directory remains unchanged for compatibility.
+
+`ModernProgressBar` is the reusable busy overlay. Windows bind its `IsActive` and `Message` properties only to existing ViewModel loading state, so the visual never simulates work or owns business behavior. The overlay is not hit-testable, while the ViewModels retain asynchronous execution, cancellation, duplicate-command guards, generation checks, and late-result rejection.
+
+`ApplicationDialogService` owns ordinary feature confirmations and notifications. It selects the active application window as owner, allows at most one application dialog at a time, activates an existing dialog after repeated input, and uses the existing logger plus a native fixed-message fallback if the styled dialog itself fails. `ApplicationDialogWindow` supports semantic Material icons with visible text, Enter for the primary action where safe, Escape for cancellation, and accessible names. Fatal dispatcher handling remains independently owned by `App.xaml.cs` so dialog failure cannot weaken controlled shutdown.
+
+Production windows use responsive Grid, DockPanel, shared sizing, and bounded scrolling with practical minimum dimensions. Long names, departments, filenames, validation messages, and report text wrap or trim with ToolTips; quiz and result images preserve aspect ratio. GOOD/NG, pending/reviewed, enabled/disabled, warning, and error states include labels or icons and do not depend on color alone. Code-behind remains limited to window ownership, focus/password bridges, keyboard access, accessibility, and close lifecycle.
+
 ## Splash Startup Flow
 
 The splash screen is coordinated by `Views/Splash/SplashWindow.xaml.cs`, `ViewModels/SplashViewModel.cs`, and `Services/SystemInitializerService.cs`.

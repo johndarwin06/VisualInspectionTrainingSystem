@@ -138,7 +138,7 @@ namespace VisualInspectionTrainingSystem.Views.Quiz
             try
             {
                 MessageBoxResult result =
-                    MessageBox.Show(
+                    ApplicationDialogService.Show(
                         "Do you want to end the current training?",
                         "Exit Training",
                         MessageBoxButton.YesNo,

@@ -215,7 +215,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     ex,
                     false);
 
-                MessageBox.Show(
+                ApplicationDialogService.Show(
                     TrainingStartupErrorMessage,
                     TrainingStartupErrorTitle,
                     MessageBoxButton.OK,

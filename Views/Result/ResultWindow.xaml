@@ -2,13 +2,16 @@
     x:Class="VisualInspectionTrainingSystem.Views.Result.ResultWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:progress="clr-namespace:VisualInspectionTrainingSystem.Controls.Progress"
     Title="Training Result"
     Width="1280"
     Height="820"
-    MinWidth="1000"
+    MinWidth="900"
     MinHeight="650"
+    AutomationProperties.Name="Training result"
     Background="#101820"
     FontFamily="Segoe UI"
+    KeyboardNavigation.TabNavigation="Cycle"
     ResizeMode="CanResize"
     SnapsToDevicePixels="True"
     UseLayoutRounding="True"
@@ -57,7 +60,7 @@
             <Setter Property="Minimum" Value="0" />
         </Style>
 
-        <Style x:Key="FilterButton" TargetType="Button">
+        <Style x:Key="FilterButton" BasedOn="{StaticResource DarkActionButtonStyle}" TargetType="Button">
             <Setter Property="Margin" Value="0,0,8,0" />
             <Setter Property="Padding" Value="14,8" />
             <Setter Property="Background" Value="#263746" />
@@ -97,6 +100,7 @@
 
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock
+                        AutomationProperties.HeadingLevel="Level1"
                         FontSize="29"
                         FontWeight="SemiBold"
                         Foreground="#F8FAFC"
@@ -139,11 +143,12 @@
 
         <TabControl
             Grid.Row="2"
+            AutomationProperties.Name="Result sections"
             Background="#17212B"
             BorderBrush="#33495C"
             Foreground="#111827">
 
-            <TabItem Header="Overview">
+            <TabItem AutomationProperties.Name="Overview" Header="Overview">
                 <ScrollViewer
                     Background="#101820"
                     HorizontalScrollBarVisibility="Disabled"
@@ -356,7 +361,7 @@
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="Answer Review">
+            <TabItem AutomationProperties.Name="Answer review" Header="Answer Review">
                 <Grid Margin="16" Background="#101820">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -371,21 +376,25 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Orientation="Horizontal">
                             <Button
+                                AutomationProperties.Name="Show all answers"
                                 Style="{StaticResource FilterButton}"
                                 Command="{Binding FilterCommand}"
                                 CommandParameter="All"
                                 Content="All Answers" />
                             <Button
+                                AutomationProperties.Name="Show reviewed wrong answers"
                                 Style="{StaticResource FilterButton}"
                                 Command="{Binding FilterCommand}"
                                 CommandParameter="Wrong"
                                 Content="Reviewed Wrong" />
                             <Button
+                                AutomationProperties.Name="Show trainee NG answers"
                                 Style="{StaticResource FilterButton}"
                                 Command="{Binding FilterCommand}"
                                 CommandParameter="NG"
                                 Content="User NG" />
                             <Button
+                                AutomationProperties.Name="Show pending review answers"
                                 Style="{StaticResource FilterButton}"
                                 Command="{Binding FilterCommand}"
                                 CommandParameter="Pending"
@@ -417,6 +426,7 @@
 
                         <DataGrid
                             Grid.Column="0"
+                            AutomationProperties.Name="Quiz answer review rows"
                             AutoGenerateColumns="False"
                             AlternatingRowBackground="#E2E8F0"
                             Background="#F8FAFC"
@@ -432,7 +442,7 @@
                             IsReadOnly="True"
                             ItemsSource="{Binding DisplayedAnswers, Mode=OneWay}"
                             RowBackground="#F8FAFC"
-                            RowHeight="34"
+                            MinRowHeight="34"
                             SelectedItem="{Binding SelectedAnswer, Mode=TwoWay}"
                             SelectionMode="Single">
                             <DataGrid.Columns>
@@ -471,10 +481,12 @@
                                     <Grid>
                                         <Image
                                             Margin="8"
+                                            AutomationProperties.Name="Selected answer image preview"
                                             Source="{Binding SelectedImagePreview, Mode=OneWay}"
                                             Stretch="Uniform" />
                                         <TextBlock
                                             Margin="20"
+                                            AutomationProperties.LiveSetting="Polite"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Bottom"
                                             FontSize="13"
@@ -482,6 +494,10 @@
                                             Text="{Binding PreviewStatus, Mode=OneWay}"
                                             TextAlignment="Center"
                                             TextWrapping="Wrap" />
+                                        <progress:ModernProgressBar
+                                            Panel.ZIndex="100"
+                                            IsActive="{Binding IsPreviewLoading}"
+                                            Message="Loading selected image..." />
                                     </Grid>
                                 </Border>
 
@@ -542,7 +558,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Header="NG Analysis">
+            <TabItem AutomationProperties.Name="NG analysis" Header="NG Analysis">
                 <ScrollViewer
                     Background="#101820"
                     HorizontalScrollBarVisibility="Disabled"

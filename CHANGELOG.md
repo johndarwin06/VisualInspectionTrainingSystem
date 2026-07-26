@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### UI Polish
+
+- Composed the existing design tokens, Material Design resources, and shared application styles into one reusable light theme with consistent colors, spacing, typography, focus visuals, inputs, actions, status treatments, and virtualized DataGrids.
+- Added truthful busy overlays bound only to existing loading states, preserving asynchronous ViewModel work, command guards, responsive cancellation, and safe window closing.
+- Replaced inconsistent feature dialogs with one keyboard-accessible application dialog that suppresses rapid duplicates, uses semantic icons plus text, retains every confirmation rule, logs technical failures, and displays only fixed non-sensitive messages.
+- Improved responsive Grid and scroll layouts, declared minimum sizes, long-text trimming/wrapping and ToolTips, proportional image presentation, keyboard navigation, accessible names, visible focus, and non-color-only GOOD/NG and status communication across all production windows.
+- Preserved MVVM ownership, public APIs, database behavior, .NET Framework 4.8.1, C# 7.3, package versions, export formats, authentication, review, Dashboard, Reports, and 10/20-question quiz behavior.
+- Passed 430 temporary automated assertions and real WPF acceptance across administrator and trainee navigation, registration validation, dialogs, Dashboard, Reports/export dialogs, both quiz sizes, Result analysis and preview, logout, and shutdown. Separate Windows 125%/150% scale changes and a deliberately prolonged visible loading operation remain Not Run; deterministic layout and lifecycle coverage passed.
+
 ### User Management
 
 - Added administrator workflows for account creation, activation, deactivation, canonical Admin/User role changes, and password resets with BCrypt hashing and repository-owned transactions.
