@@ -48,6 +48,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         private readonly LinkedList<string> _imageCacheOrder;
 
+        private readonly CancellationTokenSource _lifetimeCancellation;
+
         private QuizEngine _quizEngine;
 
         private CancellationTokenSource _imageLoadCancellation;
@@ -141,6 +143,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             _imageCache = new Dictionary<string, BitmapImage>(
                 StringComparer.OrdinalIgnoreCase);
             _imageCacheOrder = new LinkedList<string>();
+            _lifetimeCancellation = new CancellationTokenSource();
 
             _goodCommand = new RelayCommand(
                 OnGood,
@@ -394,7 +397,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
         /// <summary>
         /// Loads quiz metadata and starts the first non-blocking bitmap load.
         /// </summary>
-        private void InitializeQuiz()
+        private async void InitializeQuiz()
         {
             try
             {
@@ -403,9 +406,16 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 CurrentUser = user.FullName;
 
                 List<QuizImage> images =
-                    _imageService.LoadQuizImages(
+                    await _imageService.LoadQuizImagesWithHashesAsync(
                         _imageFolderPath,
-                        _requestedQuizSize);
+                        _requestedQuizSize,
+                        _lifetimeCancellation.Token);
+
+                if (_lifetimeCancellation.IsCancellationRequested ||
+                    Interlocked.CompareExchange(ref _isDisposed, 0, 0) != 0)
+                {
+                    return;
+                }
 
                 _quizEngine = new QuizEngine(
                     user,
@@ -425,6 +435,18 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 }
 
                 BeginDisplayCurrentImage();
+            }
+            catch (OperationCanceledException)
+            {
+                if (Interlocked.CompareExchange(ref _isDisposed, 0, 0) == 0)
+                {
+                    _isFinished = true;
+                    CurrentImage = null;
+                    ImageStatus = "Quiz preparation was cancelled.";
+                    QuizNotice = "Training was cancelled.";
+                    UpdateProgress();
+                    RefreshCommands();
+                }
             }
             catch (Exception ex)
             {
@@ -1275,8 +1297,10 @@ namespace VisualInspectionTrainingSystem.ViewModels
             }
 
             _isFinished = true;
+            _lifetimeCancellation.Cancel();
             ReleaseImageResources();
             RefreshCommands();
+            _lifetimeCancellation.Dispose();
         }
 
         #endregion

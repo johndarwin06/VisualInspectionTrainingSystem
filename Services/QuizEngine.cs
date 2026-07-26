@@ -243,6 +243,8 @@ namespace VisualInspectionTrainingSystem.Services
 
                 ImageID = image.ImageID,
 
+                ImageHash = image.ImageHash,
+
                 FileName = image.FileName,
 
                 FilePath = image.FilePath,

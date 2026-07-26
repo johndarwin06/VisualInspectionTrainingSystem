@@ -52,6 +52,10 @@
 
 # Sprint 10
 
-- [ ] Reports enhancements (Issue #12 / GitHub issue #16; implemented and verified on `issue-12-reports`, awaiting pull-request review and merge)
+- [x] Reports enhancements (Issue #12 / GitHub issue #16, delivered by merged PR #49)
+
+# Sprint 11
+
+- [ ] Review Workflow (Issue #13 / GitHub issue #17; implemented and verified on `issue-13-review-workflow`, awaiting pull-request review and merge)
 
 No subsequent project issue has started.

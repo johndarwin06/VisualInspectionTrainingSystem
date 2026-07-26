@@ -1,4 +1,4 @@
-﻿#region Namespaces
+#region Namespaces
 
 using System;
 using System.IO;
@@ -9,13 +9,15 @@ namespace VisualInspectionTrainingSystem.Models
 {
     /// <summary>
     /// Represents one inspection image used during training.
-    /// This model only contains information about the image itself.
-    /// It does not store user answers or quiz results.
+    /// The stable identity is derived from exact file bytes and is independent of the transient catalog ID.
     /// </summary>
     public class QuizImage
     {
         #region Constructor
 
+        /// <summary>
+        /// Creates active image metadata with the current local creation time.
+        /// </summary>
         public QuizImage()
         {
             CreatedDate = DateTime.Now;
@@ -27,15 +29,29 @@ namespace VisualInspectionTrainingSystem.Models
         #region Identity
 
         /// <summary>
-        /// Database identity.
-        /// Will be assigned by MySQL after importing images.
+        /// Gets or sets the transient catalog identity retained for compatibility and display.
         /// </summary>
         public int ImageID { get; set; }
 
         /// <summary>
-        /// Unique identifier based on file name.
-        /// Example:
-        /// CL43B104.bmp
+        /// Gets or sets the normalized lowercase SHA-256 hash of the exact image bytes.
+        /// </summary>
+        public string ImageHash { get; set; }
+
+        /// <summary>
+        /// Gets whether this image has a valid stable SHA-256 identity.
+        /// </summary>
+        public bool HasStableIdentity
+        {
+            get
+            {
+                return !string.IsNullOrWhiteSpace(ImageHash) &&
+                       ImageHash.Length == 64;
+            }
+        }
+
+        /// <summary>
+        /// Gets the legacy filename-based key used for display only.
         /// </summary>
         public string ImageKey
         {
@@ -53,23 +69,17 @@ namespace VisualInspectionTrainingSystem.Models
         #region File Information
 
         /// <summary>
-        /// Image file name.
-        /// Example:
-        /// CL43B104.bmp
+        /// Gets or sets the safe image file name.
         /// </summary>
         public string FileName { get; set; }
 
         /// <summary>
-        /// Configured image path.
-        /// Example:
-        /// QuizImages\CL43B104.bmp
+        /// Gets or sets the configured local image path.
         /// </summary>
         public string FilePath { get; set; }
 
         /// <summary>
-        /// File extension.
-        /// Example:
-        /// .bmp
+        /// Gets the file extension used for display.
         /// </summary>
         public string Extension
         {
@@ -87,17 +97,12 @@ namespace VisualInspectionTrainingSystem.Models
         #region Category
 
         /// <summary>
-        /// Training category.
-        /// Example:
-        /// Appearance
-        /// Scratch
-        /// Crack
-        /// Contamination
+        /// Gets or sets the training category.
         /// </summary>
         public string Category { get; set; }
 
         /// <summary>
-        /// Optional remarks from the administrator.
+        /// Gets or sets optional administrator remarks.
         /// </summary>
         public string Remarks { get; set; }
 
@@ -106,8 +111,7 @@ namespace VisualInspectionTrainingSystem.Models
         #region Status
 
         /// <summary>
-        /// Determines whether this image
-        /// can participate in training.
+        /// Gets or sets whether the image can participate in training.
         /// </summary>
         public bool IsActive { get; set; }
 
@@ -116,7 +120,7 @@ namespace VisualInspectionTrainingSystem.Models
         #region Audit
 
         /// <summary>
-        /// Import date.
+        /// Gets or sets the local import date.
         /// </summary>
         public DateTime CreatedDate { get; set; }
 
@@ -125,13 +129,13 @@ namespace VisualInspectionTrainingSystem.Models
         #region Display
 
         /// <summary>
-        /// Returns the display name.
+        /// Gets the filename shown by the application.
         /// </summary>
         public string DisplayName
         {
             get
             {
-                return $"{ImageKey}{Extension}";
+                return ImageKey + Extension;
             }
         }
 

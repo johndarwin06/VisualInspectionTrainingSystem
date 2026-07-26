@@ -3,6 +3,7 @@
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -73,7 +74,7 @@ namespace VisualInspectionTrainingSystem.Repositories
 
                 _answerRepository.EnsureTable(connection);
 
-                transaction = connection.BeginTransaction();
+                transaction = connection.BeginTransaction(IsolationLevel.RepeatableRead);
 
                 EnsureNotDuplicate(
                     validatedSession,
