@@ -75,6 +75,8 @@
                     <ColumnDefinition Width="10" />
                     <ColumnDefinition Width="118" />
                     <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="10" />
                     <ColumnDefinition Width="118" />
                     <ColumnDefinition Width="10" />
                     <ColumnDefinition Width="118" />
@@ -106,12 +108,17 @@
                 <Button
                     Grid.Column="5"
                     Style="{StaticResource ActionButton}"
+                    Command="{Binding OpenUserManagementCommand}"
+                    Content="User Management" />
+                <Button
+                    Grid.Column="7"
+                    Style="{StaticResource ActionButton}"
                     Background="#1D4ED8"
                     BorderBrush="#60A5FA"
                     Command="{Binding RefreshCommand}"
                     Content="Refresh" />
                 <Button
-                    Grid.Column="7"
+                    Grid.Column="9"
                     Style="{StaticResource ActionButton}"
                     Background="#7F1D1D"
                     BorderBrush="#EF4444"

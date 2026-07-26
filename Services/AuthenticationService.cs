@@ -9,7 +9,7 @@ using VisualInspectionTrainingSystem.Repositories;
 namespace VisualInspectionTrainingSystem.Services
 {
     /// <summary>
-    /// Handles user authentication.
+    /// Handles fail-closed user authentication and legacy password upgrades.
     /// </summary>
     public class AuthenticationService
     {
@@ -20,7 +20,7 @@ namespace VisualInspectionTrainingSystem.Services
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
         /// Initializes the authentication service.
@@ -32,6 +32,9 @@ namespace VisualInspectionTrainingSystem.Services
         {
         }
 
+        /// <summary>
+        /// Initializes the service with explicit dependencies for focused verification.
+        /// </summary>
         internal AuthenticationService(
             UserRepository repository,
             PasswordHashService passwordHashService)
@@ -48,7 +51,7 @@ namespace VisualInspectionTrainingSystem.Services
         #region Login
 
         /// <summary>
-        /// Authenticates a user by employee number and password.
+        /// Authenticates an active user with a supported canonical role.
         /// </summary>
         /// <param name="employeeNo">The employee number.</param>
         /// <param name="password">The plain-text password supplied by the user.</param>
@@ -70,6 +73,13 @@ namespace VisualInspectionTrainingSystem.Services
             {
                 return null;
             }
+
+            string canonicalRole = UserRoles.Normalize(user.Role);
+
+            if (canonicalRole == null)
+                return null;
+
+            user.Role = canonicalRole;
 
             string storedPassword = user.PasswordHash ?? string.Empty;
 
@@ -97,9 +107,13 @@ namespace VisualInspectionTrainingSystem.Services
 
             string upgradedHash = _passwordHashService.HashPassword(password);
 
-            _repository.UpdatePasswordHash(
+            bool upgraded = _repository.TryUpgradeLegacyPassword(
                 user.EmployeeNo,
+                storedPassword,
                 upgradedHash);
+
+            if (!upgraded)
+                return null;
 
             user.PasswordHash = upgradedHash;
 
