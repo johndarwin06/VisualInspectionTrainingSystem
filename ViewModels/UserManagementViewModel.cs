@@ -473,7 +473,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
             string requestedRole = EditedRole;
 
-            if (MessageBox.Show(
+            if (ApplicationDialogService.Show(
                     "Change " + selected.EmployeeNo + " from " +
                     selected.Role + " to " + requestedRole +
                     "? The new role applies on the user's next login.",
@@ -505,7 +505,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             bool newIsActive = !selected.IsActive;
 
             if (!newIsActive &&
-                MessageBox.Show(
+                ApplicationDialogService.Show(
                     "Disable " + selected.EmployeeNo +
                     "? The user will be unable to authenticate, but their history will remain intact.",
                     "Confirm Disable User",
@@ -541,7 +541,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             string confirmation = ResetConfirmPassword;
             ClearResetPasswordFields();
 
-            if (MessageBox.Show(
+            if (ApplicationDialogService.Show(
                     "Replace the password for " + selected.EmployeeNo + "?",
                     "Confirm Password Reset",
                     MessageBoxButton.YesNo,
@@ -806,7 +806,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         private static void ShowSafeError(string message, string title)
         {
-            MessageBox.Show(
+            ApplicationDialogService.Show(
                 message,
                 title,
                 MessageBoxButton.OK,

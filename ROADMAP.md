@@ -60,6 +60,10 @@
 
 # Sprint 12
 
-- [x] User Management (Issue #14 / GitHub issue #18; implemented, tested, and manually accepted)
+- [x] User Management (Issue #14 / GitHub issue #18, delivered by merged PR #51; implemented, tested, and manually accepted)
 
-No subsequent project issue has started. Issue #15 has not started.
+# Sprint 13
+
+- [x] UI Polish and secure trainee My Training History (Issue #15 / GitHub issue #19; implemented, tested, and manually accepted)
+
+No subsequent project issue has started.

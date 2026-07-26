@@ -1,0 +1,346 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+    <SolidColorBrush x:Key="App.AccentBrush" Color="#0F4C81" />
+    <SolidColorBrush x:Key="App.AccentHoverBrush" Color="#1565C0" />
+    <SolidColorBrush x:Key="App.AccentPressedBrush" Color="#0A3558" />
+    <SolidColorBrush x:Key="App.FocusBrush" Color="#38BDF8" />
+    <SolidColorBrush x:Key="App.SuccessBrush" Color="#15803D" />
+    <SolidColorBrush x:Key="App.DangerBrush" Color="#B42318" />
+    <SolidColorBrush x:Key="App.WarningBrush" Color="#B45309" />
+    <SolidColorBrush x:Key="App.InfoBrush" Color="#0369A1" />
+    <SolidColorBrush x:Key="App.SuccessSurfaceBrush" Color="#DCFCE7" />
+    <SolidColorBrush x:Key="App.DangerSurfaceBrush" Color="#FEE2E2" />
+    <SolidColorBrush x:Key="App.WarningSurfaceBrush" Color="#FEF3C7" />
+    <SolidColorBrush x:Key="App.InfoSurfaceBrush" Color="#E0F2FE" />
+    <SolidColorBrush x:Key="App.LightSurfaceBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="App.LightMutedSurfaceBrush" Color="#F4F7FA" />
+    <SolidColorBrush x:Key="App.LightBorderBrush" Color="#CBD5E1" />
+    <SolidColorBrush x:Key="App.LightTextBrush" Color="#1F2937" />
+    <SolidColorBrush x:Key="App.LightSecondaryTextBrush" Color="#475569" />
+    <SolidColorBrush x:Key="App.DarkBackgroundBrush" Color="#0F1720" />
+    <SolidColorBrush x:Key="App.DarkSurfaceBrush" Color="#17212B" />
+    <SolidColorBrush x:Key="App.DarkRaisedSurfaceBrush" Color="#1F2937" />
+    <SolidColorBrush x:Key="App.DarkBorderBrush" Color="#33495C" />
+    <SolidColorBrush x:Key="App.DarkTextBrush" Color="#F8FAFC" />
+    <SolidColorBrush x:Key="App.DarkSecondaryTextBrush" Color="#AFC1D0" />
+    <SolidColorBrush x:Key="App.BusyScrimBrush" Color="#D90B1117" />
+
+    <Style x:Key="AppFocusVisualStyle">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border
+                        Margin="2"
+                        BorderBrush="{StaticResource App.FocusBrush}"
+                        BorderThickness="2"
+                        CornerRadius="4"
+                        SnapsToDevicePixels="True">
+                        <AdornedElementPlaceholder />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type Window}">
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+    </Style>
+
+    <Style x:Key="AccessibleButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="MinWidth" Value="96" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="ToolTipService.ShowOnDisabled" Value="True" />
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1" />
+            </Setter.Value>
+        </Setter>
+        <Style.Resources>
+            <Storyboard x:Key="ButtonHoverInStoryboard">
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                    To="1.012"
+                    Duration="0:0:0.16" />
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                    To="1.012"
+                    Duration="0:0:0.16" />
+            </Storyboard>
+            <Storyboard x:Key="ButtonHoverOutStoryboard">
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                    To="1"
+                    Duration="0:0:0.16" />
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                    To="1"
+                    Duration="0:0:0.16" />
+            </Storyboard>
+        </Style.Resources>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard Storyboard="{StaticResource ButtonHoverInStoryboard}" />
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard Storyboard="{StaticResource ButtonHoverOutStoryboard}" />
+            </EventTrigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.55" />
+                <Setter Property="Cursor" Value="Arrow" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="PrimaryActionButtonStyle" BasedOn="{StaticResource AccessibleButtonStyle}" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="{StaticResource App.AccentBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource App.AccentBrush}" />
+        <Setter Property="Foreground" Value="White" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource App.AccentHoverBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource App.FocusBrush}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{StaticResource App.AccentPressedBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="SecondaryActionButtonStyle" BasedOn="{StaticResource AccessibleButtonStyle}" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="{StaticResource App.LightSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource App.AccentBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource App.AccentBrush}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#E6F0F8" />
+                <Setter Property="BorderBrush" Value="{StaticResource App.FocusBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="DarkActionButtonStyle" BasedOn="{StaticResource AccessibleButtonStyle}" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="{StaticResource App.DarkRaisedSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="#4B6072" />
+        <Setter Property="Foreground" Value="{StaticResource App.DarkTextBrush}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#2C3D4B" />
+                <Setter Property="BorderBrush" Value="{StaticResource App.FocusBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="DangerActionButtonStyle" BasedOn="{StaticResource AccessibleButtonStyle}" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="{StaticResource App.DangerBrush}" />
+        <Setter Property="BorderBrush" Value="#EF4444" />
+        <Setter Property="Foreground" Value="White" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#991B1B" />
+                <Setter Property="BorderBrush" Value="#FCA5A5" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource AccessibleButtonStyle}" />
+
+    <Style x:Key="AccessibleTextBoxStyle" TargetType="{x:Type TextBox}">
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
+        <Setter Property="AutomationProperties.HelpText" Value="Enter text" />
+        <Style.Triggers>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter Property="BorderBrush" Value="{StaticResource App.FocusBrush}" />
+                <Setter Property="BorderThickness" Value="2" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource AccessibleTextBoxStyle}" />
+
+    <Style x:Key="AccessiblePasswordBoxStyle" TargetType="{x:Type PasswordBox}">
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
+        <Setter Property="AutomationProperties.HelpText" Value="Enter password" />
+        <Style.Triggers>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter Property="BorderBrush" Value="{StaticResource App.FocusBrush}" />
+                <Setter Property="BorderThickness" Value="2" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type PasswordBox}" BasedOn="{StaticResource AccessiblePasswordBoxStyle}" />
+
+    <Style TargetType="{x:Type ComboBox}">
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
+    </Style>
+
+    <Style x:Key="AccessibleDatePickerStyle" TargetType="{x:Type DatePicker}">
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
+    </Style>
+
+    <Style TargetType="{x:Type DatePicker}" BasedOn="{StaticResource AccessibleDatePickerStyle}" />
+
+    <Style TargetType="{x:Type RadioButton}">
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
+    </Style>
+
+    <Style TargetType="{x:Type CheckBox}">
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
+    </Style>
+
+    <Style TargetType="{x:Type DataGrid}">
+        <Setter Property="EnableColumnVirtualization" Value="True" />
+        <Setter Property="EnableRowVirtualization" Value="True" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+        <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="Once" />
+    </Style>
+
+    <Style TargetType="{x:Type DataGridCell}">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
+        <Setter Property="ToolTipService.ShowDuration" Value="30000" />
+    </Style>
+
+    <Style TargetType="{x:Type ToolTip}">
+        <Setter Property="MaxWidth" Value="520" />
+        <Setter Property="Padding" Value="10,7" />
+        <Setter Property="Background" Value="{StaticResource App.DarkRaisedSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource App.DarkTextBrush}" />
+        <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="ContentEntranceGridStyle" TargetType="{x:Type Grid}">
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <TranslateTransform Y="10" />
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation
+                            Storyboard.TargetProperty="Opacity"
+                            To="1"
+                            Duration="0:0:0.2" />
+                        <DoubleAnimation
+                            Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                            To="0"
+                            Duration="0:0:0.2">
+                            <DoubleAnimation.EasingFunction>
+                                <CubicEase EasingMode="EaseOut" />
+                            </DoubleAnimation.EasingFunction>
+                        </DoubleAnimation>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="InteractiveCardStyle" TargetType="{x:Type Border}">
+        <Setter Property="Background" Value="{StaticResource App.LightSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource App.LightBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <ScaleTransform ScaleX="1" ScaleY="1" />
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation
+                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                            To="1.006"
+                            Duration="0:0:0.18" />
+                        <DoubleAnimation
+                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                            To="1.006"
+                            Duration="0:0:0.18" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation
+                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                            To="1"
+                            Duration="0:0:0.18" />
+                        <DoubleAnimation
+                            Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                            To="1"
+                            Duration="0:0:0.18" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="FieldLabelStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="Margin" Value="0,10,0,5" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource App.LightTextBrush}" />
+    </Style>
+
+    <Style x:Key="DarkFieldLabelStyle" BasedOn="{StaticResource FieldLabelStyle}" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{StaticResource App.DarkSecondaryTextBrush}" />
+    </Style>
+
+    <Style x:Key="StatusMessageTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="Foreground" Value="{StaticResource App.DangerBrush}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="AutomationProperties.LiveSetting" Value="Assertive" />
+    </Style>
+
+    <Style x:Key="TrimmedTextWithToolTipStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=Text}" />
+    </Style>
+
+    <Style x:Key="AppIconStyle" TargetType="{x:Type materialDesign:PackIcon}">
+        <Setter Property="Width" Value="20" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Margin" Value="0,0,8,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+</ResourceDictionary>

@@ -6,101 +6,97 @@
     Width="1000"
     Height="600"
     AllowsTransparency="True"
+    AutomationProperties.Name="Visual Inspection Training System startup"
     Background="Transparent"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
     WindowStartupLocation="CenterScreen"
     WindowStyle="None">
 
-    <Border Background="#FFFFFFFF" CornerRadius="15">
-
+    <Border
+        Background="{StaticResource App.LightSurfaceBrush}"
+        CornerRadius="15">
         <Grid>
+            <Image
+                AutomationProperties.Name="Visual Inspection Training System"
+                Source="/Assets/Backgrounds/splash.png"
+                Stretch="UniformToFill" />
 
-            <Image Source="/Assets/Backgrounds/splash.png" Stretch="Fill" />
-
-            <Border Background="#66000000" />
+            <Border Background="#52000000" />
 
             <Border
-                Height="178"
+                MinHeight="188"
+                Padding="32,24,32,22"
                 VerticalAlignment="Bottom"
-                Background="#F2FFFFFF">
-
-                <Grid Margin="32,24,32,22">
-
+                Background="#F7FFFFFF">
+                <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <TextBlock
                         Grid.Row="0"
+                        AutomationProperties.LiveSetting="Polite"
                         FontSize="20"
                         FontWeight="SemiBold"
-                        Foreground="#0F4C81"
-                        Text="{Binding StatusMessage}"
-                        TextTrimming="CharacterEllipsis" />
+                        Foreground="{StaticResource App.AccentBrush}"
+                        Style="{StaticResource TrimmedTextWithToolTipStyle}"
+                        Text="{Binding StatusMessage}" />
 
                     <TextBlock
                         Grid.Row="1"
-                        MaxHeight="44"
+                        MaxHeight="48"
                         Margin="0,8,0,0"
-                        FontSize="13"
-                        Foreground="#40464F"
+                        AutomationProperties.LiveSetting="Polite"
+                        Foreground="{StaticResource App.LightSecondaryTextBrush}"
                         Text="{Binding DiagnosticMessage}"
-                        TextWrapping="Wrap" />
+                        TextWrapping="Wrap"
+                        ToolTip="{Binding DiagnosticMessage}" />
 
                     <ProgressBar
                         Grid.Row="2"
                         Height="18"
                         Margin="0,16,0,0"
-                        Background="#FFE6EDF3"
-                        BorderBrush="#FF9BA9B5"
-                        Foreground="#FF0F7B58"
+                        AutomationProperties.Name="Startup progress"
+                        Background="#E6EDF3"
+                        BorderBrush="#9BA9B5"
+                        Foreground="{StaticResource App.SuccessBrush}"
                         Maximum="100"
                         Minimum="0"
                         Value="{Binding Progress}" />
 
                     <Grid Grid.Row="3" Margin="0,14,0,0">
-
                         <TextBlock
                             VerticalAlignment="Center"
                             FontSize="12"
-                            Foreground="#606A73"
+                            Foreground="{StaticResource App.LightSecondaryTextBrush}"
                             Text="Visual Inspection Training System" />
 
                         <StackPanel
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             Orientation="Horizontal">
-
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontSize="12"
-                                Foreground="#606A73"
+                                Foreground="{StaticResource App.LightSecondaryTextBrush}"
                                 Text="{Binding Version}" />
-
                             <Button
-                                Width="88"
-                                Height="32"
+                                MinWidth="88"
                                 Margin="22,0,0,0"
-                                Background="#FF2F3A45"
-                                BorderBrush="#FF2F3A45"
+                                AutomationProperties.Name="Exit application startup"
                                 Command="{Binding ExitCommand}"
                                 Content="Exit"
-                                Foreground="#FFFFFFFF" />
-
+                                IsCancel="True"
+                                Style="{StaticResource DangerActionButtonStyle}"
+                                ToolTip="Cancel startup and close the application" />
                         </StackPanel>
-
                     </Grid>
-
                 </Grid>
-
             </Border>
-
         </Grid>
-
     </Border>
-
 </Window>

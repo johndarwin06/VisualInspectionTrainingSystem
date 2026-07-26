@@ -461,7 +461,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     ex,
                     false);
 
-                MessageBox.Show(
+                ApplicationDialogService.Show(
                     "The quiz could not be started. Verify that the training images are available and try again.",
                     "Quiz Startup Error",
                     MessageBoxButton.OK,
@@ -1088,7 +1088,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             UpdateProgress();
             RefreshCommands();
 
-            MessageBox.Show(
+            ApplicationDialogService.Show(
                 "An inspection image could not be loaded. Training was stopped and the incomplete session was not saved.",
                 "Quiz Image Unavailable",
                 MessageBoxButton.OK,
@@ -1188,7 +1188,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
         {
             _isFinished = true;
 
-            MessageBox.Show(
+            ApplicationDialogService.Show(
                 "No BMP images were found.",
                 "Quiz",
                 MessageBoxButton.OK,
@@ -1249,7 +1249,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     ex,
                     false);
 
-                MessageBox.Show(
+                ApplicationDialogService.Show(
                     "Training completed, but the result could not be saved. Please contact support if the problem continues.",
                     "Save Result Warning",
                     MessageBoxButton.OK,

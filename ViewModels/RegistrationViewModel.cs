@@ -205,7 +205,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
                 ClearAllFields();
                 StatusMessage = SuccessMessage;
-                MessageBox.Show(
+                ApplicationDialogService.Show(
                     SuccessMessage,
                     "Registration Submitted",
                     MessageBoxButton.OK,

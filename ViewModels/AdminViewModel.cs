@@ -497,7 +497,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     false);
                 ClearLoadedAnswers();
                 StatusMessage = LoadErrorMessage;
-                MessageBox.Show(
+                ApplicationDialogService.Show(
                     LoadErrorMessage,
                     "Review Queue",
                     MessageBoxButton.OK,
@@ -747,7 +747,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 "Truth corrections: " + corrections + "\n" +
                 "Rows without stable identity (not processed): " + missingIdentities;
 
-            if (MessageBox.Show(
+            if (ApplicationDialogService.Show(
                     message,
                     "Confirm Bulk Review",
                     MessageBoxButton.YesNo,
@@ -793,7 +793,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     ex,
                     false);
                 StatusMessage = SaveErrorMessage;
-                MessageBox.Show(
+                ApplicationDialogService.Show(
                     IsStaleReview(ex) ? ex.Message : SaveErrorMessage,
                     "Bulk Review",
                     MessageBoxButton.OK,
@@ -839,7 +839,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 legacyPreview != null &&
                 legacyPreview.HasStableIdentity)
             {
-                MessageBoxResult legacyConfirmation = MessageBox.Show(
+                MessageBoxResult legacyConfirmation = ApplicationDialogService.Show(
                     "This historical answer has no stable image identity. Confirm that the displayed preview is the exact image originally answered. If confirmed, its SHA-256 identity will be attached to this row and reusable administrator truth may be propagated.",
                     "Confirm Legacy Image Identity",
                     MessageBoxButton.YesNoCancel,
@@ -872,7 +872,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
                 if (currentTruth.HasValue && currentTruth.Value != correctAnswer)
                 {
-                    if (MessageBox.Show(
+                    if (ApplicationDialogService.Show(
                             "Change reusable administrator truth from " +
                             FormatAnswer(currentTruth.Value) + " to " +
                             FormatAnswer(correctAnswer) + "?\n\n" +
@@ -887,7 +887,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     }
                 }
             }
-            else if (MessageBox.Show(
+            else if (ApplicationDialogService.Show(
                          "Stable image identity is unavailable. This answer can be reviewed individually, but the decision will not propagate to other rows. Continue?",
                          "Legacy Review",
                          MessageBoxButton.YesNo,
@@ -939,7 +939,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     ex,
                     false);
                 StatusMessage = SaveErrorMessage;
-                MessageBox.Show(
+                ApplicationDialogService.Show(
                     IsStaleReview(ex) ? ex.Message : SaveErrorMessage,
                     "Save Review",
                     MessageBoxButton.OK,
@@ -1046,12 +1046,65 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         private void OpenDashboard()
         {
-            new DashboardWindow().Show();
+            OpenSingleWindow(
+                () => new DashboardWindow(),
+                "Dashboard");
         }
 
         private void OpenReports()
         {
-            new ReportsWindow().Show();
+            OpenSingleWindow(
+                () => new ReportsWindow(),
+                "Reports");
+        }
+
+        /// <summary>
+        /// Activates an existing administrator tool window or creates one instance safely.
+        /// </summary>
+        /// <typeparam name="TWindow">Administrator tool window type.</typeparam>
+        /// <param name="factory">Window factory invoked only when no instance is open.</param>
+        /// <param name="windowName">Non-sensitive name used for diagnostics and user feedback.</param>
+        private static void OpenSingleWindow<TWindow>(
+            Func<TWindow> factory,
+            string windowName)
+            where TWindow : Window
+        {
+            if (Application.Current == null)
+                return;
+
+            TWindow existing = Application.Current.Windows
+                .OfType<TWindow>()
+                .FirstOrDefault();
+
+            if (existing != null)
+            {
+                if (existing.WindowState == WindowState.Minimized)
+                    existing.WindowState = WindowState.Normal;
+
+                existing.Activate();
+                return;
+            }
+
+            try
+            {
+                TWindow window = factory();
+                window.Owner = Application.Current.Windows
+                    .OfType<AdminWindow>()
+                    .FirstOrDefault();
+                window.Show();
+            }
+            catch (Exception ex)
+            {
+                ApplicationErrorLogger.LogUnhandledException(
+                    "Open " + windowName,
+                    ex,
+                    false);
+                ApplicationDialogService.Show(
+                    windowName + " could not be opened. Please try again or contact support if the problem continues.",
+                    windowName,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
 
         /// <summary>
@@ -1062,7 +1115,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             if (!SessionService.IsCurrentUserAdministrator ||
                 Application.Current == null)
             {
-                MessageBox.Show(
+                ApplicationDialogService.Show(
                     "Administrator authorization is required for User Management.",
                     "User Management",
                     MessageBoxButton.OK,
@@ -1097,7 +1150,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     "Open User Management",
                     ex,
                     false);
-                MessageBox.Show(
+                ApplicationDialogService.Show(
                     ex.Message,
                     "User Management",
                     MessageBoxButton.OK,
@@ -1109,7 +1162,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     "Open User Management",
                     ex,
                     false);
-                MessageBox.Show(
+                ApplicationDialogService.Show(
                     "User Management could not be opened. Please try again or contact support if the problem continues.",
                     "User Management",
                     MessageBoxButton.OK,

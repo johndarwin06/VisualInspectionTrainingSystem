@@ -1,12 +1,74 @@
-﻿<UserControl
+<UserControl
     x:Class="VisualInspectionTrainingSystem.Controls.Progress.ModernProgressBar"
+    x:Name="Root"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:VisualInspectionTrainingSystem.Controls.Progress"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignHeight="180"
+    d:DesignWidth="420"
+    Focusable="False"
+    IsHitTestVisible="False"
     mc:Ignorable="d">
-    <Grid />
+
+    <UserControl.Style>
+        <Style TargetType="{x:Type UserControl}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsActive, ElementName=Root}" Value="True">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Style>
+
+    <Border
+        Padding="24"
+        Background="{StaticResource App.BusyScrimBrush}"
+        CornerRadius="4">
+        <Border
+            MaxWidth="440"
+            Padding="28,24"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Background="{StaticResource App.DarkSurfaceBrush}"
+            BorderBrush="{StaticResource App.FocusBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <StackPanel HorizontalAlignment="Center">
+                <materialDesign:PackIcon
+                    Width="30"
+                    Height="30"
+                    HorizontalAlignment="Center"
+                    AutomationProperties.Name="Operation in progress"
+                    Foreground="{StaticResource App.FocusBrush}"
+                    Kind="ProgressClock" />
+                <ProgressBar
+                    Width="260"
+                    Height="8"
+                    Margin="0,16,0,0"
+                    AutomationProperties.Name="Loading progress"
+                    Background="#263746"
+                    Foreground="{StaticResource App.FocusBrush}"
+                    IsIndeterminate="True" />
+                <TextBlock
+                    Margin="0,14,0,0"
+                    HorizontalAlignment="Center"
+                    AutomationProperties.LiveSetting="Polite"
+                    FontWeight="SemiBold"
+                    Foreground="{StaticResource App.DarkTextBrush}"
+                    Text="{Binding Message, ElementName=Root}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Margin="0,6,0,0"
+                    HorizontalAlignment="Center"
+                    Foreground="{StaticResource App.DarkSecondaryTextBrush}"
+                    Text="Please wait. You can still close this window safely."
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+    </Border>
 </UserControl>

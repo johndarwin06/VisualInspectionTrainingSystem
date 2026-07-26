@@ -4,7 +4,7 @@ Project: Visual Inspection Training System
 
 Current Version: 0.9 Beta
 
-Current Module: Issue #14 User Management - implemented, tested, and manually accepted
+Current Module: Issue #15 UI Polish and trainee training history - implemented, tested, and manually accepted
 
 Build Status: Debug and Release successful
 
@@ -39,10 +39,25 @@ Completed:
 - Dashboard Analytics
 - Configurable Quiz Sample Size (Issue #46, delivered by merged PR #47)
 - Review Workflow (Issue #13, delivered by merged PR #50)
-- User Management (Issue #14 / GitHub issue #18)
+- User Management (Issue #14 / GitHub issue #18, delivered by merged PR #51)
+- UI Polish and secure trainee training history (Issue #15 / GitHub issue #19)
 
 In Progress:
-- None. Issue #14 User Management is implemented, tested, and manually accepted.
+- None. Issue #15 UI Polish and secure trainee training history are implemented, tested, and manually accepted.
+
+Issue #15 Verification:
+- Added one application-wide light resource composition with reusable color, spacing, typography, focus, input, action, status, DataGrid virtualization, and busy-state styles while preserving the existing `Resources/DesignTokems` directory and Material Design dependency.
+- Added a consistent keyboard-accessible application dialog with single-instance suppression, semantic icons plus text, fixed non-sensitive messages, active-window ownership, safe native fallback, and existing technical logging.
+- Polished Splash, Login, Registration, Administration, User Management, Review Workflow, Home, Quiz, Result, Dashboard, Reports, Loading, and fallback windows with responsive Grid/scroll layouts, useful minimum sizes, accessible labels, predictable focus, long-text handling, and proportionally fitted images.
+- Reused existing asynchronous ViewModel states for truthful loading overlays and command suppression; overlays do not intercept close or cancellation input and no simulated loading behavior was added.
+- The temporary UI/resource probe passed 268 assertions and the cross-module regression probe passed 162 assertions (430 total), including every production XAML window, resource resolution, command paths, focus, dialog suppression, lifecycle behavior, DataGrid virtualization, registration authorization, quiz statistics, exports, Dashboard, Reports, Review Workflow, and read-only MySQL checks.
+- Visible WPF acceptance passed Splash and Login, registration validation/closing, administrator navigation, User Management, Review Workflow, Dashboard, Today/This Week Reports and export dialogs, trainee login, real 10- and 20-question quizzes, exactly one Result window per quiz, Result tabs and image preview, logout, and normal shutdown without a crash, freeze, sensitive error, missing resource, or unexpected diagnostic dialog.
+- Current-scale responsive layouts were exercised from the compact Login/Home surfaces through the large Quiz/Result surfaces. Separate Windows 125% and 150% scale changes and a deliberately prolonged visible loading operation were not run; their resource, layout, busy-state, and close-lifecycle behavior passed deterministic automation.
+- The two temporary visible quiz sessions and all 30 answer rows were removed and verified absent. Temporary probes, exports, logs, screenshots, and generated build output are excluded from the delivery set.
+- Added a read-only My Training History workflow that derives the employee identity from the active session, restricts both list and detail queries to that identity, and exposes no public employee-number selector. Completed sessions use deterministic newest-first ordering, 50-row incremental pages, bounded filters, and normalized GOOD/NG review semantics.
+- Added a responsive history list and session detail with reviewed-only nullable accuracy, explicit pending/correct/wrong states, automatic/administrator review provenance without reviewer identity, and lazy image preview with fixed non-sensitive unavailable states. Refresh replaces current rows, Load More de-duplicates session IDs, and close/cancellation prevents late UI updates.
+- The focused training-history probe passed 123 assertions and the expanded cross-module regression probe passed 182 assertions (305 additional assertions). Controlled MySQL coverage included current-user isolation, 10/20-question sessions, normalized/padded values, invalid truth as pending, status/date/search filtering, empty results, deterministic pagination, duplicate-free refresh, provenance, prompt close, safe failures, and exact database cleanup.
+- Visible trainee acceptance passed one History window, current-user-only sessions, refresh without duplicates, filters/search/empty state, a 10-answer detail, 80% reviewed-only accuracy, pending/correct/wrong outcomes, review provenance, a real image preview, stable detail/history closing, logout, and administrator regression navigation. Windows 125%/150% scaling, a deliberately missing real preview, a visible 20-answer history detail, and visibly stalled history close remain Not Run; their corresponding deterministic checks passed.
 
 Issue #14 Verification:
 - Added administrator user management for canonical Admin and User roles, including account creation, activation, deactivation, role changes, and password resets with serialized repository transactions and BCrypt password hashing.
@@ -51,7 +66,7 @@ Issue #14 Verification:
 - The temporary User Management, Registration, and cross-module regression probes passed 60, 45, and 81 assertions respectively (186 total), including rollback, concurrency, authentication, role, activation, Dashboard, Reports, Review Workflow, Result Module, and 10/20-question quiz coverage.
 - Visible WPF acceptance passed registration and administrator activation, pre-activation login rejection, post-activation trainee login, trainee authorization boundaries, Review Workflow refresh, Dashboard navigation, Today and This Week Reports, exactly one ResultWindow for both 10- and 20-question quizzes, logout, and normal shutdown.
 - No crash, freeze, raw database error, unexpected diagnostic dialog, or sensitive message appeared during visible acceptance. The newly registered accepted trainee account is intentional application data and was preserved.
-- GitHub issue #18 remains open until the draft delivery pull request is reviewed and merged.
+- User Management and Registration were delivered by merged PR #51.
 
 Issue #13 Verification:
 - Added a stable SHA-256 identity for exact image bytes. Quiz persistence stores both the hash and display filename, while administrator preview continues to use the configured image inventory.
@@ -106,4 +121,4 @@ Issue #11 Verification:
 - Visible administrator navigation opened exactly one Dashboard. Its five values matched an independent SQL query (1 training session, 50.00% reviewed accuracy, 10 minutes, GOOD 3, NG 3), Refresh did not duplicate rows, Dashboard closed safely, and normal application shutdown succeeded.
 
 Next Task:
-- No subsequent project issue has started. Issue #15 has not started.
+- No subsequent project issue has started.

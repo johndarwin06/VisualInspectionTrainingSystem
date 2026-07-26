@@ -2,6 +2,22 @@
 
 ## 2026-07-26
 
+### Issue #15 - UI Polish
+
+- Audited every production window, shared resource dictionary, reusable control, command path, and existing Material Design usage before changing the UI. The implementation keeps the existing Visual Inspection identity and the intentionally misspelled `Resources/DesignTokems` path.
+- Added the shared `ApplicationStyles` dictionary and corrected light-theme composition so application colors, typography, spacing, focus, inputs, buttons, status presentation, ToolTips, and DataGrid virtualization resolve consistently at runtime.
+- Added a reusable `ModernProgressBar` busy overlay contract and applied it only to operations that already expose loading state. Existing asynchronous work, cancellation, generation checks, and busy command guards remain owned by the ViewModels.
+- Added `ApplicationDialogService` and its accessible WPF dialog, preserving destructive/security confirmation behavior while preventing duplicate dialogs and keeping raw exceptions, SQL details, paths, credentials, and internal diagnostics out of user messages.
+- Reworked Splash, Login, Registration, Administration, User Management, Review Workflow, Home, Quiz, Result, Dashboard, Reports, Loading, and fallback layouts for resizing, long content, keyboard focus, accessible labels, semantic icons plus text, and proportional images without changing business behavior.
+- Passed 268 UI/resource assertions and 162 cross-module regression assertions (430 total). Coverage included XAML parsing/instantiation, effective resources, command bindings, loading/close lifecycle, rapid navigation/dialog suppression, virtualization, long text, authorization, quiz/statistics, Dashboard, Reports, CSV/XLSX/PDF generation, Review Workflow, and read-only MySQL access.
+- Real WPF acceptance passed Splash/Login, Registration, administrator navigation, User Management, Review Workflow, Dashboard, Today/This Week Reports, all export dialogs, trainee Home, real 10- and 20-question quizzes, one Result window per completion, Result filters/NG analysis/image preview, logout, and shutdown. No crash, freeze, raw database error, missing resource, or unexpected diagnostic dialog occurred.
+- Current-scale compact and large layouts were visibly exercised. Separate 125% and 150% Windows scaling and a deliberately prolonged visible loading operation were Not Run; deterministic tests covered their layout resources, busy visibility, duplicate prevention, and prompt close behavior.
+- Removed the two visible test sessions and their 30 answers and verified no rows remained. Temporary probes, exports, logs, screenshots, and generated build output were removed from the delivery set.
+- Added secure trainee My Training History without changing existing quiz persistence or Result Module behavior. The service captures the active session identity internally; repository list, summary, and answer-detail queries are parameterized and always constrain that identity. Completed sessions page deterministically in groups of 50 with bounded search/date/status filters.
+- Added normalized GOOD/NG statistics with invalid truth remaining pending, reviewed-only nullable accuracy, automatic/administrator provenance without reviewer identity, and a read-only detail surface with lazy bounded image preview. ViewModels perform database and filesystem work away from the dispatcher, disable repeated work, observe abandoned tasks, and reject late publication after cancellation or close.
+- Passed 123 focused history assertions and 182 expanded cross-module assertions (305 additional assertions) against controlled MySQL records. Coverage included cross-user and administrator isolation, 10/20-question details, malformed/lowercase/padded values, deterministic two-page loading, refresh de-duplication, filters, empty states, provenance, safe error text, close during blocked work, every production XAML file, and Result/Dashboard/Reports/Review/User Management regressions.
+- Real trainee WPF verification passed current-user history, single-window navigation, filters, empty state, duplicate-free refresh, a real 10-answer detail with reviewed statistics and image preview, and stable closing. Administrator Review, Dashboard, Reports, User Management, logout, and shutdown also passed without a crash, freeze, raw database error, or unexpected diagnostic dialog. Separate 125%/150% scaling and the remaining deliberately adverse visible history cases were Not Run and are recorded as manual follow-up checks.
+
 ### Issue #14 - User Management
 
 - Added administrator user management for creating accounts, activating and deactivating access, changing canonical Admin/User roles, and resetting passwords. Repository-owned serialized transactions preserve unique Employee Numbers, rollback on failure, and enforce self/final-administrator safeguards.
@@ -10,7 +26,7 @@
 - Passed 186 temporary automated assertions: 60 User Management, 45 Registration, and 81 cross-module regression assertions. Coverage included validation, duplicate and concurrent registration, rollback, legacy password upgrade, authentication, activation, roles, Dashboard, Reports, Review Workflow, Result Module, and 10/20-question quizzes.
 - Final Debug and Release rebuilds completed with zero errors and one existing `MVVMTKCFG0002` warning in each configuration.
 - Real visible WPF acceptance passed registration, inactive-login rejection, administrator activation, activated Trainee login without administrator functions, Review Workflow refresh, Dashboard open/close, Today and This Week Reports, one ResultWindow for both quiz sizes, logout, and normal shutdown. No crash, freeze, raw database error, unexpected diagnostic dialog, or sensitive message occurred.
-- Temporary probe data and artifacts were removed. The newly registered accepted trainee account was deliberately preserved as requested. Issue #15 has not started.
+- Temporary probe data and artifacts were removed. The newly registered accepted trainee account was deliberately preserved as requested. User Management and Registration were subsequently delivered by merged PR #51.
 
 ### Issue #13 - Review Workflow
 
