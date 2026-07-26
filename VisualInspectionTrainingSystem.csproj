@@ -213,6 +213,7 @@
     <Compile Include="Services\MySqlService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="Services\PasswordHashService.cs" />
+    <Compile Include="Services\RegistrationService.cs" />
     <Compile Include="Services\QuizEngine.cs" />
     <Compile Include="Services\QuizService.cs" />
     <Compile Include="Services\ReportExportService.cs" />
@@ -228,6 +229,7 @@
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\QuizViewModel.cs" />
     <Compile Include="ViewModels\ReportsViewModel.cs" />
+    <Compile Include="ViewModels\RegistrationViewModel.cs" />
     <Compile Include="ViewModels\ResultViewModel.cs" />
     <Compile Include="ViewModels\SplashViewModel.cs" />
     <Compile Include="ViewModels\UserManagementViewModel.cs" />
@@ -248,6 +250,9 @@
     </Compile>
     <Compile Include="Views\Login\LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Login\RegistrationWindow.xaml.cs">
+      <DependentUpon>RegistrationWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Quiz\QuizWindow.xaml.cs">
       <DependentUpon>QuizWindow.xaml</DependentUpon>
@@ -379,6 +384,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Login\LoginWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Login\RegistrationWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

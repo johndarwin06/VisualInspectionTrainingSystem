@@ -2,6 +2,16 @@
 
 ## 2026-07-26
 
+### Issue #14 - User Management
+
+- Added administrator user management for creating accounts, activating and deactivating access, changing canonical Admin/User roles, and resetting passwords. Repository-owned serialized transactions preserve unique Employee Numbers, rollback on failure, and enforce self/final-administrator safeguards.
+- Added public trainee registration from the existing Login window. The registration API accepts identity and password fields only, always stores a BCrypt hash, always creates an inactive User account, and requires administrator activation before login.
+- Kept Login and registration asynchronous with one-operation busy guards, prompt cancellation and close behavior, abandoned-task observation, stale-result protection, fixed non-sensitive messages, and technical diagnostics through `ApplicationErrorLogger`.
+- Passed 186 temporary automated assertions: 60 User Management, 45 Registration, and 81 cross-module regression assertions. Coverage included validation, duplicate and concurrent registration, rollback, legacy password upgrade, authentication, activation, roles, Dashboard, Reports, Review Workflow, Result Module, and 10/20-question quizzes.
+- Final Debug and Release rebuilds completed with zero errors and one existing `MVVMTKCFG0002` warning in each configuration.
+- Real visible WPF acceptance passed registration, inactive-login rejection, administrator activation, activated Trainee login without administrator functions, Review Workflow refresh, Dashboard open/close, Today and This Week Reports, one ResultWindow for both quiz sizes, logout, and normal shutdown. No crash, freeze, raw database error, unexpected diagnostic dialog, or sensitive message occurred.
+- Temporary probe data and artifacts were removed. The newly registered accepted trainee account was deliberately preserved as requested. Issue #15 has not started.
+
 ### Issue #13 - Review Workflow
 
 - Added lowercase SHA-256 identity for exact image bytes. Quiz metadata hashing runs away from the WPF dispatcher, and completed answer persistence stores both `ImageHash` and `ImageFileName` without changing the existing public quiz APIs.

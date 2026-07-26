@@ -180,7 +180,7 @@
                             <DataGridTextColumn Width="*" IsReadOnly="True" Binding="{Binding FullName}" Header="Full Name" />
                             <DataGridTextColumn Width="140" IsReadOnly="True" Binding="{Binding Department}" Header="Department" />
                             <DataGridTextColumn Width="80" IsReadOnly="True" Binding="{Binding Role}" Header="Role" />
-                            <DataGridCheckBoxColumn Width="70" IsReadOnly="True" Binding="{Binding IsActive}" Header="Active" />
+                            <DataGridTextColumn Width="130" IsReadOnly="True" Binding="{Binding ActivationStatus}" Header="Status" />
                             <DataGridTextColumn Width="145" IsReadOnly="True" Binding="{Binding CreatedDate, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Header="Created" />
                         </DataGrid.Columns>
                     </DataGrid>

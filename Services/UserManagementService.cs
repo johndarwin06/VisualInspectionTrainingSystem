@@ -88,14 +88,8 @@ namespace VisualInspectionTrainingSystem.Services
             string confirmPassword)
         {
             string validatedEmployeeNo = ValidateEmployeeNo(employeeNo);
-            string validatedFullName = ValidateRequiredText(
-                fullName,
-                UserRepository.FullNameMaximumLength,
-                "Full Name");
-            string validatedDepartment = ValidateRequiredText(
-                department,
-                UserRepository.DepartmentMaximumLength,
-                "Department");
+            string validatedFullName = ValidateFullName(fullName);
+            string validatedDepartment = ValidateDepartment(department);
             string canonicalRole = ValidateRole(role);
             string validatedPassword = ValidatePasswordPair(
                 password,
@@ -231,6 +225,32 @@ namespace VisualInspectionTrainingSystem.Services
                 ThrowValidation("Select a supported role: Admin or User.");
 
             return canonicalRole;
+        }
+
+        /// <summary>
+        /// Validates and trims a full name using the live user-schema limit.
+        /// </summary>
+        /// <param name="fullName">Full name supplied by an administrator or registrant.</param>
+        /// <returns>The trimmed validated full name.</returns>
+        internal static string ValidateFullName(string fullName)
+        {
+            return ValidateRequiredText(
+                fullName,
+                UserRepository.FullNameMaximumLength,
+                "Full Name");
+        }
+
+        /// <summary>
+        /// Validates and trims a department using the live user-schema limit.
+        /// </summary>
+        /// <param name="department">Department supplied by an administrator or registrant.</param>
+        /// <returns>The trimmed validated department.</returns>
+        internal static string ValidateDepartment(string department)
+        {
+            return ValidateRequiredText(
+                department,
+                UserRepository.DepartmentMaximumLength,
+                "Department");
         }
 
         /// <summary>

@@ -100,6 +100,16 @@ Legacy answers with no hash are deliberately conservative. They can be reviewed 
 
 `AdminViewModel` owns asynchronous queue loading, preview selection, filtering, selection, and review commands. A single busy state disables navigation, search, refresh, individual review, and bulk review during database work. Cancellation and operation generations prevent late UI publication, abandoned tasks are observed, and `AdminWindow` disposes the ViewModel when closing. Technical failures go to `ApplicationErrorLogger`; the UI receives only fixed non-sensitive messages.
 
+## User Management and Registration
+
+`UserRepository` owns user persistence, schema compatibility, and transaction boundaries. Administrative mutations run in serialized repository transactions, enforce unique Employee Numbers, and commit only after all validation and authorization invariants succeed. Activation mapping fails closed, roles normalize to the canonical Admin or User values, and password values are stored only as BCrypt hashes. Self-deactivation, self-demotion, and removal of the final active administrator are rejected before commit.
+
+`UserManagementService` is the application boundary for administrator account creation, activation, deactivation, role changes, and password resets. `UserManagementViewModel` exposes these operations asynchronously and supplies only fixed non-sensitive errors to the administrator UI; technical failures use `ApplicationErrorLogger`.
+
+Public registration is a separate least-privilege path. `RegistrationService` accepts Employee Number, full name, department, password, and password confirmation only. It never accepts a role or activation flag: `UserRepository.RegisterInactiveTrainee` always persists the canonical User role with inactive status. Registration never authenticates the applicant or creates a session; the existing Login window remains open, and authentication succeeds only after an administrator activates the account.
+
+`LoginViewModel` and `RegistrationViewModel` perform database work away from the WPF dispatcher. One-operation busy guards, lifecycle cancellation, observed abandoned tasks, and operation-version checks prevent duplicate work and late UI publication. Password controls are cleared after use, raw exceptions never reach a dialog, and the Login window owns at most one Registration window.
+
 ## Result Module
 
 `ResultWindow(List<QuizAnswer>)` remains the quiz-to-result entry point. `ResultViewModel` immediately passes the supplied answers to `StatisticsService`, which clones each non-null answer into a read-only `ResultStatistics` snapshot. The result module never writes answers, assigns `CorrectAnswer`, or persists a session; administrator truth remains owned by the Admin module.

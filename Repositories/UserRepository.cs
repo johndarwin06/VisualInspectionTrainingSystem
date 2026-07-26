@@ -426,6 +426,102 @@ VALUES
         }
 
         /// <summary>
+        /// Creates one inactive canonical trainee account without accepting a caller-supplied role or activation state.
+        /// The database uniqueness guarantee and serialized transaction make concurrent duplicate registration deterministic.
+        /// </summary>
+        /// <param name="employeeNo">Normalized employee number requested by the registrant.</param>
+        /// <param name="fullName">Validated full name.</param>
+        /// <param name="department">Validated department.</param>
+        /// <param name="passwordHash">BCrypt hash created by the trusted registration service.</param>
+        /// <returns>An inactive safe account projection with no password hash.</returns>
+        public User RegisterInactiveTrainee(
+            string employeeNo,
+            string fullName,
+            string department,
+            string passwordHash)
+        {
+            string normalizedEmployeeNo = ValidateManagedEmployeeNo(employeeNo);
+            string validatedFullName = ValidateText(
+                fullName,
+                FullNameMaximumLength,
+                "Full Name");
+            string validatedDepartment = ValidateText(
+                department,
+                DepartmentMaximumLength,
+                "Department");
+            ValidatePasswordHash(passwordHash);
+
+            return ExecuteMutation(
+                delegate(
+                    MySqlConnection connection,
+                    MySqlTransaction transaction,
+                    IList<LockedUser> users)
+                {
+                    if (users.Any(user => EmployeeNumbersEqual(
+                        user.EmployeeNo,
+                        normalizedEmployeeNo)))
+                    {
+                        throw new UserManagementException(
+                            UserManagementErrorCode.DuplicateEmployeeNumber,
+                            DuplicateEmployeeMessage);
+                    }
+
+                    const string sql = @"
+INSERT INTO tbl_users
+(
+    EmployeeNo,
+    FullName,
+    PasswordHash,
+    Role,
+    Department,
+    IsActive,
+    CreatedDate
+)
+VALUES
+(
+    @EmployeeNo,
+    @FullName,
+    @PasswordHash,
+    @Role,
+    @Department,
+    0,
+    CURRENT_TIMESTAMP
+);";
+
+                    int userId;
+
+                    using (MySqlCommand command = new MySqlCommand(
+                               sql,
+                               connection,
+                               transaction))
+                    {
+                        command.Parameters.AddWithValue(
+                            "@EmployeeNo",
+                            normalizedEmployeeNo);
+                        command.Parameters.AddWithValue(
+                            "@FullName",
+                            validatedFullName);
+                        command.Parameters.AddWithValue(
+                            "@PasswordHash",
+                            passwordHash);
+                        command.Parameters.AddWithValue(
+                            "@Role",
+                            UserRoles.User);
+                        command.Parameters.AddWithValue(
+                            "@Department",
+                            validatedDepartment);
+                        command.ExecuteNonQuery();
+                        userId = Convert.ToInt32(command.LastInsertedId);
+                    }
+
+                    return LoadManagementUser(
+                        connection,
+                        transaction,
+                        userId);
+                });
+        }
+
+        /// <summary>
         /// Disables or reactivates a user with stale-state, self, and final-administrator protection.
         /// </summary>
         public void SetUserActive(
