@@ -4,11 +4,11 @@ Project: Visual Inspection Training System
 
 Current Version: 0.9 Beta
 
-Current Module: Issue #12 Reports - implemented and verified on `issue-12-reports`; awaiting pull-request review and merge
+Current Module: Issue #13 Review Workflow - implemented and verified on `issue-13-review-workflow`; awaiting pull-request review and merge
 
 Build Status: Debug and Release successful
 
-Last Build: 2026-07-24
+Last Build: 2026-07-26
 
 Build Warnings: 1 existing `MVVMTKCFG0002` warning in each configuration
 
@@ -40,7 +40,18 @@ Completed:
 - Configurable Quiz Sample Size (Issue #46, delivered by merged PR #47)
 
 In Progress:
-- Issue #12 Reports is implemented and verified on `issue-12-reports` and is awaiting pull-request review and merge.
+- Issue #13 Review Workflow is implemented and verified on `issue-13-review-workflow` and is awaiting pull-request review and merge.
+
+Issue #13 Verification:
+- Added a stable SHA-256 identity for exact image bytes. Quiz persistence stores both the hash and display filename, while administrator preview continues to use the configured image inventory.
+- Added one reusable GOOD/NG truth row per stable image hash, including reviewer, source answer, timestamp, and version metadata. New answers preload matching truth and are graded automatically without a per-answer lookup.
+- Manual review propagates one truth to every matching answer and recalculates every affected session in one transaction. Truth correction uses row locking and a version check so concurrent or stale reviews fail safely instead of silently overwriting newer truth.
+- Added individual and grouped bulk review, selection counts, search by employee/answer/session/file/hash/value, and All, Pending, Reviewed, Auto Reviewed, Manual Reviewed, User GOOD, User NG, Correct, Wrong, Has Reusable Truth, and Missing Stable Identity filters.
+- Legacy answers without stable identity remain individually reviewable. An available preview can be explicitly confirmed to attach its SHA-256 identity; unavailable legacy images never propagate by filename alone.
+- Administrator loading and preview work remains asynchronous, disables conflicting commands while busy, observes abandoned tasks, ignores late UI updates, and closes promptly during a blocked refresh. User-facing failures remain fixed and non-sensitive while technical details use `ApplicationErrorLogger`.
+- The complete temporary Review Workflow probe passed 190 assertions, including stable identity, automatic reuse, propagation, correction concurrency, bulk and legacy behavior, search/filter behavior, Result/Dashboard/Reports regressions, 10/20-question quiz flows, connection lifecycle, and zero-residual cleanup.
+- Visible WPF acceptance passed administrator login, exactly one Review Workflow window, search and every filter, individual GOOD/NG review, automatic grading of later identical images, different trainee answers against reusable truth, pending duplicate propagation, grouped bulk GOOD/NG review, confirmed truth correction, both legacy-image policies, Dashboard and Reports navigation, busy-command suppression, close during a blocked refresh, normal logout, and normal shutdown.
+- GitHub issue #17 remains open until the draft pull request is reviewed and merged.
 
 Issue #12 Verification:
 - Added explicit Daily, Monday-to-Sunday This Week, rolling Last 7 Days, This Month, inclusive Custom, and All Dates periods using parameterized half-open database boundaries.
@@ -54,7 +65,9 @@ Issue #12 Verification:
 - Visible WPF acceptance passed every required Reports period and state, all three save-dialog cancellation paths, CSV/XLSX/PDF export and opening, four-page PDF layout, close during a genuinely blocked refresh, Administration and Dashboard navigation, normal Reports close, and normal shutdown.
 - The correction retest visibly confirmed Today and This Week against controlled MySQL data, opened the real three-sheet workbook in Excel, rendered the real PDF, returned to Administration, and shut down without a crash, freeze, unexpected dialog, or sensitive error.
 - Temporary report rows were removed with zero residual sessions. Generated exports, probes, rendered pages, and build output are excluded from the change set.
-- GitHub issue #16 remains open until the draft pull request is reviewed and merged.
+- Merged PR: #49
+- Merge commit: `8b99f1cf50388e74e77558efc86fec7d3dac3300`
+- Issue #16: closed as completed
 
 Issue #46 Verification:
 - GitHub issue #46 tracks the configurable 10- or 20-question trainee quiz feature; 10 is the default.
@@ -82,4 +95,4 @@ Issue #11 Verification:
 - Visible administrator navigation opened exactly one Dashboard. Its five values matched an independent SQL query (1 training session, 50.00% reviewed accuracy, 10 minutes, GOOD 3, NG 3), Refresh did not duplicate rows, Dashboard closed safely, and normal application shutdown succeeded.
 
 Next Task:
-- No subsequent project issue has started. Issue #12 awaits pull-request review and merge.
+- No subsequent project issue has started. Issue #13 awaits pull-request review and merge.

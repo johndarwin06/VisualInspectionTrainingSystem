@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Review Workflow
+
+- Added SHA-256 identity over exact image bytes and persisted the stable hash plus display filename with every new quiz answer.
+- Added one reusable administrator GOOD/NG truth row per stable image hash with reviewer, source answer, timestamps, and version metadata.
+- Automatically grades later identical images from reusable truth, including a different trainee selection, while keeping missing or unsupported truth pending.
+- Propagates manual truth and corrections to all matching answers and recalculates all affected sessions in one repository-owned transaction with row locking and stale-version protection.
+- Added grouped bulk GOOD/NG review, multi-selection counts, search, eleven review filters, fixed non-sensitive errors, and asynchronous loading that disables conflicting work and ignores late completion after close.
+- Preserved safe legacy behavior: rows without identity remain individually reviewable, available previews require explicit confirmation before attaching a hash, and unavailable files never propagate by filename.
+- Verified stable identity, truth reuse, propagation, corrections, concurrency, bulk and legacy paths, downstream statistics, 10/20-question quizzes, lifecycle handling, and cleanup with 190 automated assertions.
+- Visible WPF verification passed the complete administrator workflow, Dashboard and Reports regressions, blocked-refresh command suppression and prompt close, normal logout, and normal shutdown.
+
 ### Reports
 
 - Added explicit local-calendar Daily, Monday-to-Sunday This Week, rolling Last 7 Days, This Month, inclusive Custom, and All Dates report periods with parameterized half-open MySQL boundaries.

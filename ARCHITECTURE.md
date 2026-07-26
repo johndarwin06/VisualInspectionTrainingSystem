@@ -32,7 +32,7 @@ Completed quiz persistence is coordinated by `SessionRepository.Save`. The sessi
 
 Standalone answer batch persistence is coordinated by `AnswerRepository.SaveMany`. All answer rows in the batch use one connection and transaction.
 
-Admin answer review is coordinated by `AnswerRepository.ReviewAnswer`. The selected answer row is locked, updated, and followed by parent session statistics recalculation in the same transaction. The parent session row is locked before recalculation.
+Administrator answer review remains repository-owned. `AnswerRepository.ReviewAnswer` and grouped bulk review lock the selected answers and reusable truth rows, update every answer with the same stable image hash, and recalculate every affected parent session inside one transaction. Truth correction checks the locked version before updating, so stale concurrent work rolls back instead of overwriting newer truth.
 
 Table creation checks run outside data transactions because MySQL DDL can cause implicit commits. Data-changing workflows roll back on exceptions and rethrow non-sensitive context.
 
@@ -87,6 +87,18 @@ Each bitmap is read into memory, decoded with `BitmapCacheOption.OnLoad`, and fr
 Answer commands are enabled only when the active bitmap is ready. A failed active-image load stops and cleans up the incomplete quiz without persisting it as completed. `QuizWindow` routes local G and N input through the existing commands, prevents repeated/queued keyboard input from becoming a second answer, and retains one Escape exit confirmation. It owns and disposes its ViewModel once when closed.
 
 Quiz progress is derived from accepted answers: `CurrentQuestion`, `TotalQuestions`, `AnsweredQuestions`, `RemainingQuestions`, and `CompletionPercentage` are synchronized by the ViewModel. The percentage is zero before the first accepted answer, 100 after the final accepted answer, and `AnsweredQuestions + RemainingQuestions` always equals `TotalQuestions`.
+
+## Review Workflow
+
+`ImageService` calculates a lowercase SHA-256 digest over exact image bytes and caches it only while the path and file metadata remain unchanged. Quiz image metadata is hashed off the WPF dispatcher. `QuizAnswer` persists the stable `ImageHash` and display-only `ImageFileName`; filename is never treated as identity.
+
+`tbl_image_review_truth` stores one current normalized GOOD/NG truth per hash with the source answer, reviewer, review time, update time, and version. `AnswerRepository.SaveMany` preloads all matching truth rows once per answer batch and automatically grades new matching answers before insertion. A pending trainee GOOD or NG selection remains pending when no reusable truth exists.
+
+Manual individual and bulk review use one repository transaction. Matching answer rows and truth rows are locked, the truth is inserted or corrected, every exact-hash answer is updated with MANUAL or AUTO provenance as appropriate, and all affected session totals are recalculated before commit. Bulk work is grouped by unique stable hash so duplicate selections do not repeat propagation. Version checking turns a stale concurrent correction into a fixed safe failure.
+
+Legacy answers with no hash are deliberately conservative. They can be reviewed individually without propagation. If the original image is available, the administrator may confirm its preview-derived hash before attaching identity; an unavailable legacy file never propagates through a filename guess.
+
+`AdminViewModel` owns asynchronous queue loading, preview selection, filtering, selection, and review commands. A single busy state disables navigation, search, refresh, individual review, and bulk review during database work. Cancellation and operation generations prevent late UI publication, abandoned tasks are observed, and `AdminWindow` disposes the ViewModel when closing. Technical failures go to `ApplicationErrorLogger`; the UI receives only fixed non-sensitive messages.
 
 ## Result Module
 

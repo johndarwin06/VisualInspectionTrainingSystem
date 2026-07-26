@@ -1,5 +1,20 @@
 # DEVELOPMENT LOG
 
+## 2026-07-26
+
+### Issue #13 - Review Workflow
+
+- Added lowercase SHA-256 identity for exact image bytes. Quiz metadata hashing runs away from the WPF dispatcher, and completed answer persistence stores both `ImageHash` and `ImageFileName` without changing the existing public quiz APIs.
+- Added the idempotent `tbl_image_review_truth` schema with one GOOD/NG truth per hash, reviewer/source/timestamp metadata, and a version used to reject stale truth corrections.
+- New answer batches preload reusable truth once and grade matching images automatically. Manual individual and bulk review lock the relevant rows, propagate truth across exact hashes, recalculate every affected session, and commit the complete change atomically.
+- Added administrator multi-selection, grouped bulk GOOD/NG review, clear selection counts, text search, and All, Pending, Reviewed, Auto Reviewed, Manual Reviewed, User GOOD, User NG, Correct, Wrong, Has Reusable Truth, and Missing Stable Identity filters.
+- Preserved conservative legacy handling: a row without stable identity can be reviewed individually; an available preview requires administrator confirmation before its hash is attached; an unavailable file never propagates based on filename.
+- Kept review loading and preview work asynchronous with busy-command guards, cancellation and operation generations, observed abandoned tasks, fixed non-sensitive UI errors, and prompt close during a deliberately blocked refresh.
+- Passed the temporary Issue #13 probe with 190 assertions covering byte identity, cache behavior, automatic reuse, propagation, truth correction and concurrency, bulk and legacy review, search/filter state, session recalculation, Result/Dashboard/Reports semantics, 10/20-question quiz regression, connection cleanup, and zero residual rows.
+- Visible WPF acceptance passed administrator login, one Review Workflow window, search and every filter, individual GOOD/NG review, later identical-image auto review, differing trainee answers, pending duplicate propagation, grouped bulk review, confirmed truth correction, available/unavailable legacy behavior, Dashboard and Reports navigation, disabled repeated commands while loading, close during a real database stall, normal logout, and normal shutdown.
+- Final Debug and Release rebuilds completed with zero errors and one existing `MVVMTKCFG0002` warning in each configuration. Temporary sessions, answers, truth rows, lock markers, probes, logs, and generated build output were removed from the delivery set.
+- Issue #13 Review Workflow is implemented and verified on `issue-13-review-workflow` and is awaiting pull-request review and merge; GitHub issue #17 remains open.
+
 ## 2026-07-24
 
 ### Issue #12 - Reports
@@ -15,7 +30,7 @@
 - Controlled MySQL verification covered daily/weekly/monthly/custom/all-date periods, completed and open sessions, multiple trainees, correct and wrong GOOD/NG answers, null/empty/whitespace/unsupported/lowercase/padded values, zero-reviewed behavior, independent aggregate comparison, and deterministic ordering. Cleanup reported zero residual probe sessions.
 - Visible WPF acceptance passed administrator login, exactly one Reports window, every period action, empty and invalid ranges, N/A accuracy, repeated Refresh, a real close during a blocked database refresh, all save-dialog cancellations, CSV/XLSX/PDF generation and opening, four-page PDF rendering, Administration and Dashboard regressions, normal Reports close, and normal application shutdown.
 - Correction verification visibly matched the controlled Today and This Week reports to independent MySQL values (1 session, 6 questions, 4 reviewed, 2 pending, 2 correct, 2 wrong, and 50.00% reviewed accuracy), opened the real three-sheet export in Excel, rendered the real PDF without layout defects, returned safely to Administration, and shut down normally.
-- Final verification removed temporary database data, report files, render output, lock probes, and generated artifacts. Issue #12 Reports is implemented and verified on `issue-12-reports` and is awaiting pull-request review and merge; GitHub issue #16 remains open.
+- Final verification removed temporary database data, report files, render output, lock probes, and generated artifacts. Issue #12 Reports was delivered by merged PR #49 at merge commit `8b99f1cf50388e74e77558efc86fec7d3dac3300`; GitHub issue #16 is complete.
 
 ## 2026-07-23
 
