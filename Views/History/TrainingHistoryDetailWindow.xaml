@@ -1,7 +1,8 @@
-<Window
+<mah:MetroWindow
     x:Class="VisualInspectionTrainingSystem.Views.History.TrainingHistoryDetailWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     Title="Training Result"
     Width="1180"
@@ -67,9 +68,57 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Width="50" Binding="{Binding QuestionNumber}" Header="#" />
                         <DataGridTextColumn Width="*" Binding="{Binding ImageDisplayText}" Header="Image" />
-                        <DataGridTextColumn Width="78" Binding="{Binding UserAnswerText}" Header="Your Answer" />
-                        <DataGridTextColumn Width="82" Binding="{Binding CorrectAnswerText}" Header="Truth" />
-                        <DataGridTextColumn Width="88" Binding="{Binding OutcomeText}" Header="Outcome" />
+                        <DataGridTemplateColumn Width="98" Header="Your Answer">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Margin="4">
+                                        <Border.Style>
+                                            <Style BasedOn="{StaticResource StatusChipStyle}" TargetType="Border">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding UserAnswerText}" Value="GOOD"><Setter Property="Background" Value="{DynamicResource App.SuccessSurfaceBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource App.SuccessBrush}" /></DataTrigger>
+                                                    <DataTrigger Binding="{Binding UserAnswerText}" Value="NG"><Setter Property="Background" Value="{DynamicResource App.DangerSurfaceBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource App.DangerBrush}" /></DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock HorizontalAlignment="Center" FontWeight="SemiBold" Text="{Binding UserAnswerText}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Width="98" Header="Truth">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Margin="4">
+                                        <Border.Style>
+                                            <Style BasedOn="{StaticResource PendingChipStyle}" TargetType="Border">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding CorrectAnswerText}" Value="GOOD"><Setter Property="Background" Value="{DynamicResource App.SuccessSurfaceBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource App.SuccessBrush}" /></DataTrigger>
+                                                    <DataTrigger Binding="{Binding CorrectAnswerText}" Value="NG"><Setter Property="Background" Value="{DynamicResource App.DangerSurfaceBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource App.DangerBrush}" /></DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock HorizontalAlignment="Center" FontWeight="SemiBold" Text="{Binding CorrectAnswerText}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Width="108" Header="Outcome">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Margin="4">
+                                        <Border.Style>
+                                            <Style BasedOn="{StaticResource PendingChipStyle}" TargetType="Border">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding OutcomeText}" Value="Correct"><Setter Property="Background" Value="{DynamicResource App.SuccessSurfaceBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource App.SuccessBrush}" /></DataTrigger>
+                                                    <DataTrigger Binding="{Binding OutcomeText}" Value="Wrong"><Setter Property="Background" Value="{DynamicResource App.DangerSurfaceBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource App.DangerBrush}" /></DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock HorizontalAlignment="Center" FontWeight="SemiBold" Text="{Binding OutcomeText}" />
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                         <DataGridTextColumn Width="125" Binding="{Binding ReviewSourceText}" Header="Review Source" />
                     </DataGrid.Columns>
                 </DataGrid>
@@ -108,4 +157,4 @@
             <TextBlock Margin="0,3,0,0" FontSize="11" Foreground="{StaticResource App.LightSecondaryTextBrush}" Text="Pending answers have no supported GOOD/NG truth and are excluded from reviewed accuracy." />
         </StackPanel>
     </Grid>
-</Window>
+</mah:MetroWindow>

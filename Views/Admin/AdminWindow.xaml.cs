@@ -1,7 +1,7 @@
 #region Namespaces
 
 using System;
-using System.Windows;
+using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.ViewModels;
 
 #endregion
@@ -9,9 +9,9 @@ using VisualInspectionTrainingSystem.ViewModels;
 namespace VisualInspectionTrainingSystem.Views.Admin
 {
     /// <summary>
-    /// Hosts the administrator review ViewModel and forwards window lifecycle cleanup only.
+    /// Hosts the focused administrator review workflow and forwards window lifecycle cleanup only.
     /// </summary>
-    public partial class AdminWindow : Window
+    public partial class AdminWindow : MetroWindow
     {
         #region Fields
 
@@ -19,10 +19,10 @@ namespace VisualInspectionTrainingSystem.Views.Admin
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
-        /// Creates the administrator review window.
+        /// Creates the administrator review workflow window.
         /// </summary>
         public AdminWindow()
         {
@@ -43,7 +43,9 @@ namespace VisualInspectionTrainingSystem.Views.Admin
             EventArgs eventArgs)
         {
             if (_isDisposed)
+            {
                 return;
+            }
 
             _isDisposed = true;
             Closed -= OnWindowClosed;
@@ -51,7 +53,9 @@ namespace VisualInspectionTrainingSystem.Views.Admin
             IDisposable disposable = DataContext as IDisposable;
 
             if (disposable != null)
+            {
                 disposable.Dispose();
+            }
 
             DataContext = null;
         }

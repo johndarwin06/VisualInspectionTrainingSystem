@@ -29,6 +29,13 @@ namespace VisualInspectionTrainingSystem.Services
         /// <returns>Authorized read-only detail, or null when unavailable.</returns>
         TrainingHistorySessionDetail GetSessionDetail(int sessionId);
 
+        /// <summary>
+        /// Loads an exact seven-day or thirty-day progress series for the active trainee.
+        /// </summary>
+        /// <param name="dayCount">Supported local-day range: seven or thirty days.</param>
+        /// <returns>A chart-neutral, zero-filled current-trainee series.</returns>
+        AnalyticsChartData GetProgressChartData(int dayCount);
+
         #endregion
     }
 
@@ -91,6 +98,17 @@ namespace VisualInspectionTrainingSystem.Services
             return _repository.GetSessionDetail(employeeNo, sessionId);
         }
 
+        /// <summary>
+        /// Loads progress analytics using only the active canonical trainee identity.
+        /// </summary>
+        /// <param name="dayCount">Supported local-day range: seven or thirty days.</param>
+        /// <returns>A chart-neutral, zero-filled current-trainee series.</returns>
+        public AnalyticsChartData GetProgressChartData(int dayCount)
+        {
+            string employeeNo = GetAuthorizedTraineeEmployeeNo();
+            return _repository.GetProgressChartData(employeeNo, dayCount);
+        }
+
         #endregion
 
         #region Authorization
@@ -124,6 +142,42 @@ namespace VisualInspectionTrainingSystem.Services
             {
                 throw new UnauthorizedAccessException(
                     "The authenticated user role is invalid.");
+            }
+
+            string employeeNo = user.EmployeeNo.Trim();
+
+            if (employeeNo.Length > 20)
+            {
+                throw new UnauthorizedAccessException(
+                    "The authenticated user identity is invalid.");
+            }
+
+            return employeeNo;
+        }
+
+        /// <summary>
+        /// Captures an active canonical trainee identity for personal analytics.
+        /// </summary>
+        /// <returns>The trimmed current trainee employee number.</returns>
+        private static string GetAuthorizedTraineeEmployeeNo()
+        {
+            User user = SessionService.CurrentUser;
+
+            if (user == null ||
+                !user.IsActive ||
+                string.IsNullOrWhiteSpace(user.EmployeeNo))
+            {
+                throw new UnauthorizedAccessException(
+                    "An active authenticated trainee is required for progress analytics.");
+            }
+
+            if (!string.Equals(
+                    UserRoles.Normalize(user.Role),
+                    UserRoles.User,
+                    StringComparison.Ordinal))
+            {
+                throw new UnauthorizedAccessException(
+                    "Progress analytics is available only to an authenticated trainee.");
             }
 
             string employeeNo = user.EmployeeNo.Trim();

@@ -7,8 +7,6 @@ using System.Windows.Input;
 using VisualInspectionTrainingSystem.Commands;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Services;
-using VisualInspectionTrainingSystem.Views.Admin;
-using VisualInspectionTrainingSystem.Views.Login;
 
 #endregion
 
@@ -55,6 +53,16 @@ namespace VisualInspectionTrainingSystem.ViewModels
         /// Occurs when Home should open the current user's training history.
         /// </summary>
         public event Action HistoryRequested;
+
+        /// <summary>
+        /// Requests administrator navigation from the authenticated shell without constructing a window.
+        /// </summary>
+        public event Action AdministrationRequested;
+
+        /// <summary>
+        /// Requests logout from the authenticated shell without owning application lifetime.
+        /// </summary>
+        public event Action LogoutRequested;
 
         #endregion
 
@@ -304,24 +312,24 @@ namespace VisualInspectionTrainingSystem.ViewModels
         }
 
         /// <summary>
-        /// Opens administrator tools and closes the current Home window.
+        /// Requests administrator tools without transferring window ownership from the application shell.
         /// </summary>
         private void OpenAdmin()
         {
-            AdminWindow window = new AdminWindow();
-            window.Show();
-            CloseCurrentWindow<VisualInspectionTrainingSystem.Views.Home.HomeWindow>();
+            if (!SessionService.IsCurrentUserAdministrator)
+            {
+                return;
+            }
+
+            AdministrationRequested?.Invoke();
         }
 
         /// <summary>
-        /// Clears the session, opens Login, and closes the current Home window.
+        /// Requests a shell-owned logout transition.
         /// </summary>
         private void Logout()
         {
-            SessionService.Logout();
-            LoginWindow window = new LoginWindow();
-            window.Show();
-            CloseCurrentWindow<VisualInspectionTrainingSystem.Views.Home.HomeWindow>();
+            LogoutRequested?.Invoke();
         }
 
         #endregion
@@ -339,25 +347,6 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     nameof(requestedQuizSize),
                     requestedQuizSize,
                     "Quiz size must be 10 or 20.");
-            }
-        }
-
-        /// <summary>
-        /// Closes the first open application window of the requested type.
-        /// </summary>
-        private static void CloseCurrentWindow<T>()
-            where T : Window
-        {
-            if (Application.Current == null)
-                return;
-
-            foreach (Window window in Application.Current.Windows)
-            {
-                if (window is T)
-                {
-                    window.Close();
-                    break;
-                }
             }
         }
 

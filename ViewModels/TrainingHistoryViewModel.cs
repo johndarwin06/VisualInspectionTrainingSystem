@@ -31,6 +31,10 @@ namespace VisualInspectionTrainingSystem.ViewModels
         private const string InvalidDateRangeMessage =
             "Select a valid date range. The start date must not be later than the end date.";
 
+        private const string ChartUnavailableMessage =
+            "Progress charts are temporarily unavailable. " +
+            "Your training history is still available.";
+
         #endregion
 
         #region Fields
@@ -41,11 +45,13 @@ namespace VisualInspectionTrainingSystem.ViewModels
         private readonly RelayCommand _loadMoreCommand;
         private readonly RelayCommand _openResultCommand;
         private readonly ReadOnlyCollection<string> _reviewStatusOptions;
+        private readonly ReadOnlyCollection<int> _analyticsDayOptions;
 
         private string _searchText;
         private DateTime? _startDate;
         private DateTime? _endDate;
         private string _selectedReviewStatus;
+        private int _selectedAnalyticsDays;
         private string _statusMessage;
         private bool _isLoading;
         private bool _hasMore;
@@ -95,10 +101,14 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     "Partially Reviewed",
                     "Reviewed"
                 });
+            _analyticsDayOptions = new ReadOnlyCollection<int>(
+                new[] { 7, 30 });
             _selectedReviewStatus = "All";
+            _selectedAnalyticsDays = 30;
             _statusMessage = "Loading your training history...";
 
             Sessions = new ObservableCollection<TrainingHistorySessionSummary>();
+            Charts = new TraineeProgressChartViewModel();
 
             _refreshCommand = new RelayCommand(BeginRefresh, CanRefresh);
             _clearFiltersCommand = new RelayCommand(ClearFilters, CanRefresh);
@@ -129,6 +139,23 @@ namespace VisualInspectionTrainingSystem.ViewModels
         public ReadOnlyCollection<string> ReviewStatusOptions
         {
             get { return _reviewStatusOptions; }
+        }
+
+        /// <summary>
+        /// Gets the supported personal-progress ranges in local calendar days.
+        /// </summary>
+        public ReadOnlyCollection<int> AnalyticsDayOptions
+        {
+            get { return _analyticsDayOptions; }
+        }
+
+        /// <summary>
+        /// Gets the chart presentation restricted to the active trainee identity.
+        /// </summary>
+        public TraineeProgressChartViewModel Charts
+        {
+            get;
+            private set;
         }
 
         #endregion
@@ -171,6 +198,34 @@ namespace VisualInspectionTrainingSystem.ViewModels
             set { SetProperty(ref _selectedReviewStatus, value ?? "All"); }
         }
 
+        /// <summary>
+        /// Gets or sets the seven-day or thirty-day personal analytics range.
+        /// </summary>
+        public int SelectedAnalyticsDays
+        {
+            get { return _selectedAnalyticsDays; }
+            set
+            {
+                if (value != 7 && value != 30)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(value),
+                        "Personal analytics supports only seven or thirty days.");
+                }
+
+                if (_isDisposed || IsLoading)
+                {
+                    OnPropertyChanged(nameof(SelectedAnalyticsDays));
+                    return;
+                }
+
+                if (SetProperty(ref _selectedAnalyticsDays, value))
+                {
+                    BeginRefresh();
+                }
+            }
+        }
+
         #endregion
 
         #region State Properties
@@ -196,9 +251,18 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 {
                     OnPropertyChanged(nameof(IsEmpty));
                     OnPropertyChanged(nameof(EmptyStateText));
+                    OnPropertyChanged(nameof(CanSelectAnalyticsRange));
                     RefreshCommandStates();
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets whether the personal-progress range may be changed.
+        /// </summary>
+        public bool CanSelectAnalyticsRange
+        {
+            get { return !_isDisposed && !IsLoading; }
         }
 
         /// <summary>
@@ -348,13 +412,17 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 ? "Loading more completed sessions..."
                 : "Loading your training history...";
 
-            Task<TrainingHistoryPage> worker = Task.Run(
-                () => _historyService.GetHistoryPage(query),
+            int analyticsDays = SelectedAnalyticsDays;
+            Task<TrainingHistoryLoadResult> worker = Task.Run(
+                () => LoadHistoryResult(
+                    query,
+                    append,
+                    analyticsDays),
                 CancellationToken.None);
 
             try
             {
-                TrainingHistoryPage page = await AwaitWithCancellation(
+                TrainingHistoryLoadResult result = await AwaitWithCancellation(
                     worker,
                     cancellationToken);
 
@@ -362,7 +430,20 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     return;
 
                 if (!append)
+                {
                     Sessions.Clear();
+                    Charts.UpdateProgress(result.ChartData);
+
+                    if (result.ChartLoadException != null)
+                    {
+                        ApplicationErrorLogger.LogUnhandledException(
+                            "Training History Analytics",
+                            result.ChartLoadException,
+                            false);
+                    }
+                }
+
+                TrainingHistoryPage page = result.Page;
 
                 HashSet<int> existingIds = new HashSet<int>(
                     Sessions.Select(session => session.SessionID));
@@ -393,6 +474,11 @@ namespace VisualInspectionTrainingSystem.ViewModels
                         ex,
                         false);
                     HasMore = false;
+                    if (!append)
+                    {
+                        Sessions.Clear();
+                        Charts.UpdateProgress(null);
+                    }
                     StatusMessage = LoadErrorMessage;
                 }
             }
@@ -408,6 +494,45 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     _operationCancellation = null;
 
                 cancellation.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Loads the required history page while containing an optional analytics-only failure.
+        /// </summary>
+        /// <param name="query">Validated current-user history query.</param>
+        /// <param name="append">Whether only a subsequent history page is required.</param>
+        /// <param name="analyticsDays">Bounded personal analytics range.</param>
+        /// <returns>History rows plus chart data or a safe unavailable chart state.</returns>
+        private TrainingHistoryLoadResult LoadHistoryResult(
+            TrainingHistoryQuery query,
+            bool append,
+            int analyticsDays)
+        {
+            TrainingHistoryPage page = _historyService.GetHistoryPage(query);
+
+            if (append)
+            {
+                return new TrainingHistoryLoadResult(page, null, null);
+            }
+
+            try
+            {
+                return new TrainingHistoryLoadResult(
+                    page,
+                    _historyService.GetProgressChartData(analyticsDays),
+                    null);
+            }
+            catch (Exception exception)
+            {
+                return new TrainingHistoryLoadResult(
+                    page,
+                    new AnalyticsChartData
+                    {
+                        IsAvailable = false,
+                        UnavailableReason = ChartUnavailableMessage
+                    },
+                    exception);
             }
         }
 
@@ -581,6 +706,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 return;
 
             _isDisposed = true;
+            Charts.Dispose();
             _operationVersion++;
 
             CancellationTokenSource cancellation = _operationCancellation;
@@ -593,6 +719,47 @@ namespace VisualInspectionTrainingSystem.ViewModels
             }
 
             OpenSessionRequested = null;
+            OnPropertyChanged(nameof(CanSelectAnalyticsRange));
+        }
+
+        #endregion
+
+        #region Nested Types
+
+        /// <summary>
+        /// Carries one history page and its current-trainee chart data to the dispatcher.
+        /// </summary>
+        private sealed class TrainingHistoryLoadResult
+        {
+            /// <summary>
+            /// Initializes one background history load result.
+            /// </summary>
+            public TrainingHistoryLoadResult(
+                TrainingHistoryPage page,
+                AnalyticsChartData chartData,
+                Exception chartLoadException)
+            {
+                Page = page ?? new TrainingHistoryPage(
+                    new List<TrainingHistorySessionSummary>(),
+                    false);
+                ChartData = chartData;
+                ChartLoadException = chartLoadException;
+            }
+
+            /// <summary>
+            /// Gets the bounded deterministic history page.
+            /// </summary>
+            public TrainingHistoryPage Page { get; private set; }
+
+            /// <summary>
+            /// Gets personal analytics for a replacement first-page load.
+            /// </summary>
+            public AnalyticsChartData ChartData { get; private set; }
+
+            /// <summary>
+            /// Gets the technical optional-chart failure for sanitized logging on the live operation.
+            /// </summary>
+            public Exception ChartLoadException { get; private set; }
         }
 
         #endregion

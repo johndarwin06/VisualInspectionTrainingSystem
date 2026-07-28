@@ -9,13 +9,17 @@
             PrimaryColor="Indigo"
             SecondaryColor="Cyan" />
         <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
+
+        <!-- MahApps supplies window chrome; the bridge aligns it with Material Design 3. -->
+        <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Indigo.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Defaults.xaml" />
         <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/DesignTokems/Brushes.xaml" />
         <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/DesignTokems/Spacing.xaml" />
         <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/DesignTokems/CornerRadius.xaml" />
         <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/DesignTokems/Shadows.xaml" />
         <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/Styles/TextBlock/Typography.xaml" />
-        <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/Styles/Button/BaseButton.xaml" />
-        <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/Styles/Button/PrimaryButton.xaml" />
         <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/Styles/Border/Cards.xaml" />
         <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/Styles/ApplicationStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>

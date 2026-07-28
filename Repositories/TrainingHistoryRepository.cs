@@ -23,6 +23,9 @@ namespace VisualInspectionTrainingSystem.Repositories
         private const int MaximumPageSize = 100;
         private const int MaximumOffset = 10000;
         private const int MaximumSearchLength = 100;
+        private const int AnalyticsCommandTimeoutSeconds = 15;
+        private const int ShortProgressDayCount = 7;
+        private const int LongProgressDayCount = 30;
 
         private const string HistoryPageSql = @"
 SELECT
@@ -211,6 +214,59 @@ WHERE s.EmployeeNo = @EmployeeNo
   AND s.EndTime IS NOT NULL
 ORDER BY a.AnswerTime ASC, a.AnswerID ASC;";
 
+        private const string ProgressSessionSql = @"
+SELECT
+    DATE(s.StartTime) AS ActivityDate,
+    COUNT(*) AS CompletedSessions,
+    SUM(CASE
+        WHEN s.EndTime >= s.StartTime
+            THEN TIMESTAMPDIFF(SECOND, s.StartTime, s.EndTime)
+        ELSE 0
+    END) AS DurationSeconds
+FROM tbl_training_session s
+WHERE s.EmployeeNo = @EmployeeNo
+  AND s.StartTime >= @RangeStart
+  AND s.StartTime < @RangeEnd
+  AND s.EndTime IS NOT NULL
+GROUP BY DATE(s.StartTime)
+ORDER BY ActivityDate ASC;";
+
+        private const string ProgressAnswerSql = @"
+SELECT
+    DATE(s.StartTime) AS ActivityDate,
+    SUM(CASE
+        WHEN UPPER(TRIM(a.UserAnswer)) = 'GOOD' THEN 1
+        ELSE 0
+    END) AS GoodSelections,
+    SUM(CASE
+        WHEN UPPER(TRIM(a.UserAnswer)) = 'NG' THEN 1
+        ELSE 0
+    END) AS NgSelections,
+    SUM(CASE
+        WHEN UPPER(TRIM(a.CorrectAnswer)) IN ('GOOD', 'NG') THEN 1
+        ELSE 0
+    END) AS ReviewedAnswers,
+    SUM(CASE
+        WHEN UPPER(TRIM(a.CorrectAnswer)) IN ('GOOD', 'NG')
+         AND UPPER(TRIM(a.UserAnswer)) IN ('GOOD', 'NG')
+         AND UPPER(TRIM(a.UserAnswer)) = UPPER(TRIM(a.CorrectAnswer)) THEN 1
+        ELSE 0
+    END) AS CorrectReviewedAnswers,
+    SUM(CASE
+        WHEN a.CorrectAnswer IS NULL
+          OR UPPER(TRIM(a.CorrectAnswer)) NOT IN ('GOOD', 'NG') THEN 1
+        ELSE 0
+    END) AS PendingAnswers
+FROM tbl_quiz_answer a
+INNER JOIN tbl_training_session s
+    ON s.SessionID = a.SessionID
+WHERE s.EmployeeNo = @EmployeeNo
+  AND s.StartTime >= @RangeStart
+  AND s.StartTime < @RangeEnd
+  AND s.EndTime IS NOT NULL
+GROUP BY DATE(s.StartTime)
+ORDER BY ActivityDate ASC;";
+
         #endregion
 
         #region Fields
@@ -366,6 +422,296 @@ ORDER BY a.AnswerTime ASC, a.AnswerID ASC;";
 
                 _database.CloseConnection();
             }
+        }
+
+        /// <summary>
+        /// Loads an exact zero-filled local-day progress series for one authorized trainee.
+        /// </summary>
+        /// <param name="employeeNo">Employee identity captured by the service boundary.</param>
+        /// <param name="dayCount">Supported local-day range: seven or thirty days.</param>
+        /// <returns>A chart-neutral series ordered by ascending local date.</returns>
+        internal virtual AnalyticsChartData GetProgressChartData(
+            string employeeNo,
+            int dayCount)
+        {
+            string normalizedEmployeeNo = ValidateEmployeeNo(employeeNo);
+            ValidateProgressDayCount(dayCount);
+
+            DateTime rangeEnd = DateTime.Today.AddDays(1);
+            DateTime rangeStart = rangeEnd.AddDays(-dayCount);
+            MySqlTransaction transaction = null;
+            bool transactionCompleted = false;
+
+            try
+            {
+                _database.OpenConnection();
+                MySqlConnection connection = _database.GetConnection();
+                transaction = connection.BeginTransaction(
+                    IsolationLevel.RepeatableRead);
+
+                AnalyticsChartData chartData = CreateEmptyProgressChartData(
+                    rangeStart,
+                    rangeEnd,
+                    dayCount);
+                Dictionary<DateTime, ChartPoint> pointsByDate =
+                    IndexProgressPoints(chartData.DailyPoints);
+
+                LoadProgressSessions(
+                    connection,
+                    transaction,
+                    normalizedEmployeeNo,
+                    rangeStart,
+                    rangeEnd,
+                    pointsByDate);
+                LoadProgressAnswers(
+                    connection,
+                    transaction,
+                    normalizedEmployeeNo,
+                    rangeStart,
+                    rangeEnd,
+                    pointsByDate);
+                UpdateProgressAggregates(chartData);
+
+                transaction.Commit();
+                transactionCompleted = true;
+
+                return chartData;
+            }
+            catch
+            {
+                if (!transactionCompleted)
+                {
+                    RollbackQuietly(transaction);
+                }
+
+                throw;
+            }
+            finally
+            {
+                try
+                {
+                    if (transaction != null)
+                    {
+                        transaction.Dispose();
+                    }
+                }
+                finally
+                {
+                    _database.CloseConnection();
+                }
+            }
+        }
+
+        #endregion
+
+        #region Progress Loading
+
+        /// <summary>
+        /// Creates one zero-valued point for each exact local day in the requested range.
+        /// </summary>
+        private static AnalyticsChartData CreateEmptyProgressChartData(
+            DateTime rangeStart,
+            DateTime rangeEnd,
+            int dayCount)
+        {
+            AnalyticsChartData chartData = new AnalyticsChartData
+            {
+                RangeStartInclusive = rangeStart,
+                RangeEndExclusive = rangeEnd
+            };
+            string labelFormat = dayCount == ShortProgressDayCount
+                ? "ddd"
+                : "MMM d";
+
+            for (DateTime day = rangeStart;
+                 day < rangeEnd;
+                 day = day.AddDays(1))
+            {
+                chartData.DailyPoints.Add(new ChartPoint
+                {
+                    PeriodStartLocal = day,
+                    Label = day.ToString(
+                        labelFormat,
+                        CultureInfo.CurrentCulture)
+                });
+            }
+
+            return chartData;
+        }
+
+        /// <summary>
+        /// Indexes the exact zero-filled point set by local calendar date.
+        /// </summary>
+        private static Dictionary<DateTime, ChartPoint> IndexProgressPoints(
+            IEnumerable<ChartPoint> points)
+        {
+            Dictionary<DateTime, ChartPoint> pointsByDate =
+                new Dictionary<DateTime, ChartPoint>();
+
+            foreach (ChartPoint point in points)
+            {
+                pointsByDate.Add(
+                    point.PeriodStartLocal.Date,
+                    point);
+            }
+
+            return pointsByDate;
+        }
+
+        /// <summary>
+        /// Applies completed-session counts and non-negative valid durations.
+        /// </summary>
+        private static void LoadProgressSessions(
+            MySqlConnection connection,
+            MySqlTransaction transaction,
+            string employeeNo,
+            DateTime rangeStart,
+            DateTime rangeEnd,
+            IDictionary<DateTime, ChartPoint> pointsByDate)
+        {
+            using (MySqlCommand command = CreateProgressCommand(
+                ProgressSessionSql,
+                connection,
+                transaction,
+                employeeNo,
+                rangeStart,
+                rangeEnd))
+            using (MySqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    DateTime activityDate = ReadRequiredDate(
+                        reader,
+                        "ActivityDate").Date;
+                    ChartPoint point;
+
+                    if (pointsByDate.TryGetValue(activityDate, out point))
+                    {
+                        point.CompletedSessions = ReadNonNegativeInt(
+                            reader,
+                            "CompletedSessions");
+                        point.DurationSeconds = ReadNonNegativeLong(
+                            reader,
+                            "DurationSeconds");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Applies normalized answer and reviewed-only accuracy aggregates.
+        /// </summary>
+        private static void LoadProgressAnswers(
+            MySqlConnection connection,
+            MySqlTransaction transaction,
+            string employeeNo,
+            DateTime rangeStart,
+            DateTime rangeEnd,
+            IDictionary<DateTime, ChartPoint> pointsByDate)
+        {
+            using (MySqlCommand command = CreateProgressCommand(
+                ProgressAnswerSql,
+                connection,
+                transaction,
+                employeeNo,
+                rangeStart,
+                rangeEnd))
+            using (MySqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    DateTime activityDate = ReadRequiredDate(
+                        reader,
+                        "ActivityDate").Date;
+                    ChartPoint point;
+
+                    if (pointsByDate.TryGetValue(activityDate, out point))
+                    {
+                        point.GoodSelections = ReadNonNegativeInt(
+                            reader,
+                            "GoodSelections");
+                        point.NgSelections = ReadNonNegativeInt(
+                            reader,
+                            "NgSelections");
+                        point.ReviewedAnswers = ReadNonNegativeInt(
+                            reader,
+                            "ReviewedAnswers");
+                        point.CorrectReviewedAnswers = ReadNonNegativeInt(
+                            reader,
+                            "CorrectReviewedAnswers");
+                        point.PendingAnswers = ReadNonNegativeInt(
+                            reader,
+                            "PendingAnswers");
+                        point.ReviewedAccuracyPercent =
+                            CalculateReviewedAccuracy(
+                                point.CorrectReviewedAnswers,
+                                point.ReviewedAnswers);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates one bounded, parameterized read command in the caller-owned transaction.
+        /// </summary>
+        private static MySqlCommand CreateProgressCommand(
+            string sql,
+            MySqlConnection connection,
+            MySqlTransaction transaction,
+            string employeeNo,
+            DateTime rangeStart,
+            DateTime rangeEnd)
+        {
+            MySqlCommand command = new MySqlCommand(
+                sql,
+                connection,
+                transaction)
+            {
+                CommandTimeout = AnalyticsCommandTimeoutSeconds
+            };
+
+            AddIdentityParameter(command, employeeNo);
+            command.Parameters.Add(
+                "@RangeStart",
+                MySqlDbType.DateTime).Value = rangeStart;
+            command.Parameters.Add(
+                "@RangeEnd",
+                MySqlDbType.DateTime).Value = rangeEnd;
+
+            return command;
+        }
+
+        /// <summary>
+        /// Calculates aggregates after both consistent-read queries succeed.
+        /// </summary>
+        private static void UpdateProgressAggregates(
+            AnalyticsChartData chartData)
+        {
+            foreach (ChartPoint point in chartData.DailyPoints)
+            {
+                chartData.ReviewedAnswers += point.ReviewedAnswers;
+                chartData.CorrectReviewedAnswers +=
+                    point.CorrectReviewedAnswers;
+                chartData.PendingAnswers += point.PendingAnswers;
+            }
+        }
+
+        /// <summary>
+        /// Calculates reviewed-only accuracy without treating pending truth as incorrect.
+        /// </summary>
+        private static decimal? CalculateReviewedAccuracy(
+            int correctReviewedAnswers,
+            int reviewedAnswers)
+        {
+            if (reviewedAnswers == 0)
+            {
+                return null;
+            }
+
+            return Math.Round(
+                correctReviewedAnswers * 100m / reviewedAnswers,
+                2,
+                MidpointRounding.AwayFromZero);
         }
 
         #endregion
@@ -610,6 +956,20 @@ ORDER BY a.AnswerTime ASC, a.AnswerID ASC;";
             }
         }
 
+        /// <summary>
+        /// Restricts trainee analytics to the explicitly supported local-day windows.
+        /// </summary>
+        private static void ValidateProgressDayCount(int dayCount)
+        {
+            if (dayCount != ShortProgressDayCount &&
+                dayCount != LongProgressDayCount)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(dayCount),
+                    "Progress analytics supports only seven or thirty days.");
+            }
+        }
+
         private static string NormalizeSearch(string value)
         {
             return string.IsNullOrWhiteSpace(value)
@@ -664,6 +1024,19 @@ ORDER BY a.AnswerTime ASC, a.AnswerID ASC;";
 
             int converted = Convert.ToInt32(value, CultureInfo.InvariantCulture);
             return converted < 0 ? 0 : converted;
+        }
+
+        private static long ReadNonNegativeLong(
+            MySqlDataReader reader,
+            string columnName)
+        {
+            object value = reader[columnName];
+
+            if (value == null || value == DBNull.Value)
+                return 0L;
+
+            long converted = Convert.ToInt64(value, CultureInfo.InvariantCulture);
+            return converted < 0L ? 0L : converted;
         }
 
         private static DateTime ReadRequiredDate(

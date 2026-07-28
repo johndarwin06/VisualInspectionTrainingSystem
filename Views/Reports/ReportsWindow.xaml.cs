@@ -2,6 +2,7 @@
 
 using System;
 using System.Windows;
+using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.ViewModels;
 
 #endregion
@@ -11,7 +12,7 @@ namespace VisualInspectionTrainingSystem.Views.Reports
     /// <summary>
     /// Provides lifecycle integration for the MVVM Reports window.
     /// </summary>
-    public partial class ReportsWindow : Window
+    public partial class ReportsWindow : MetroWindow
     {
         #region Constructors
 
@@ -43,6 +44,8 @@ namespace VisualInspectionTrainingSystem.Views.Reports
             {
                 disposableViewModel.Dispose();
             }
+
+            DataContext = null;
         }
 
         #endregion

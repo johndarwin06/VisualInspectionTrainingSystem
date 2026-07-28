@@ -1,0 +1,189 @@
+<UserControl
+    x:Class="VisualInspectionTrainingSystem.Controls.Charts.AnalyticsChartsPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    MinWidth="720"
+    AutomationProperties.Name="Training analytics charts"
+    Focusable="False">
+
+    <UserControl.Resources>
+        <Style x:Key="ChartCardStyle" TargetType="materialDesign:Card">
+            <Setter Property="Margin" Value="8" />
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="MinHeight" Value="310" />
+            <Setter Property="Background" Value="{DynamicResource App.SurfaceBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource App.TextPrimaryBrush}" />
+            <Setter Property="UniformCornerRadius" Value="18" />
+            <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp2" />
+        </Style>
+        <Style x:Key="ChartTitleStyle" BasedOn="{StaticResource SectionTitleTextStyle}" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style x:Key="ChartSubtitleStyle" BasedOn="{StaticResource SupportingTextStyle}" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,4,0,10" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="ChartEmptyTextStyle" BasedOn="{StaticResource SupportingTextStyle}" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="MaxWidth" Value="260" />
+        </Style>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <Border Margin="8,0,8,8" Padding="14,10" Background="{DynamicResource App.InfoSurfaceBrush}" CornerRadius="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <materialDesign:PackIcon Width="20" Height="20" VerticalAlignment="Center" Foreground="{DynamicResource App.InfoBrush}" Kind="ChartTimelineVariantShimmer" />
+                <TextBlock Grid.Column="1" Margin="10,0" VerticalAlignment="Center" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="Hover over a point for exact values. Pending review is never counted as wrong." TextWrapping="Wrap" />
+                <TextBlock Grid.Column="2" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{DynamicResource App.PrimaryBrush}" Text="{Binding RangeText}" />
+            </Grid>
+        </Border>
+
+        <UniformGrid Columns="2">
+            <materialDesign:Card AutomationProperties.Name="Completed training sessions trend" Style="{StaticResource ChartCardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ChartTitleStyle}" Text="Training Sessions Trend" />
+                        <TextBlock Style="{StaticResource ChartSubtitleStyle}" Text="Completed sessions by local calendar day" />
+                    </StackPanel>
+                    <lvc:CartesianChart Grid.Row="1" MinHeight="220" AnimationsSpeed="0:0:0.22" LegendPosition="Bottom" Series="{Binding CompletedSessionsSeries}" TooltipPosition="Top" XAxes="{Binding CompletedSessionsXAxes}" YAxes="{Binding CompletedSessionsYAxes}">
+                        <lvc:CartesianChart.Style>
+                            <Style TargetType="lvc:CartesianChart">
+                                <Style.Triggers><DataTrigger Binding="{Binding HasCompletedSessionsData}" Value="False"><Setter Property="Visibility" Value="Hidden" /></DataTrigger></Style.Triggers>
+                            </Style>
+                        </lvc:CartesianChart.Style>
+                    </lvc:CartesianChart>
+                    <TextBlock Grid.Row="1" Text="{Binding EmptyStateMessage}">
+                        <TextBlock.Style>
+                            <Style BasedOn="{StaticResource ChartEmptyTextStyle}" TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers><DataTrigger Binding="{Binding HasCompletedSessionsData}" Value="False"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </materialDesign:Card>
+
+            <materialDesign:Card AutomationProperties.Name="GOOD and NG selection trend" Style="{StaticResource ChartCardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ChartTitleStyle}" Text="GOOD vs NG Trend" />
+                        <TextBlock Style="{StaticResource ChartSubtitleStyle}" Text="All valid trainee selections, including answers pending review" />
+                    </StackPanel>
+                    <lvc:CartesianChart Grid.Row="1" MinHeight="220" AnimationsSpeed="0:0:0.22" LegendPosition="Bottom" Series="{Binding GoodVsNgSeries}" TooltipPosition="Top" XAxes="{Binding SelectionXAxes}" YAxes="{Binding SelectionYAxes}">
+                        <lvc:CartesianChart.Style>
+                            <Style TargetType="lvc:CartesianChart">
+                                <Style.Triggers><DataTrigger Binding="{Binding HasSelectionData}" Value="False"><Setter Property="Visibility" Value="Hidden" /></DataTrigger></Style.Triggers>
+                            </Style>
+                        </lvc:CartesianChart.Style>
+                    </lvc:CartesianChart>
+                    <TextBlock Grid.Row="1" Text="{Binding EmptyStateMessage}">
+                        <TextBlock.Style>
+                            <Style BasedOn="{StaticResource ChartEmptyTextStyle}" TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers><DataTrigger Binding="{Binding HasSelectionData}" Value="False"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </materialDesign:Card>
+
+            <materialDesign:Card AutomationProperties.Name="Reviewed accuracy trend" Style="{StaticResource ChartCardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ChartTitleStyle}" Text="Reviewed Accuracy Trend" />
+                        <TextBlock Style="{StaticResource ChartSubtitleStyle}" Text="Correct reviewed answers divided by reviewed answers; no review is N/A" />
+                    </StackPanel>
+                    <lvc:CartesianChart Grid.Row="1" MinHeight="220" AnimationsSpeed="0:0:0.22" LegendPosition="Bottom" Series="{Binding ReviewedAccuracyTrendSeries}" TooltipPosition="Top" XAxes="{Binding ReviewedAccuracyXAxes}" YAxes="{Binding ReviewedAccuracyYAxes}">
+                        <lvc:CartesianChart.Style>
+                            <Style TargetType="lvc:CartesianChart">
+                                <Style.Triggers><DataTrigger Binding="{Binding HasReviewedAccuracyData}" Value="False"><Setter Property="Visibility" Value="Hidden" /></DataTrigger></Style.Triggers>
+                            </Style>
+                        </lvc:CartesianChart.Style>
+                    </lvc:CartesianChart>
+                    <TextBlock Grid.Row="1" Text="No reviewed answers are available for this period. Accuracy remains N/A.">
+                        <TextBlock.Style>
+                            <Style BasedOn="{StaticResource ChartEmptyTextStyle}" TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers><DataTrigger Binding="{Binding HasReviewedAccuracyData}" Value="False"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </materialDesign:Card>
+
+            <materialDesign:Card AutomationProperties.Name="Training time trend" Style="{StaticResource ChartCardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ChartTitleStyle}" Text="Training Time Trend" />
+                        <TextBlock Style="{StaticResource ChartSubtitleStyle}" Text="Valid completed-session duration; incomplete and negative durations excluded" />
+                    </StackPanel>
+                    <lvc:CartesianChart Grid.Row="1" MinHeight="220" AnimationsSpeed="0:0:0.22" LegendPosition="Bottom" Series="{Binding DurationTrendSeries}" TooltipPosition="Top" XAxes="{Binding DurationXAxes}" YAxes="{Binding DurationYAxes}">
+                        <lvc:CartesianChart.Style>
+                            <Style TargetType="lvc:CartesianChart">
+                                <Style.Triggers><DataTrigger Binding="{Binding HasDurationData}" Value="False"><Setter Property="Visibility" Value="Hidden" /></DataTrigger></Style.Triggers>
+                            </Style>
+                        </lvc:CartesianChart.Style>
+                    </lvc:CartesianChart>
+                    <TextBlock Grid.Row="1" Text="{Binding EmptyStateMessage}">
+                        <TextBlock.Style>
+                            <Style BasedOn="{StaticResource ChartEmptyTextStyle}" TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers><DataTrigger Binding="{Binding HasDurationData}" Value="False"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </materialDesign:Card>
+
+            <materialDesign:Card AutomationProperties.Name="Review coverage chart" Style="{StaticResource ChartCardStyle}">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource ChartTitleStyle}" Text="Review Coverage" />
+                        <TextBlock Style="{StaticResource ChartSubtitleStyle}" Text="Supported GOOD or NG truth compared with answers still pending review" />
+                    </StackPanel>
+                    <lvc:PieChart Grid.Row="1" MinHeight="220" AnimationsSpeed="0:0:0.22" LegendPosition="Bottom" Series="{Binding ReviewCoverageSeries}" TooltipPosition="Top">
+                        <lvc:PieChart.Style>
+                            <Style TargetType="lvc:PieChart">
+                                <Style.Triggers><DataTrigger Binding="{Binding HasReviewCoverageData}" Value="False"><Setter Property="Visibility" Value="Hidden" /></DataTrigger></Style.Triggers>
+                            </Style>
+                        </lvc:PieChart.Style>
+                    </lvc:PieChart>
+                    <TextBlock Grid.Row="1" Text="No reviewed or pending answers are available for this period.">
+                        <TextBlock.Style>
+                            <Style BasedOn="{StaticResource ChartEmptyTextStyle}" TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers><DataTrigger Binding="{Binding HasReviewCoverageData}" Value="False"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </materialDesign:Card>
+
+            <materialDesign:Card AutomationProperties.Name="Analytics definitions" Style="{StaticResource ChartCardStyle}">
+                <StackPanel VerticalAlignment="Center">
+                    <materialDesign:PackIcon Width="34" Height="34" Margin="0,0,0,14" Foreground="{DynamicResource App.PrimaryBrush}" Kind="ShieldCheckOutline" />
+                    <TextBlock Style="{StaticResource ChartTitleStyle}" Text="How to read these charts" />
+                    <TextBlock Margin="0,12,0,0" TextWrapping="Wrap"><Run FontWeight="SemiBold" Text="GOOD / NG" /><Run Text=" describes the trainee selection, not whether it was correct." /></TextBlock>
+                    <TextBlock Margin="0,10,0,0" TextWrapping="Wrap"><Run FontWeight="SemiBold" Text="Reviewed" /><Run Text=" requires a supported GOOD or NG truth value." /></TextBlock>
+                    <TextBlock Margin="0,10,0,0" TextWrapping="Wrap"><Run FontWeight="SemiBold" Text="Pending" /><Run Text=" is excluded from reviewed accuracy and never counted as wrong." /></TextBlock>
+                </StackPanel>
+            </materialDesign:Card>
+        </UniformGrid>
+    </StackPanel>
+</UserControl>

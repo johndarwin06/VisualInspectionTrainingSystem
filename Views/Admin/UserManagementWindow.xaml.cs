@@ -2,6 +2,7 @@
 
 using System;
 using System.Windows;
+using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.ViewModels;
 
 #endregion
@@ -11,7 +12,7 @@ namespace VisualInspectionTrainingSystem.Views.Admin
     /// <summary>
     /// Hosts the User Management ViewModel and forwards window lifecycle events only.
     /// </summary>
-    public partial class UserManagementWindow : Window
+    public partial class UserManagementWindow : MetroWindow
     {
         #region Fields
 

@@ -1,24 +1,27 @@
 #region Namespaces
 
+using MahApps.Metro.Controls;
 using System;
 using System.Windows;
 using VisualInspectionTrainingSystem.ViewModels;
 using VisualInspectionTrainingSystem.Views.History;
 using VisualInspectionTrainingSystem.Views.Quiz;
+using VisualInspectionTrainingSystem.Views.Result;
 
 #endregion
 
 namespace VisualInspectionTrainingSystem.Views.Home
 {
     /// <summary>
-    /// Hosts trainee Home and owns single-flight quiz and history navigation.
+    /// Hosts the focused trainee setup task and owns single-flight quiz and compatibility history navigation.
     /// </summary>
-    public partial class HomeWindow : Window
+    public partial class HomeWindow : MetroWindow
     {
         #region Fields
 
         private readonly HomeViewModel _viewModel;
         private QuizWindow _activeQuizWindow;
+        private ResultWindow _activeResultWindow;
         private TrainingHistoryWindow _activeHistoryWindow;
         private bool _isClosing;
 
@@ -64,6 +67,7 @@ namespace VisualInspectionTrainingSystem.Views.Home
             try
             {
                 quiz = new QuizWindow(_viewModel.SelectedQuizSize);
+                SetNestedWindowOwner(quiz);
                 _activeQuizWindow = quiz;
                 quiz.Closed += QuizWindow_Closed;
                 quiz.Show();
@@ -79,6 +83,8 @@ namespace VisualInspectionTrainingSystem.Views.Home
         /// <summary>
         /// Restores Home after normal quiz completion or cancellation.
         /// </summary>
+        /// <param name="sender">The quiz window that closed.</param>
+        /// <param name="e">Unused close event information.</param>
         private void QuizWindow_Closed(object sender, EventArgs e)
         {
             QuizWindow closedQuiz = sender as QuizWindow;
@@ -88,12 +94,40 @@ namespace VisualInspectionTrainingSystem.Views.Home
 
             closedQuiz.Closed -= QuizWindow_Closed;
             _activeQuizWindow = null;
+
+            ResultWindow resultWindow = FindActiveResultWindow();
+
+            if (resultWindow != null)
+            {
+                _activeResultWindow = resultWindow;
+                resultWindow.Closed += ResultWindow_Closed;
+                return;
+            }
+
+            RestoreHome();
+        }
+
+        /// <summary>
+        /// Restores Home only after the completed quiz result has closed.
+        /// </summary>
+        /// <param name="sender">The completed-session result window.</param>
+        /// <param name="e">Unused close event information.</param>
+        private void ResultWindow_Closed(object sender, EventArgs e)
+        {
+            ResultWindow resultWindow = sender as ResultWindow;
+
+            if (!ReferenceEquals(resultWindow, _activeResultWindow))
+                return;
+
+            resultWindow.Closed -= ResultWindow_Closed;
+            _activeResultWindow = null;
             RestoreHome();
         }
 
         /// <summary>
         /// Releases a quiz that failed during window startup.
         /// </summary>
+        /// <param name="quiz">Partially constructed quiz window, when available.</param>
         private void CleanupFailedQuiz(QuizWindow quiz)
         {
             if (quiz != null)
@@ -115,10 +149,10 @@ namespace VisualInspectionTrainingSystem.Views.Home
 
         #endregion
 
-        #region History Navigation
+        #region History Compatibility Navigation
 
         /// <summary>
-        /// Opens at most one current-user training-history window.
+        /// Opens at most one current-user history window for compatibility callers.
         /// </summary>
         private void ViewModel_HistoryRequested()
         {
@@ -138,6 +172,7 @@ namespace VisualInspectionTrainingSystem.Views.Home
             try
             {
                 historyWindow = new TrainingHistoryWindow();
+                SetNestedWindowOwner(historyWindow);
                 _activeHistoryWindow = historyWindow;
                 historyWindow.Closed += HistoryWindow_Closed;
                 historyWindow.Show();
@@ -151,8 +186,10 @@ namespace VisualInspectionTrainingSystem.Views.Home
         }
 
         /// <summary>
-        /// Restores Home after history closes.
+        /// Restores Home after a compatibility history window closes.
         /// </summary>
+        /// <param name="sender">The history window that closed.</param>
+        /// <param name="e">Unused close event information.</param>
         private void HistoryWindow_Closed(object sender, EventArgs e)
         {
             TrainingHistoryWindow closedHistory =
@@ -169,6 +206,7 @@ namespace VisualInspectionTrainingSystem.Views.Home
         /// <summary>
         /// Releases a history window that failed during startup.
         /// </summary>
+        /// <param name="historyWindow">Partially constructed history window, when available.</param>
         private void CleanupFailedHistory(TrainingHistoryWindow historyWindow)
         {
             if (historyWindow != null)
@@ -190,7 +228,45 @@ namespace VisualInspectionTrainingSystem.Views.Home
 
         #endregion
 
-        #region Navigation Helpers
+        #region Window Ownership
+
+        /// <summary>
+        /// Keeps nested workflow windows in the authenticated shell ownership tree.
+        /// </summary>
+        /// <param name="nestedWindow">New nested workflow window.</param>
+        private void SetNestedWindowOwner(Window nestedWindow)
+        {
+            if (nestedWindow == null)
+                throw new ArgumentNullException(nameof(nestedWindow));
+
+            nestedWindow.Owner = Owner ?? this;
+        }
+
+        /// <summary>
+        /// Finds the result created immediately before Quiz closes so Home cannot cover it.
+        /// </summary>
+        /// <returns>The visible result in this shell ownership tree, or null.</returns>
+        private ResultWindow FindActiveResultWindow()
+        {
+            if (Application.Current == null)
+                return null;
+
+            Window expectedOwner = Owner ?? this;
+
+            foreach (Window window in Application.Current.Windows)
+            {
+                ResultWindow resultWindow = window as ResultWindow;
+
+                if (resultWindow != null &&
+                    resultWindow.IsVisible &&
+                    ReferenceEquals(resultWindow.Owner, expectedOwner))
+                {
+                    return resultWindow;
+                }
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Restores and activates Home unless application shutdown is underway.
@@ -211,6 +287,7 @@ namespace VisualInspectionTrainingSystem.Views.Home
         /// <summary>
         /// Detaches navigation handlers without reopening Home during shutdown.
         /// </summary>
+        /// <param name="e">The close event information.</param>
         protected override void OnClosed(EventArgs e)
         {
             _isClosing = true;
@@ -219,6 +296,9 @@ namespace VisualInspectionTrainingSystem.Views.Home
 
             if (_activeQuizWindow != null)
                 _activeQuizWindow.Closed -= QuizWindow_Closed;
+
+            if (_activeResultWindow != null)
+                _activeResultWindow.Closed -= ResultWindow_Closed;
 
             if (_activeHistoryWindow != null)
                 _activeHistoryWindow.Closed -= HistoryWindow_Closed;

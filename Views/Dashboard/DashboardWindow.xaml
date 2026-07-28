@@ -1,7 +1,9 @@
-<Window
+<mah:MetroWindow
     x:Class="VisualInspectionTrainingSystem.Views.Dashboard.DashboardWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:charts="clr-namespace:VisualInspectionTrainingSystem.Controls.Charts"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:progress="clr-namespace:VisualInspectionTrainingSystem.Controls.Progress"
     Title="Dashboard"
@@ -89,7 +91,11 @@
                     <RowDefinition Height="20" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="20" />
-                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="24" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="16" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="16" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -159,6 +165,29 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel>
+                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="Analytics trends" />
+                        <TextBlock Margin="0,3,0,0" Style="{StaticResource SupportingTextStyle}" Text="Completed activity and reviewed-quality trends from one consistent database snapshot" />
+                    </StackPanel>
+                    <ComboBox
+                        Grid.Column="1"
+                        Width="150"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="Dashboard trend range"
+                        IsEnabled="{Binding CanSelectTrendRange}"
+                        ItemsSource="{Binding TrendDayOptions}"
+                        materialDesign:HintAssist.Hint="Trend range (days)"
+                        SelectedItem="{Binding SelectedTrendDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+                </Grid>
+
+                <charts:AnalyticsChartsPanel Grid.Row="4" DataContext="{Binding Charts}" />
+
+                <Grid Grid.Row="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
                         <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="Recent sessions" />
                         <TextBlock Margin="0,3,0,0" Style="{StaticResource SupportingTextStyle}" Text="Latest training activity across all dates" />
                     </StackPanel>
@@ -167,7 +196,7 @@
                     </Border>
                 </Grid>
 
-                <Border Grid.Row="4" MinHeight="280" Padding="1" Style="{StaticResource SurfaceCardStyle}">
+                <Border Grid.Row="8" MinHeight="280" Padding="1" Style="{StaticResource SurfaceCardStyle}">
                     <DataGrid
                         AutomationProperties.Name="Recent training sessions"
                         AutoGenerateColumns="False"
@@ -175,6 +204,8 @@
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
                         CanUserResizeRows="False"
+                        EnableColumnVirtualization="True"
+                        EnableRowVirtualization="True"
                         IsReadOnly="True"
                         ItemsSource="{Binding RecentSessions}"
                         MinRowHeight="40"
@@ -194,7 +225,7 @@
                     </DataGrid>
                 </Border>
 
-                <Border Grid.Row="6" Padding="16,12" Background="{DynamicResource App.SurfaceVariantBrush}" CornerRadius="12">
+                <Border Grid.Row="10" Padding="16,12" Background="{DynamicResource App.SurfaceVariantBrush}" CornerRadius="12">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Margin="0,0,10,0" VerticalAlignment="Center" Foreground="{DynamicResource App.PrimaryBrush}" Kind="InformationOutline" />
                         <TextBlock
@@ -214,4 +245,4 @@
             IsActive="{Binding IsBusy}"
             Message="{Binding StatusMessage}" />
     </Grid>
-</Window>
+</mah:MetroWindow>

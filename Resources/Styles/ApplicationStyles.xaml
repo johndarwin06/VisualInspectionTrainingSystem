@@ -3,6 +3,31 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
 
+    <ResourceDictionary.MergedDictionaries>
+        <!-- Keep named Material 5.3.2 styles in this dictionary's parse scope. -->
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Window.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.CheckBox.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.RadioButton.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBox.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PasswordBox.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DatePicker.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ListBox.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ListView.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TabControl.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ProgressBar.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ScrollBar.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ScrollViewer.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Menu.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToolTip.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Expander.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Card.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DialogHost.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
     <!-- Focus and application foundation -->
@@ -24,7 +49,7 @@
     </Style>
 
     <Style
-        BasedOn="{StaticResource {x:Type Window}}"
+        BasedOn="{StaticResource MaterialDesignWindow}"
         TargetType="{x:Type Window}">
         <Setter Property="Background" Value="{DynamicResource App.BackgroundBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource App.TextPrimaryBrush}" />
@@ -39,7 +64,7 @@
     <!-- Material buttons -->
     <Style
         x:Key="AccessibleButtonStyle"
-        BasedOn="{StaticResource {x:Type Button}}"
+        BasedOn="{StaticResource MaterialDesignFlatButton}"
         TargetType="{x:Type Button}">
         <Setter Property="MinHeight" Value="44" />
         <Setter Property="MinWidth" Value="96" />
@@ -94,7 +119,7 @@
 
     <Style
         x:Key="PrimaryActionButtonStyle"
-        BasedOn="{StaticResource {x:Type Button}}"
+        BasedOn="{StaticResource MaterialDesignRaisedButton}"
         TargetType="{x:Type Button}">
         <Setter Property="MinHeight" Value="46" />
         <Setter Property="MinWidth" Value="112" />
@@ -130,7 +155,7 @@
 
     <Style
         x:Key="SecondaryActionButtonStyle"
-        BasedOn="{StaticResource {x:Type Button}}"
+        BasedOn="{StaticResource MaterialDesignOutlinedButton}"
         TargetType="{x:Type Button}">
         <Setter Property="MinHeight" Value="44" />
         <Setter Property="MinWidth" Value="104" />
@@ -155,7 +180,7 @@
 
     <Style
         x:Key="DarkActionButtonStyle"
-        BasedOn="{StaticResource {x:Type Button}}"
+        BasedOn="{StaticResource MaterialDesignOutlinedDarkButton}"
         TargetType="{x:Type Button}">
         <Setter Property="MinHeight" Value="44" />
         <Setter Property="Padding" Value="18,9" />
@@ -169,7 +194,7 @@
 
     <Style
         x:Key="DangerActionButtonStyle"
-        BasedOn="{StaticResource {x:Type Button}}"
+        BasedOn="{StaticResource MaterialDesignRaisedButton}"
         TargetType="{x:Type Button}">
         <Setter Property="MinHeight" Value="44" />
         <Setter Property="Padding" Value="18,9" />
@@ -185,7 +210,7 @@
 
     <Style
         x:Key="NavigationButtonStyle"
-        BasedOn="{StaticResource {x:Type Button}}"
+        BasedOn="{StaticResource MaterialDesignFlatDarkButton}"
         TargetType="{x:Type Button}">
         <Setter Property="MinHeight" Value="48" />
         <Setter Property="Padding" Value="16,10" />
@@ -202,11 +227,67 @@
         </Style.Triggers>
     </Style>
 
+    <Style
+        x:Key="ShellNavigationButtonStyle"
+        BasedOn="{StaticResource MaterialDesignFlatDarkButton}"
+        TargetType="{x:Type Button}">
+        <Setter Property="MinHeight" Value="48" />
+        <Setter Property="Margin" Value="0,3" />
+        <Setter Property="Padding" Value="14,10" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource App.DarkSecondaryTextBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="12" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource App.NavigationRaisedBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource App.DarkTextBrush}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource App.DarkTextBrush}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.5" />
+                <Setter Property="Cursor" Value="Arrow" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style
+        x:Key="ActiveShellNavigationButtonStyle"
+        BasedOn="{StaticResource ShellNavigationButtonStyle}"
+        TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="{DynamicResource App.PrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource App.PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource App.OnPrimaryBrush}" />
+        <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp1" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource App.PrimaryHoverBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource App.PrimaryHoverBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource App.OnPrimaryBrush}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{DynamicResource App.PrimaryPressedBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource App.PrimaryPressedBrush}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource App.OnPrimaryBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource AccessibleButtonStyle}" />
 
     <Style
         x:Key="AppIconButtonStyle"
-        BasedOn="{StaticResource AccessibleButtonStyle}"
+        BasedOn="{StaticResource MaterialDesignIconButton}"
         TargetType="{x:Type Button}">
         <Setter Property="Width" Value="44" />
         <Setter Property="MinWidth" Value="44" />
@@ -226,7 +307,7 @@
     <!-- Material input controls -->
     <Style
         x:Key="AccessibleTextBoxStyle"
-        BasedOn="{StaticResource {x:Type TextBox}}"
+        BasedOn="{StaticResource MaterialDesignOutlinedTextBox}"
         TargetType="{x:Type TextBox}">
         <Setter Property="MinHeight" Value="48" />
         <Setter Property="Padding" Value="12,8" />
@@ -240,7 +321,7 @@
 
     <Style
         x:Key="AccessiblePasswordBoxStyle"
-        BasedOn="{StaticResource {x:Type PasswordBox}}"
+        BasedOn="{StaticResource MaterialDesignOutlinedPasswordBox}"
         TargetType="{x:Type PasswordBox}">
         <Setter Property="MinHeight" Value="48" />
         <Setter Property="Padding" Value="12,8" />
@@ -252,7 +333,7 @@
     <Style TargetType="{x:Type PasswordBox}" BasedOn="{StaticResource AccessiblePasswordBoxStyle}" />
 
     <Style
-        BasedOn="{StaticResource {x:Type ComboBox}}"
+        BasedOn="{StaticResource MaterialDesignOutlinedComboBox}"
         TargetType="{x:Type ComboBox}">
         <Setter Property="MinHeight" Value="48" />
         <Setter Property="Padding" Value="10,6" />
@@ -262,69 +343,36 @@
 
     <Style
         x:Key="AccessibleDatePickerStyle"
-        BasedOn="{StaticResource {x:Type DatePicker}}"
+        BasedOn="{StaticResource MaterialDesignOutlinedDatePicker}"
         TargetType="{x:Type DatePicker}">
         <Setter Property="MinHeight" Value="48" />
         <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
     </Style>
 
     <Style TargetType="{x:Type DatePicker}" BasedOn="{StaticResource AccessibleDatePickerStyle}" />
-    <Style TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Type RadioButton}}">
+    <Style TargetType="{x:Type RadioButton}" BasedOn="{StaticResource MaterialDesignRadioButton}">
         <Setter Property="MinHeight" Value="34" />
         <Setter Property="Padding" Value="4" />
         <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
     </Style>
-    <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
+    <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource MaterialDesignCheckBox}">
         <Setter Property="MinHeight" Value="34" />
         <Setter Property="Padding" Value="4" />
         <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
     </Style>
 
-    <Style x:Key="QuizSizeChoiceChipStyle" TargetType="{x:Type RadioButton}">
+    <Style x:Key="QuizSizeChoiceChipStyle" BasedOn="{StaticResource MaterialDesignChoiceChipSecondaryRadioButton}" TargetType="{x:Type RadioButton}">
         <Setter Property="MinWidth" Value="112" />
         <Setter Property="MinHeight" Value="42" />
         <Setter Property="Margin" Value="0,0,8,0" />
         <Setter Property="Padding" Value="16,8" />
-        <Setter Property="Background" Value="{DynamicResource App.SurfaceBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource App.BorderBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Foreground" Value="{DynamicResource App.TextPrimaryBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type RadioButton}">
-                    <Border
-                        x:Name="Chip"
-                        Padding="{TemplateBinding Padding}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="14">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chip" Property="Background" Value="{DynamicResource App.SecondarySurfaceBrush}" />
-                            <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource App.SecondaryBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Chip" Property="Background" Value="{DynamicResource App.PrimaryBrush}" />
-                            <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource App.PrimaryBrush}" />
-                            <Setter Property="Foreground" Value="{DynamicResource App.OnPrimaryBrush}" />
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Chip" Property="Opacity" Value="0.52" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <!-- Material tables, progress, and supporting controls -->
-    <Style TargetType="{x:Type DataGrid}" BasedOn="{StaticResource {x:Type DataGrid}}">
+    <Style TargetType="{x:Type DataGrid}" BasedOn="{StaticResource MaterialDesignDataGrid}">
         <Setter Property="Background" Value="{DynamicResource App.SurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource App.DividerBrush}" />
         <Setter Property="BorderThickness" Value="1" />
@@ -337,15 +385,88 @@
         <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
         <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="Once" />
+        <Setter Property="GridLinesVisibility" Value="Horizontal" />
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource App.DividerBrush}" />
+        <Setter Property="VerticalGridLinesBrush" Value="Transparent" />
+        <Setter Property="HeadersVisibility" Value="Column" />
+        <Setter Property="RowHeaderWidth" Value="0" />
     </Style>
 
-    <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource {x:Type DataGridCell}}">
+    <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MaterialDesignDataGridRow}">
+        <Setter Property="MinHeight" Value="46" />
+        <Setter Property="Foreground" Value="{DynamicResource App.TextPrimaryBrush}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource App.SecondarySurfaceBrush}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{DynamicResource App.InfoSurfaceBrush}" />
+                <Setter Property="Foreground" Value="{DynamicResource App.TextPrimaryBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource MaterialDesignDataGridCell}">
+        <Setter Property="Padding" Value="10,6" />
         <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
         <Setter Property="ToolTipService.ShowDuration" Value="30000" />
     </Style>
 
-    <Style TargetType="{x:Type ProgressBar}" BasedOn="{StaticResource {x:Type ProgressBar}}" />
-    <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource {x:Type ToolTip}}">
+    <Style TargetType="{x:Type DataGridColumnHeader}" BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+        <Setter Property="MinHeight" Value="48" />
+        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="Background" Value="{DynamicResource App.SurfaceVariantBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource App.TextSecondaryBrush}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="DataGridActionButtonStyle" BasedOn="{StaticResource MaterialDesignFlatButton}" TargetType="{x:Type Button}">
+        <Setter Property="MinWidth" Value="82" />
+        <Setter Property="MinHeight" Value="34" />
+        <Setter Property="Padding" Value="12,5" />
+        <Setter Property="Foreground" Value="{DynamicResource App.PrimaryBrush}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
+        <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="10" />
+    </Style>
+
+    <Style x:Key="DataGridOutlinedActionButtonStyle" BasedOn="{StaticResource MaterialDesignOutlinedButton}" TargetType="{x:Type Button}">
+        <Setter Property="MinWidth" Value="86" />
+        <Setter Property="MinHeight" Value="34" />
+        <Setter Property="Padding" Value="12,5" />
+        <Setter Property="Foreground" Value="{DynamicResource App.PrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource App.PrimaryBrush}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
+        <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="10" />
+    </Style>
+
+    <Style x:Key="DataGridDangerActionButtonStyle" BasedOn="{StaticResource MaterialDesignFlatButton}" TargetType="{x:Type Button}">
+        <Setter Property="MinWidth" Value="86" />
+        <Setter Property="MinHeight" Value="34" />
+        <Setter Property="Padding" Value="12,5" />
+        <Setter Property="Foreground" Value="{DynamicResource App.DangerBrush}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AppFocusVisualStyle}" />
+        <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="10" />
+    </Style>
+
+    <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource MaterialDesignFlatToggleButton}" />
+    <Style TargetType="{x:Type ListBox}" BasedOn="{StaticResource MaterialDesignListBox}" />
+    <Style TargetType="{x:Type ListView}" BasedOn="{StaticResource MaterialDesignListView}" />
+    <Style TargetType="{x:Type TabControl}" BasedOn="{StaticResource MaterialDesignTabControl}" />
+    <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource MaterialDesignTabItem}" />
+    <Style TargetType="{x:Type Expander}" BasedOn="{StaticResource MaterialDesignExpander}" />
+    <Style TargetType="{x:Type Menu}" BasedOn="{StaticResource MaterialDesignMenu}" />
+    <Style TargetType="{x:Type ContextMenu}" BasedOn="{StaticResource MaterialDesignContextMenu}" />
+    <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource MaterialDesignScrollBar}" />
+    <Style TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource MaterialDesignScrollViewer}" />
+    <Style TargetType="{x:Type ProgressBar}" BasedOn="{StaticResource MaterialDesignLinearProgressBar}" />
+    <Style TargetType="{x:Type ToolTip}" BasedOn="{StaticResource MaterialDesignToolTip}">
         <Setter Property="MaxWidth" Value="520" />
         <Setter Property="Padding" Value="12,8" />
         <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
@@ -456,6 +577,33 @@
         <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp6" />
     </Style>
 
+    <Style
+        x:Key="AuthenticatedShellNavigationRailStyle"
+        BasedOn="{StaticResource NavigationRailStyle}"
+        TargetType="{x:Type Border}">
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Padding" Value="20,24" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="BorderBrush" Value="{DynamicResource App.NavigationRaisedBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,1,0" />
+        <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp4" />
+    </Style>
+
+    <Style
+        x:Key="ShellProfileCardStyle"
+        BasedOn="{StaticResource {x:Type materialDesign:Card}}"
+        TargetType="{x:Type materialDesign:Card}">
+        <Setter Property="MinHeight" Value="76" />
+        <Setter Property="Padding" Value="14" />
+        <Setter Property="Background" Value="{DynamicResource App.NavigationRaisedBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource App.DarkBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource App.DarkTextBrush}" />
+        <Setter Property="UniformCornerRadius" Value="14" />
+        <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp1" />
+    </Style>
+
     <Style x:Key="StatusChipStyle" TargetType="{x:Type Border}">
         <Setter Property="Padding" Value="10,5" />
         <Setter Property="CornerRadius" Value="100" />
@@ -478,6 +626,16 @@
     <Style x:Key="PendingChipStyle" TargetType="{x:Type Border}" BasedOn="{StaticResource StatusChipStyle}">
         <Setter Property="Background" Value="{DynamicResource App.WarningSurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource App.WarningBrush}" />
+    </Style>
+
+    <Style x:Key="CorrectChipStyle" TargetType="{x:Type Border}" BasedOn="{StaticResource StatusChipStyle}">
+        <Setter Property="Background" Value="{DynamicResource App.SuccessSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource App.SuccessBrush}" />
+    </Style>
+
+    <Style x:Key="WrongChipStyle" TargetType="{x:Type Border}" BasedOn="{StaticResource StatusChipStyle}">
+        <Setter Property="Background" Value="{DynamicResource App.DangerSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource App.DangerBrush}" />
     </Style>
 
     <!-- Motion -->
@@ -547,6 +705,16 @@
         <Setter Property="Width" Value="21" />
         <Setter Property="Height" Value="21" />
         <Setter Property="Margin" Value="0,0,9,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style
+        x:Key="ShellRailIconStyle"
+        BasedOn="{StaticResource AppIconStyle}"
+        TargetType="{x:Type materialDesign:PackIcon}">
+        <Setter Property="Width" Value="20" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Margin" Value="0,0,12,0" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 

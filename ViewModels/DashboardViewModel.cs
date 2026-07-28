@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using VisualInspectionTrainingSystem.Commands;
@@ -15,13 +16,15 @@ using VisualInspectionTrainingSystem.Services;
 namespace VisualInspectionTrainingSystem.ViewModels
 {
     /// <summary>
-    /// Provides daily analytics and recent-session state for the administrator dashboard.
+    /// Provides coherent daily metrics, recent sessions, and cancellable administrator charts.
     /// </summary>
-    public class DashboardViewModel : BaseViewModel
+    public class DashboardViewModel : BaseViewModel, IDisposable
     {
         #region Constants
 
         private const int RecentSessionLimit = 12;
+        private const int SevenDayTrend = 7;
+        private const int ThirtyDayTrend = 30;
 
         private const string DashboardErrorMessage =
             "Dashboard data could not be loaded. Please try again. " +
@@ -32,63 +35,125 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #region Fields
 
         private readonly DashboardRepository _dashboardRepository;
-
         private readonly RelayCommand _refreshCommand;
+        private readonly ReadOnlyCollection<int> _trendDayOptions;
 
+        private CancellationTokenSource _operationCancellation;
         private DashboardMetrics _metrics;
-
         private string _statusMessage;
-
         private bool _isBusy;
+        private int _operationVersion;
+        private int _selectedTrendDays;
+        private bool _isDisposed;
 
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// Initializes a dashboard ViewModel with the default repository.
+        /// Initializes a dashboard ViewModel and starts its first production refresh.
         /// </summary>
         public DashboardViewModel()
-            : this(new DashboardRepository())
+            : this(new DashboardRepository(), true)
         {
         }
 
         /// <summary>
         /// Initializes a dashboard ViewModel with an explicit repository.
         /// </summary>
-        /// <param name="dashboardRepository">Repository used to load dashboard data.</param>
+        /// <param name="dashboardRepository">Repository used for coherent read snapshots.</param>
         public DashboardViewModel(DashboardRepository dashboardRepository)
+            : this(dashboardRepository, true)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a dashboard ViewModel with an optional initial load for deterministic tests.
+        /// </summary>
+        /// <param name="dashboardRepository">Repository used for coherent read snapshots.</param>
+        /// <param name="loadImmediately">Whether to start the first asynchronous refresh.</param>
+        public DashboardViewModel(
+            DashboardRepository dashboardRepository,
+            bool loadImmediately)
         {
             if (dashboardRepository == null)
+            {
                 throw new ArgumentNullException(nameof(dashboardRepository));
+            }
 
             _dashboardRepository = dashboardRepository;
-
-            RecentSessions = new ObservableCollection<DashboardSessionSummary>();
-
+            _trendDayOptions = new ReadOnlyCollection<int>(
+                new[] { SevenDayTrend, ThirtyDayTrend });
+            _selectedTrendDays = SevenDayTrend;
             _metrics = new DashboardMetrics();
-
             _statusMessage = "Loading today's dashboard...";
+
+            RecentSessions =
+                new ObservableCollection<DashboardSessionSummary>();
+            Charts = new DashboardChartViewModel();
 
             _refreshCommand = new RelayCommand(
                 BeginRefresh,
                 CanRefresh);
-
             RefreshCommand = _refreshCommand;
 
-            BeginRefresh();
+            if (loadImmediately)
+            {
+                BeginRefresh();
+            }
         }
 
         #endregion
 
-        #region Collections
+        #region Collections and Charts
 
         /// <summary>
-        /// Gets the current deterministic recent-session rows.
+        /// Gets deterministic recent-session rows from the current snapshot.
         /// </summary>
         public ObservableCollection<DashboardSessionSummary> RecentSessions
         {
             get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the reusable LiveCharts presentation for the current snapshot.
+        /// </summary>
+        public DashboardChartViewModel Charts
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Gets the supported bounded trend day counts.
+        /// </summary>
+        public ReadOnlyCollection<int> TrendDayOptions
+        {
+            get { return _trendDayOptions; }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected seven-day or thirty-day trend range.
+        /// </summary>
+        public int SelectedTrendDays
+        {
+            get { return _selectedTrendDays; }
+            set
+            {
+                ValidateTrendDays(value);
+
+                if (_isDisposed || IsBusy)
+                {
+                    OnPropertyChanged(nameof(SelectedTrendDays));
+                    return;
+                }
+
+                if (SetProperty(ref _selectedTrendDays, value))
+                {
+                    BeginRefresh();
+                }
+            }
         }
 
         #endregion
@@ -100,10 +165,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
         /// </summary>
         public DashboardMetrics Metrics
         {
-            get
-            {
-                return _metrics;
-            }
+            get { return _metrics; }
             private set
             {
                 if (SetProperty(
@@ -120,23 +182,19 @@ namespace VisualInspectionTrainingSystem.ViewModels
         /// </summary>
         public string TodaysTrainingText
         {
-            get
-            {
-                return Metrics.TodaysTraining.ToString();
-            }
+            get { return Metrics.TodaysTraining.ToString(); }
         }
 
         /// <summary>
-        /// Gets today's reviewed-only accuracy or N/A when no reviewed answers exist.
+        /// Gets today's reviewed-only accuracy or N/A when no answer is reviewed.
         /// </summary>
         public string AverageReviewedAccuracyText
         {
             get
             {
-                if (!Metrics.AverageReviewedAccuracy.HasValue)
-                    return "N/A";
-
-                return Metrics.AverageReviewedAccuracy.Value.ToString("0.00") + "%";
+                return Metrics.AverageReviewedAccuracy.HasValue
+                    ? Metrics.AverageReviewedAccuracy.Value.ToString("0.00") + "%"
+                    : "N/A";
             }
         }
 
@@ -147,43 +205,25 @@ namespace VisualInspectionTrainingSystem.ViewModels
         {
             get
             {
-                long totalSeconds = Metrics.TimeSpentSeconds;
-
-                if (totalSeconds < 0)
-                    totalSeconds = 0;
-
-                long hours = totalSeconds / 3600;
-                long minutes = (totalSeconds % 3600) / 60;
-                long seconds = totalSeconds % 60;
-
-                return string.Format(
-                    "{0}h {1:00}m {2:00}s",
-                    hours,
-                    minutes,
-                    seconds);
+                return AnalyticsChartViewModel.FormatDuration(
+                    Metrics.TimeSpentSeconds);
             }
         }
 
         /// <summary>
-        /// Gets today's trainee GOOD selection count.
+        /// Gets today's normalized trainee GOOD selection count.
         /// </summary>
         public string GoodCountText
         {
-            get
-            {
-                return Metrics.GoodCount.ToString();
-            }
+            get { return Metrics.GoodCount.ToString(); }
         }
 
         /// <summary>
-        /// Gets today's trainee NG selection count.
+        /// Gets today's normalized trainee NG selection count.
         /// </summary>
         public string NgCountText
         {
-            get
-            {
-                return Metrics.NgCount.ToString();
-            }
+            get { return Metrics.NgCount.ToString(); }
         }
 
         /// <summary>
@@ -194,7 +234,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             get
             {
                 return string.Format(
-                    "Reviewed {0} · Correct {1} · Wrong {2} · Pending {3}",
+                    "Reviewed {0} | Correct {1} | Wrong {2} | Pending {3}",
                     Metrics.ReviewedAnswers,
                     Metrics.CorrectReviewedAnswers,
                     Metrics.WrongReviewedAnswers,
@@ -203,14 +243,11 @@ namespace VisualInspectionTrainingSystem.ViewModels
         }
 
         /// <summary>
-        /// Gets the local date label used by all five metrics.
+        /// Gets the local date label shared by the five headline metrics.
         /// </summary>
         public string TodayScopeText
         {
-            get
-            {
-                return "Today · " + DateTime.Today.ToString("yyyy-MM-dd");
-            }
+            get { return "Today | " + DateTime.Today.ToString("yyyy-MM-dd"); }
         }
 
         #endregion
@@ -218,128 +255,110 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #region Compatibility Display Properties
 
         /// <summary>
-        /// Gets the existing session text binding using today's completed count.
+        /// Gets the compatibility session-count display value.
         /// </summary>
         public string TotalSessionsText
         {
-            get
-            {
-                return Metrics.TotalSessions.ToString();
-            }
+            get { return Metrics.TotalSessions.ToString(); }
         }
 
         /// <summary>
-        /// Gets the existing answer text binding using today's GOOD and NG answers.
+        /// Gets the compatibility answer-count display value.
         /// </summary>
         public string TotalAnswersText
         {
-            get
-            {
-                return Metrics.TotalAnswers.ToString();
-            }
+            get { return Metrics.TotalAnswers.ToString(); }
         }
 
         /// <summary>
-        /// Gets today's pending-answer count for existing consumers.
+        /// Gets today's pending-answer count.
         /// </summary>
         public string PendingAnswersText
         {
-            get
-            {
-                return Metrics.PendingAnswers.ToString();
-            }
+            get { return Metrics.PendingAnswers.ToString(); }
         }
 
         /// <summary>
-        /// Gets today's reviewed-answer count for existing consumers.
+        /// Gets today's reviewed-answer count.
         /// </summary>
         public string ReviewedAnswersText
         {
-            get
-            {
-                return Metrics.ReviewedAnswers.ToString();
-            }
+            get { return Metrics.ReviewedAnswers.ToString(); }
         }
 
         /// <summary>
-        /// Gets today's completed-session trainee count for existing consumers.
+        /// Gets today's completed-session trainee count.
         /// </summary>
         public string ActiveTraineesText
         {
-            get
-            {
-                return Metrics.ActiveTrainees.ToString();
-            }
+            get { return Metrics.ActiveTrainees.ToString(); }
         }
 
         /// <summary>
-        /// Gets today's reviewed-only accuracy for the existing accuracy binding.
+        /// Gets today's reviewed-only accuracy for compatibility bindings.
         /// </summary>
         public string AverageAccuracyText
         {
-            get
-            {
-                return AverageReviewedAccuracyText;
-            }
+            get { return AverageReviewedAccuracyText; }
         }
 
         /// <summary>
-        /// Gets today's latest completed-session time for existing consumers.
+        /// Gets today's latest completed-session time.
         /// </summary>
         public string LatestSessionText
         {
             get
             {
-                if (!Metrics.LatestSessionTime.HasValue)
-                    return "-";
-
-                return Metrics.LatestSessionTime.Value.ToString("yyyy-MM-dd HH:mm");
+                return Metrics.LatestSessionTime.HasValue
+                    ? Metrics.LatestSessionTime.Value.ToString("yyyy-MM-dd HH:mm")
+                    : "-";
             }
         }
 
         #endregion
 
-        #region State Properties
+        #region State and Commands
 
         /// <summary>
-        /// Gets or sets the non-sensitive dashboard status message.
+        /// Gets or sets the fixed, non-sensitive dashboard status message.
         /// </summary>
         public string StatusMessage
         {
-            get
-            {
-                return _statusMessage;
-            }
-            set
-            {
-                SetProperty(ref _statusMessage, value);
-            }
+            get { return _statusMessage; }
+            set { SetProperty(ref _statusMessage, value); }
         }
 
         /// <summary>
-        /// Gets or sets whether dashboard data is currently loading.
+        /// Gets or sets whether dashboard data is loading.
         /// </summary>
         public bool IsBusy
         {
-            get
-            {
-                return _isBusy;
-            }
+            get { return _isBusy; }
             set
             {
                 if (SetProperty(ref _isBusy, value))
                 {
                     _refreshCommand.RaiseCanExecuteChanged();
+                    OnPropertyChanged(nameof(CanSelectTrendRange));
                 }
             }
         }
 
         /// <summary>
-        /// Gets the command that refreshes metrics and recent sessions once.
+        /// Gets whether the trend-range selector may be changed.
+        /// </summary>
+        public bool CanSelectTrendRange
+        {
+            get { return !_isDisposed && !IsBusy; }
+        }
+
+        /// <summary>
+        /// Gets the command that refreshes the coherent snapshot once.
         /// </summary>
         public ICommand RefreshCommand
         {
             get;
+            private set;
         }
 
         #endregion
@@ -347,48 +366,85 @@ namespace VisualInspectionTrainingSystem.ViewModels
         #region Loading
 
         /// <summary>
-        /// Refreshes metrics and recent sessions without blocking the WPF dispatcher.
+        /// Refreshes one coherent snapshot without blocking the WPF dispatcher.
         /// </summary>
-        /// <returns>A task that completes when the refresh settles.</returns>
+        /// <returns>A task that completes when refresh or cancellation settles.</returns>
         public async Task RefreshAsync()
         {
-            if (IsBusy)
+            if (_isDisposed || IsBusy)
+            {
                 return;
+            }
+
+            int version = ++_operationVersion;
+            CancellationTokenSource cancellation =
+                new CancellationTokenSource();
+            _operationCancellation = cancellation;
+            CancellationToken cancellationToken = cancellation.Token;
+            int trendDays = SelectedTrendDays;
+            DateTime dayStart = DateTime.Today;
+            DateTime dayEnd = dayStart.AddDays(1);
+            DateTime trendStart = dayEnd.AddDays(-trendDays);
 
             IsBusy = true;
-            StatusMessage = "Loading today's dashboard...";
+            StatusMessage = "Loading today's dashboard and " +
+                            trendDays + "-day trends...";
+
+            Task<DashboardSnapshot> worker = Task.Run(
+                () => _dashboardRepository.GetSnapshot(
+                    dayStart,
+                    dayEnd,
+                    trendStart,
+                    dayEnd,
+                    RecentSessionLimit),
+                CancellationToken.None);
 
             try
             {
-                DashboardLoadResult result = await Task.Run(
-                    () => new DashboardLoadResult(
-                        _dashboardRepository.GetMetrics(),
-                        _dashboardRepository.GetRecentSessions(
-                            RecentSessionLimit)));
+                DashboardSnapshot snapshot = await AwaitWithCancellation(
+                    worker,
+                    cancellationToken);
 
-                Metrics = result.Metrics;
+                if (!CanPublish(version, cancellationToken))
+                {
+                    return;
+                }
 
-                ReplaceRecentSessions(result.RecentSessions);
-
-                StatusMessage =
-                    "Today's dashboard refreshed at " +
-                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") +
-                    ".";
+                PublishSnapshot(snapshot);
+                StatusMessage = "Dashboard refreshed at " +
+                                snapshot.GeneratedAtLocal.ToString(
+                                    "yyyy-MM-dd HH:mm:ss") +
+                                ".";
             }
-            catch (Exception ex)
+            catch (OperationCanceledException)
             {
-                ApplicationErrorLogger.LogUnhandledException(
-                    "Dashboard Refresh",
-                    ex,
-                    false);
-
-                Metrics = new DashboardMetrics();
-                RecentSessions.Clear();
-                StatusMessage = DashboardErrorMessage;
+                // Window close is an expected cancellation path.
+            }
+            catch (Exception exception)
+            {
+                if (CanPublish(version, cancellationToken))
+                {
+                    ApplicationErrorLogger.LogUnhandledException(
+                        "Dashboard Refresh",
+                        exception,
+                        false);
+                    ClearSnapshot();
+                    StatusMessage = DashboardErrorMessage;
+                }
             }
             finally
             {
-                IsBusy = false;
+                if (CanPublish(version, cancellationToken))
+                {
+                    IsBusy = false;
+                }
+
+                if (ReferenceEquals(_operationCancellation, cancellation))
+                {
+                    _operationCancellation = null;
+                }
+
+                cancellation.Dispose();
             }
         }
 
@@ -405,24 +461,48 @@ namespace VisualInspectionTrainingSystem.ViewModels
         /// </summary>
         private bool CanRefresh()
         {
-            return !IsBusy;
+            return !_isDisposed && !IsBusy;
         }
 
         #endregion
 
-        #region Helpers
+        #region Snapshot Publication
 
         /// <summary>
-        /// Replaces recent-session rows so refreshes cannot append duplicates.
+        /// Replaces all visible collections and chart arrays from one snapshot.
         /// </summary>
-        /// <param name="sessions">The latest deterministic repository rows.</param>
+        private void PublishSnapshot(DashboardSnapshot snapshot)
+        {
+            DashboardSnapshot safeSnapshot = snapshot ??
+                new DashboardSnapshot();
+
+            Metrics = safeSnapshot.Metrics;
+            ReplaceRecentSessions(safeSnapshot.RecentSessions);
+            Charts.UpdateSnapshot(safeSnapshot);
+        }
+
+        /// <summary>
+        /// Clears stale values after a failed refresh.
+        /// </summary>
+        private void ClearSnapshot()
+        {
+            Metrics = new DashboardMetrics();
+            RecentSessions.Clear();
+            Charts.UpdateSnapshot(null);
+        }
+
+        /// <summary>
+        /// Replaces recent-session rows so refresh cannot append duplicates.
+        /// </summary>
         private void ReplaceRecentSessions(
             IList<DashboardSessionSummary> sessions)
         {
             RecentSessions.Clear();
 
             if (sessions == null)
+            {
                 return;
+            }
 
             foreach (DashboardSessionSummary session in sessions)
             {
@@ -433,8 +513,85 @@ namespace VisualInspectionTrainingSystem.ViewModels
             }
         }
 
+        #endregion
+
+        #region Cancellation
+
         /// <summary>
-        /// Raises property changes for all metric display values.
+        /// Awaits synchronous database work while allowing UI cancellation to finish promptly.
+        /// </summary>
+        private static async Task<T> AwaitWithCancellation<T>(
+            Task<T> task,
+            CancellationToken cancellationToken)
+        {
+            TaskCompletionSource<bool> cancellationSignal =
+                new TaskCompletionSource<bool>(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
+
+            using (cancellationToken.Register(
+                () => cancellationSignal.TrySetResult(true)))
+            {
+                Task completed = await Task.WhenAny(
+                    task,
+                    cancellationSignal.Task);
+
+                if (!ReferenceEquals(completed, task))
+                {
+                    ObserveAbandonedTask(task);
+                    throw new OperationCanceledException(cancellationToken);
+                }
+            }
+
+            return await task;
+        }
+
+        /// <summary>
+        /// Observes a worker that can outlive a canceled view operation.
+        /// </summary>
+        private static void ObserveAbandonedTask(Task task)
+        {
+            task.ContinueWith(
+                abandoned =>
+                {
+                    Exception ignored = abandoned.Exception;
+                },
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted |
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+        }
+
+        /// <summary>
+        /// Returns whether one operation may still update live WPF state.
+        /// </summary>
+        private bool CanPublish(
+            int version,
+            CancellationToken cancellationToken)
+        {
+            return !_isDisposed &&
+                   !cancellationToken.IsCancellationRequested &&
+                   version == _operationVersion;
+        }
+
+        #endregion
+
+        #region Validation and Notification
+
+        /// <summary>
+        /// Restricts Dashboard trends to the supported bounded ranges.
+        /// </summary>
+        private static void ValidateTrendDays(int value)
+        {
+            if (value != SevenDayTrend && value != ThirtyDayTrend)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(value),
+                    "Dashboard trends support only seven or thirty days.");
+            }
+        }
+
+        /// <summary>
+        /// Raises all metric-dependent display properties.
         /// </summary>
         private void NotifyMetricTextChanged()
         {
@@ -456,43 +613,33 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         #endregion
 
-        #region Nested Types
+        #region IDisposable
 
         /// <summary>
-        /// Carries one atomically loaded dashboard refresh result.
+        /// Cancels active work and prevents all late publication after view closure.
         /// </summary>
-        private sealed class DashboardLoadResult
+        public void Dispose()
         {
-            /// <summary>
-            /// Initializes one dashboard load result.
-            /// </summary>
-            /// <param name="metrics">Daily metric snapshot.</param>
-            /// <param name="recentSessions">Recent deterministic session rows.</param>
-            public DashboardLoadResult(
-                DashboardMetrics metrics,
-                List<DashboardSessionSummary> recentSessions)
+            if (_isDisposed)
             {
-                Metrics = metrics ?? new DashboardMetrics();
-
-                RecentSessions = recentSessions ??
-                    new List<DashboardSessionSummary>();
+                return;
             }
 
-            /// <summary>
-            /// Gets the daily metric snapshot.
-            /// </summary>
-            public DashboardMetrics Metrics
+            _isDisposed = true;
+            Charts.Dispose();
+            _operationVersion++;
+
+            CancellationTokenSource cancellation = _operationCancellation;
+            _operationCancellation = null;
+
+            if (cancellation != null)
             {
-                get;
+                cancellation.Cancel();
+                cancellation.Dispose();
             }
 
-            /// <summary>
-            /// Gets the recent deterministic session rows.
-            /// </summary>
-            public List<DashboardSessionSummary> RecentSessions
-            {
-                get;
-            }
+            _refreshCommand.RaiseCanExecuteChanged();
+            OnPropertyChanged(nameof(CanSelectTrendRange));
         }
 
         #endregion

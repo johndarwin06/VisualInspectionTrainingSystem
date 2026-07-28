@@ -4,6 +4,7 @@ using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.Services;
 using VisualInspectionTrainingSystem.ViewModels;
 
@@ -14,7 +15,7 @@ namespace VisualInspectionTrainingSystem.Views.Quiz
     /// <summary>
     /// Hosts the quiz view and routes local keyboard shortcuts to its view model commands.
     /// </summary>
-    public partial class QuizWindow : Window
+    public partial class QuizWindow : MetroWindow
     {
         #region Fields
 

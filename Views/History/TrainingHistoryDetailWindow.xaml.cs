@@ -2,6 +2,7 @@
 
 using System;
 using System.Windows;
+using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.ViewModels;
 
 #endregion
@@ -11,7 +12,7 @@ namespace VisualInspectionTrainingSystem.Views.History
     /// <summary>
     /// Hosts one authorized read-only trainee result and disposes active background work on close.
     /// </summary>
-    public partial class TrainingHistoryDetailWindow : Window
+    public partial class TrainingHistoryDetailWindow : MetroWindow
     {
         #region Fields
 

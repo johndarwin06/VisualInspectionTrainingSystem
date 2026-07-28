@@ -1,7 +1,9 @@
-<Window
+<mah:MetroWindow
     x:Class="VisualInspectionTrainingSystem.Views.Reports.ReportsWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:charts="clr-namespace:VisualInspectionTrainingSystem.Controls.Charts"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:progress="clr-namespace:VisualInspectionTrainingSystem.Controls.Progress"
     Title="Reports"
@@ -14,7 +16,7 @@
     KeyboardNavigation.TabNavigation="Cycle"
     WindowStartupLocation="CenterScreen">
 
-    <Window.Resources>
+    <mah:MetroWindow.Resources>
         <Style x:Key="ReportActionButtonStyle" BasedOn="{StaticResource DarkActionButtonStyle}" TargetType="Button">
             <Setter Property="MinWidth" Value="104" />
             <Setter Property="Margin" Value="6,0,0,0" />
@@ -36,7 +38,7 @@
             <Setter Property="FontSize" Value="22" />
             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
         </Style>
-    </Window.Resources>
+    </mah:MetroWindow.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -121,35 +123,53 @@
             </UniformGrid>
 
             <Border Grid.Row="4" Padding="1" Style="{StaticResource SurfaceCardStyle}">
-                <DataGrid
-                    AutomationProperties.Name="Report sessions"
-                    AutoGenerateColumns="False"
-                    BorderThickness="0"
-                    CanUserAddRows="False"
-                    CanUserDeleteRows="False"
-                    CanUserReorderColumns="True"
-                    CanUserResizeColumns="True"
-                    EnableRowVirtualization="True"
-                    IsReadOnly="True"
-                    ItemsSource="{Binding Sessions}"
-                    SelectionMode="Single"
-                    SelectionUnit="FullRow">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Width="72" Binding="{Binding SessionID}" Header="Session" />
-                        <DataGridTextColumn Width="92" Binding="{Binding EmployeeNo}" Header="Employee" />
-                        <DataGridTextColumn Width="150" Binding="{Binding FullName}" Header="Full Name" />
-                        <DataGridTextColumn Width="115" Binding="{Binding Department}" Header="Department" />
-                        <DataGridTextColumn Width="126" Binding="{Binding StartTime, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Header="Start" />
-                        <DataGridTextColumn Width="126" Binding="{Binding EndTime, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue=N/A}" Header="End" />
-                        <DataGridTextColumn Width="80" Binding="{Binding Status}" Header="Status" />
-                        <DataGridTextColumn Width="74" Binding="{Binding TotalQuestions}" Header="Questions" />
-                        <DataGridTextColumn Width="66" Binding="{Binding CorrectAnswers}" Header="Correct" />
-                        <DataGridTextColumn Width="62" Binding="{Binding WrongAnswers}" Header="Wrong" />
-                        <DataGridTextColumn Width="66" Binding="{Binding PendingAnswers}" Header="Pending" />
-                        <DataGridTextColumn Width="72" Binding="{Binding ReviewedAnswers}" Header="Reviewed" />
-                        <DataGridTextColumn Width="78" Binding="{Binding ReviewedAccuracyText}" Header="Accuracy" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                <TabControl
+                    AutomationProperties.Name="Report views"
+                    materialDesign:ColorZoneAssist.Mode="PrimaryLight"
+                    Style="{StaticResource MaterialDesignTabControl}">
+                    <TabItem AutomationProperties.Name="Report charts" Header="Charts" Style="{StaticResource MaterialDesignTabItem}">
+                        <ScrollViewer
+                            HorizontalScrollBarVisibility="Auto"
+                            PanningMode="Both"
+                            VerticalScrollBarVisibility="Auto">
+                            <charts:AnalyticsChartsPanel DataContext="{Binding Charts}" />
+                        </ScrollViewer>
+                    </TabItem>
+                    <TabItem AutomationProperties.Name="Report session table" Header="Session Table" Style="{StaticResource MaterialDesignTabItem}">
+                        <DataGrid
+                            AutomationProperties.Name="Report sessions"
+                            AutoGenerateColumns="False"
+                            BorderThickness="0"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            CanUserReorderColumns="True"
+                            CanUserResizeColumns="True"
+                            EnableColumnVirtualization="True"
+                            EnableRowVirtualization="True"
+                            IsReadOnly="True"
+                            ItemsSource="{Binding Sessions}"
+                            SelectionMode="Single"
+                            SelectionUnit="FullRow"
+                            VirtualizingPanel.IsVirtualizing="True"
+                            VirtualizingPanel.VirtualizationMode="Recycling">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Width="72" Binding="{Binding SessionID}" Header="Session" />
+                                <DataGridTextColumn Width="92" Binding="{Binding EmployeeNo}" Header="Employee" />
+                                <DataGridTextColumn Width="150" Binding="{Binding FullName}" Header="Full Name" />
+                                <DataGridTextColumn Width="115" Binding="{Binding Department}" Header="Department" />
+                                <DataGridTextColumn Width="126" Binding="{Binding StartTime, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Header="Start" />
+                                <DataGridTextColumn Width="126" Binding="{Binding EndTime, StringFormat={}{0:yyyy-MM-dd HH:mm}, TargetNullValue=N/A}" Header="End" />
+                                <DataGridTextColumn Width="80" Binding="{Binding Status}" Header="Status" />
+                                <DataGridTextColumn Width="74" Binding="{Binding TotalQuestions}" Header="Questions" />
+                                <DataGridTextColumn Width="66" Binding="{Binding CorrectAnswers}" Header="Correct" />
+                                <DataGridTextColumn Width="62" Binding="{Binding WrongAnswers}" Header="Wrong" />
+                                <DataGridTextColumn Width="66" Binding="{Binding PendingAnswers}" Header="Pending" />
+                                <DataGridTextColumn Width="72" Binding="{Binding ReviewedAnswers}" Header="Reviewed" />
+                                <DataGridTextColumn Width="78" Binding="{Binding ReviewedAccuracyText}" Header="Accuracy" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
             </Border>
 
             <Grid Grid.Row="6">
@@ -167,4 +187,4 @@
 
         <progress:ModernProgressBar Grid.RowSpan="2" Panel.ZIndex="100" IsActive="{Binding IsBusy}" Message="{Binding BusyStatusText}" />
     </Grid>
-</Window>
+</mah:MetroWindow>

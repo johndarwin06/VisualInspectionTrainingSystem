@@ -1213,7 +1213,36 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 new ResultWindow(
                     new List<QuizAnswer>(_quizEngine.Session.Answers));
 
+            Window resultOwner = FindResultOwner();
+
+            if (resultOwner != null)
+            {
+                resultWindow.Owner = resultOwner;
+            }
+
             resultWindow.Show();
+        }
+
+        /// <summary>
+        /// Finds the authenticated shell through the active quiz ownership chain without creating navigation state.
+        /// </summary>
+        /// <returns>The shell owner when available; otherwise, the current application main window.</returns>
+        private static Window FindResultOwner()
+        {
+            if (Application.Current == null)
+            {
+                return null;
+            }
+
+            foreach (Window window in Application.Current.Windows)
+            {
+                if (window is Views.Quiz.QuizWindow && window.Owner != null)
+                {
+                    return window.Owner;
+                }
+            }
+
+            return Application.Current.MainWindow;
         }
 
         /// <summary>

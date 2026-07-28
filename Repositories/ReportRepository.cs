@@ -4,6 +4,7 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Services;
 
@@ -27,6 +28,14 @@ namespace VisualInspectionTrainingSystem.Repositories
         /// Maximum session rows permitted in one generated export.
         /// </summary>
         public const int MaximumExportSessionCount = 10000;
+
+        /// <summary>
+        /// Maximum number of local calendar days loaded into one chart series.
+        /// </summary>
+        public const int MaximumChartDayCount = 366;
+
+        private const string ChartUnavailableReason =
+            "Charts are available for date ranges of up to 366 days.";
 
         private const string SummarySql = @"
 SELECT
@@ -159,6 +168,59 @@ GROUP BY
 ORDER BY s.StartTime DESC, s.SessionID DESC
 LIMIT @Limit;";
 
+        private const string DailySessionChartSql = @"
+SELECT
+    DATE(s.StartTime) AS PeriodDate,
+    IFNULL(SUM(CASE
+        WHEN s.EndTime IS NOT NULL THEN 1
+        ELSE 0
+    END), 0) AS CompletedSessions,
+    IFNULL(SUM(CASE
+        WHEN s.EndTime IS NOT NULL
+         AND s.EndTime >= s.StartTime THEN
+            TIMESTAMPDIFF(SECOND, s.StartTime, s.EndTime)
+        ELSE 0
+    END), 0) AS DurationSeconds
+FROM tbl_training_session s
+WHERE s.StartTime >= @StartDate
+  AND s.StartTime < @EndDate
+GROUP BY DATE(s.StartTime)
+ORDER BY PeriodDate ASC;";
+
+        private const string DailyAnswerChartSql = @"
+SELECT
+    DATE(s.StartTime) AS PeriodDate,
+    IFNULL(SUM(CASE
+        WHEN UPPER(TRIM(a.UserAnswer)) = 'GOOD' THEN 1
+        ELSE 0
+    END), 0) AS GoodSelections,
+    IFNULL(SUM(CASE
+        WHEN UPPER(TRIM(a.UserAnswer)) = 'NG' THEN 1
+        ELSE 0
+    END), 0) AS NgSelections,
+    IFNULL(SUM(CASE
+        WHEN UPPER(TRIM(a.CorrectAnswer)) IN ('GOOD', 'NG') THEN 1
+        ELSE 0
+    END), 0) AS ReviewedAnswers,
+    IFNULL(SUM(CASE
+        WHEN UPPER(TRIM(a.CorrectAnswer)) IN ('GOOD', 'NG')
+         AND UPPER(TRIM(a.UserAnswer)) IN ('GOOD', 'NG')
+         AND UPPER(TRIM(a.UserAnswer)) = UPPER(TRIM(a.CorrectAnswer)) THEN 1
+        ELSE 0
+    END), 0) AS CorrectReviewedAnswers,
+    IFNULL(SUM(CASE
+        WHEN a.CorrectAnswer IS NULL
+          OR UPPER(TRIM(a.CorrectAnswer)) NOT IN ('GOOD', 'NG') THEN 1
+        ELSE 0
+    END), 0) AS PendingAnswers
+FROM tbl_training_session s
+INNER JOIN tbl_quiz_answer a
+    ON a.SessionID = s.SessionID
+WHERE s.StartTime >= @StartDate
+  AND s.StartTime < @EndDate
+GROUP BY DATE(s.StartTime)
+ORDER BY PeriodDate ASC;";
+
         #endregion
 
         #region Fields
@@ -216,7 +278,7 @@ LIMIT @Limit;";
         }
 
         /// <summary>
-        /// Loads summary and row data through one repeatable-read transaction.
+        /// Loads summary, bounded chart, and row data through one repeatable-read transaction.
         /// </summary>
         private ReportSnapshot LoadConsistentSnapshot(
             ReportPeriod period,
@@ -242,12 +304,21 @@ LIMIT @Limit;";
                     period.StartInclusive,
                     period.EndExclusive);
 
+                AnalyticsChartData chartData = LoadChartData(
+                    connection,
+                    transaction,
+                    period.StartInclusive,
+                    period.EndExclusive);
+
                 ReportSnapshot snapshot;
 
                 if (isExport &&
                     summary.SessionCount > MaximumExportSessionCount)
                 {
-                    snapshot = CreateExportLimitSnapshot(period, summary);
+                    snapshot = CreateExportLimitSnapshot(
+                        period,
+                        summary,
+                        chartData);
                 }
                 else
                 {
@@ -264,7 +335,10 @@ LIMIT @Limit;";
                     if (isExport &&
                         sessions.Count > MaximumExportSessionCount)
                     {
-                        snapshot = CreateExportLimitSnapshot(period, summary);
+                        snapshot = CreateExportLimitSnapshot(
+                            period,
+                            summary,
+                            chartData);
                     }
                     else
                     {
@@ -273,6 +347,7 @@ LIMIT @Limit;";
                             Period = period,
                             Summary = summary,
                             Sessions = sessions,
+                            ChartData = chartData,
                             GeneratedAtLocal = DateTime.Now,
                             IsDisplayLimited =
                                 !isExport &&
@@ -438,6 +513,165 @@ LIMIT @Limit;";
         }
 
         /// <summary>
+        /// Loads bounded daily chart aggregates through the caller-owned read scope.
+        /// </summary>
+        private static AnalyticsChartData LoadChartData(
+            MySqlConnection connection,
+            MySqlTransaction transaction,
+            DateTime? startDate,
+            DateTime? endDateExclusive)
+        {
+            if (!IsBoundedChartRange(startDate, endDateExclusive))
+            {
+                return CreateUnavailableChartData();
+            }
+
+            DateTime rangeStart = startDate.Value;
+            DateTime rangeEnd = endDateExclusive.Value;
+            Dictionary<DateTime, ChartPoint> pointsByDate =
+                CreateZeroFilledPoints(rangeStart, rangeEnd);
+
+            DataTable sessionTable = ExecuteDataTable(
+                DailySessionChartSql,
+                connection,
+                transaction,
+                CreateDateParameter("@StartDate", rangeStart),
+                CreateDateParameter("@EndDate", rangeEnd));
+
+            ApplySessionChartRows(sessionTable, pointsByDate);
+
+            DataTable answerTable = ExecuteDataTable(
+                DailyAnswerChartSql,
+                connection,
+                transaction,
+                CreateDateParameter("@StartDate", rangeStart),
+                CreateDateParameter("@EndDate", rangeEnd));
+
+            ApplyAnswerChartRows(answerTable, pointsByDate);
+
+            AnalyticsChartData chartData = new AnalyticsChartData
+            {
+                RangeStartInclusive = rangeStart,
+                RangeEndExclusive = rangeEnd
+            };
+
+            for (DateTime date = rangeStart.Date;
+                 date < rangeEnd;
+                 date = date.AddDays(1))
+            {
+                ChartPoint point = pointsByDate[date];
+
+                point.ReviewedAccuracyPercent = CalculateReviewedAccuracy(
+                    point.CorrectReviewedAnswers,
+                    point.ReviewedAnswers);
+
+                chartData.DailyPoints.Add(point);
+                chartData.ReviewedAnswers += point.ReviewedAnswers;
+                chartData.CorrectReviewedAnswers +=
+                    point.CorrectReviewedAnswers;
+                chartData.PendingAnswers += point.PendingAnswers;
+            }
+
+            return chartData;
+        }
+
+        /// <summary>
+        /// Creates one zero-valued point for every local calendar day in the range.
+        /// </summary>
+        private static Dictionary<DateTime, ChartPoint> CreateZeroFilledPoints(
+            DateTime startDate,
+            DateTime endDateExclusive)
+        {
+            Dictionary<DateTime, ChartPoint> points =
+                new Dictionary<DateTime, ChartPoint>();
+
+            for (DateTime date = startDate.Date;
+                 date < endDateExclusive;
+                 date = date.AddDays(1))
+            {
+                points.Add(
+                    date,
+                    new ChartPoint
+                    {
+                        PeriodStartLocal = date,
+                        Label = date.ToString(
+                            "MMM d",
+                            CultureInfo.InvariantCulture)
+                    });
+            }
+
+            return points;
+        }
+
+        /// <summary>
+        /// Applies daily completed-session and valid-duration aggregates.
+        /// </summary>
+        private static void ApplySessionChartRows(
+            DataTable table,
+            IDictionary<DateTime, ChartPoint> pointsByDate)
+        {
+            foreach (DataRow row in table.Rows)
+            {
+                DateTime date = ToRequiredDate(
+                    row["PeriodDate"],
+                    "PeriodDate").Date;
+                ChartPoint point;
+
+                if (pointsByDate.TryGetValue(date, out point))
+                {
+                    point.CompletedSessions = ToInt(
+                        row["CompletedSessions"]);
+                    point.DurationSeconds = ToLong(
+                        row["DurationSeconds"]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Applies normalized GOOD, NG, reviewed, correct, and pending aggregates.
+        /// </summary>
+        private static void ApplyAnswerChartRows(
+            DataTable table,
+            IDictionary<DateTime, ChartPoint> pointsByDate)
+        {
+            foreach (DataRow row in table.Rows)
+            {
+                DateTime date = ToRequiredDate(
+                    row["PeriodDate"],
+                    "PeriodDate").Date;
+                ChartPoint point;
+
+                if (pointsByDate.TryGetValue(date, out point))
+                {
+                    point.GoodSelections = ToInt(row["GoodSelections"]);
+                    point.NgSelections = ToInt(row["NgSelections"]);
+                    point.ReviewedAnswers = ToInt(row["ReviewedAnswers"]);
+                    point.CorrectReviewedAnswers = ToInt(
+                        row["CorrectReviewedAnswers"]);
+                    point.PendingAnswers = ToInt(row["PendingAnswers"]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculates reviewed-only accuracy without treating pending as incorrect.
+        /// </summary>
+        private static decimal? CalculateReviewedAccuracy(
+            int correctReviewedAnswers,
+            int reviewedAnswers)
+        {
+            if (reviewedAnswers == 0)
+            {
+                return null;
+            }
+
+            return Math.Round(
+                correctReviewedAnswers * 100m / reviewedAnswers,
+                2,
+                MidpointRounding.AwayFromZero);
+        }
+
+        /// <summary>
         /// Executes one read command within the caller-owned connection scope.
         /// </summary>
         private static DataTable ExecuteDataTable(
@@ -472,14 +706,28 @@ LIMIT @Limit;";
         /// </summary>
         private static ReportSnapshot CreateExportLimitSnapshot(
             ReportPeriod period,
-            ReportSummary summary)
+            ReportSummary summary,
+            AnalyticsChartData chartData)
         {
             return new ReportSnapshot
             {
                 Period = period,
                 Summary = summary,
+                ChartData = chartData,
                 GeneratedAtLocal = DateTime.Now,
                 IsExportLimitExceeded = true
+            };
+        }
+
+        /// <summary>
+        /// Creates the fixed safe state used when a chart range is unbounded or too large.
+        /// </summary>
+        private static AnalyticsChartData CreateUnavailableChartData()
+        {
+            return new AnalyticsChartData
+            {
+                IsAvailable = false,
+                UnavailableReason = ChartUnavailableReason
             };
         }
 
@@ -593,6 +841,24 @@ LIMIT @Limit;";
             }
         }
 
+        /// <summary>
+        /// Determines whether a chart range is finite and within the point limit.
+        /// </summary>
+        private static bool IsBoundedChartRange(
+            DateTime? startDate,
+            DateTime? endDateExclusive)
+        {
+            if (!startDate.HasValue || !endDateExclusive.HasValue)
+            {
+                return false;
+            }
+
+            TimeSpan range = endDateExclusive.Value - startDate.Value;
+
+            return range >= TimeSpan.Zero &&
+                   range <= TimeSpan.FromDays(MaximumChartDayCount);
+        }
+
         #endregion
 
         #region SQL Parameters
@@ -630,6 +896,19 @@ LIMIT @Limit;";
             }
 
             return Convert.ToInt32(value);
+        }
+
+        /// <summary>
+        /// Converts an optional numeric database value to a long integer.
+        /// </summary>
+        private static long ToLong(object value)
+        {
+            if (value == null || value == DBNull.Value)
+            {
+                return 0L;
+            }
+
+            return Convert.ToInt64(value);
         }
 
         /// <summary>

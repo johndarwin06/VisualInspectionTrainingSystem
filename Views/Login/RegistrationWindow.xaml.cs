@@ -1,7 +1,7 @@
 #region Namespaces
 
 using System;
-using System.Windows;
+using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.ViewModels;
 
 #endregion
@@ -9,9 +9,10 @@ using VisualInspectionTrainingSystem.ViewModels;
 namespace VisualInspectionTrainingSystem.Views.Login
 {
     /// <summary>
-    /// Hosts the registration ViewModel and forwards only window lifecycle events.
+    /// Hosts the registration ViewModel in MahApps chrome and forwards only
+    /// window lifecycle events.
     /// </summary>
-    public partial class RegistrationWindow : Window
+    public partial class RegistrationWindow : MetroWindow
     {
         #region Fields
 
@@ -20,7 +21,7 @@ namespace VisualInspectionTrainingSystem.Views.Login
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
         /// Creates the inactive-trainee registration surface.
@@ -38,6 +39,10 @@ namespace VisualInspectionTrainingSystem.Views.Login
 
         #region Lifecycle
 
+        /// <summary>
+        /// Returns registration to its existing owner through the established
+        /// close-request contract.
+        /// </summary>
         private void OnCloseRequested()
         {
             Close();
@@ -51,7 +56,9 @@ namespace VisualInspectionTrainingSystem.Views.Login
             EventArgs eventArgs)
         {
             if (_isDisposed)
+            {
                 return;
+            }
 
             _isDisposed = true;
             Closed -= OnWindowClosed;
