@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Material Design UI and Analytics Overhaul
+
+- Added one role-aware MahApps application shell for authenticated administrator and trainee navigation, with fail-closed destination commands, single-workspace ownership, safe logout handoff, and stable close/minimize/restore behavior.
+- Integrated Material Design 3, the Material/MahApps bridge, light/dark application themes, modern window chrome, consistent cards, fields, actions, DataGrids, dialogs, status chips, focus visuals, responsive layouts, and subtle state animations across every production surface.
+- Added reusable LiveChartsCore daily analytics for Dashboard, authenticated trainee progress, and bounded Reports periods. Repository aggregation remains parameterized and preserves normalized GOOD/NG, pending/reviewed, nullable accuracy, valid-duration, deterministic ordering, trainee isolation, and repeatable-read report semantics.
+- Added safe optional-chart failure handling so valid trainee history remains visible when personal analytics cannot load, while technical details are logged and only a fixed unavailable chart state is shown.
+- Verified Debug and Release with zero errors, the existing single MVVM Toolkit warning, 12,000+ focused assertions across UI construction, authorization/navigation, MySQL analytics, Result, quiz sizing, lifecycle, and native deployment, plus approved real WPF acceptance of all administrator and trainee workflows.
+- Verified actual x86/x64 SkiaSharp and HarfBuzz native loading and real Cartesian/pie rendering in both Debug and Release. Temporary probes, database fixtures, logs, exports, and generated output are excluded from delivery.
+
 ### UI Polish
 
 - Composed the existing design tokens, Material Design resources, and shared application styles into one reusable light theme with consistent colors, spacing, typography, focus visuals, inputs, actions, status treatments, and virtualized DataGrids.

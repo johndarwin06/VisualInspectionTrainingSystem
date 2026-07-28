@@ -4,11 +4,11 @@ Project: Visual Inspection Training System
 
 Current Version: 0.9 Beta
 
-Current Module: Issue #15 UI Polish and trainee training history - implemented, tested, and manually accepted
+Current Module: Issue #15.1 Material Design UI and analytics overhaul - implemented, tested, and manually accepted
 
 Build Status: Debug and Release successful
 
-Last Build: 2026-07-26
+Last Build: 2026-07-28
 
 Build Warnings: 1 existing `MVVMTKCFG0002` warning in each configuration
 
@@ -41,9 +41,19 @@ Completed:
 - Review Workflow (Issue #13, delivered by merged PR #50)
 - User Management (Issue #14 / GitHub issue #18, delivered by merged PR #51)
 - UI Polish and secure trainee training history (Issue #15 / GitHub issue #19)
+- Material Design UI and analytics overhaul (Issue #15.1 / GitHub issue #53)
 
 In Progress:
-- None. Issue #15 UI Polish and secure trainee training history are implemented, tested, and manually accepted.
+- None. Issue #15.1 is implemented, tested, and manually accepted. No subsequent project issue has started.
+
+Issue #15.1 Verification:
+- Replaced competing authenticated navigation with one role-aware MahApps shell. Administrator and trainee destinations are hidden and fail closed by role, one owned workspace opens at a time, logout safely transfers application ownership back to Login, and shell shutdown closes active work without reactivating a closing window.
+- Composed Material Design 3, MahApps, and the Material/MahApps bridge before custom resources; added application-wide light/dark switching, modern window chrome, consistent cards, inputs, buttons, navigation, tables, dialogs, focus treatment, loading/empty/error states, and subtle state animations across every production surface.
+- Added reusable chart-neutral daily analytics models and LiveChartsCore presentations for administrator Dashboard, trainee-only personal progress, and bounded Reports periods. Repository SQL remains parameterized, normalizes supported GOOD/NG values, excludes pending truth from reviewed accuracy, avoids session-duration multiplication, and keeps report reads inside the existing repeatable-read snapshot.
+- Final Debug and Release rebuilds succeeded with zero errors and one existing `MVVMTKCFG0002` warning in each configuration. Material UI construction passed 555 assertions, role-aware shell/navigation passed 173, controlled MySQL analytics and cleanup passed 11,685, Result Module passed 76, and configurable quiz-size regression passed 29.
+- Native deployment and real off-screen WPF chart rendering passed 96 assertions in each Debug x64, Debug x86, Release x64, and Release x86 run. The correct SkiaSharp and HarfBuzz native modules loaded from each architecture-specific output folder, and light/dark refresh replaced rather than duplicated chart series.
+- Visible WPF acceptance passed the administrator and trainee shells, all navigation destinations, both themes, window controls, Review Workflow, Dashboard metrics/charts, Reports periods/charts/tables, User Management, Login, Registration, Training Setup, 10- and 20-question quizzes, Result filters, Training History/detail/personal charts, refresh, resizing, keyboard interaction, logout, and shutdown.
+- No clipping, inconsistent or plain controls, crash, freeze, binding failure, raw database error, sensitive message, or unexpected diagnostic dialog appeared. Temporary database fixtures were removed with zero residual rows, existing accounts were preserved, and ignored probes/build output are excluded from delivery.
 
 Issue #15 Verification:
 - Added one application-wide light resource composition with reusable color, spacing, typography, focus, input, action, status, DataGrid virtualization, and busy-state styles while preserving the existing `Resources/DesignTokems` directory and Material Design dependency.
