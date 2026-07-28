@@ -7,8 +7,6 @@ using System.Windows.Input;
 using VisualInspectionTrainingSystem.Commands;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Services;
-using VisualInspectionTrainingSystem.Views.Admin;
-using VisualInspectionTrainingSystem.Views.Home;
 
 #endregion
 
@@ -49,6 +47,11 @@ namespace VisualInspectionTrainingSystem.ViewModels
         /// Requests that the Login view open or reactivate one registration window.
         /// </summary>
         public event Action RegisterRequested;
+
+        /// <summary>
+        /// Requests that the Login view hand a successfully authenticated user to the application shell.
+        /// </summary>
+        public event Action<User> LoginSucceeded;
 
         #endregion
 
@@ -162,6 +165,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 ? string.Empty
                 : EmployeeNo.Trim();
             string password = Password;
+            bool authenticatedSessionEstablished = false;
 
             try
             {
@@ -193,25 +197,25 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     return;
                 }
 
-                Window home = string.Equals(
-                    user.Role,
-                    UserRoles.Admin,
-                    StringComparison.Ordinal)
-                    ? (Window)new AdminWindow()
-                    : new HomeWindow();
-                home.Show();
+                authenticatedSessionEstablished = true;
 
-                foreach (Window window in Application.Current.Windows)
+                Action<User> loginSucceeded = LoginSucceeded;
+
+                if (loginSucceeded == null)
                 {
-                    if (window is Views.Login.LoginWindow)
-                    {
-                        window.Close();
-                        break;
-                    }
+                    throw new InvalidOperationException(
+                        "The application shell navigation handler is unavailable.");
                 }
+
+                loginSucceeded(user);
             }
             catch (Exception ex)
             {
+                if (authenticatedSessionEstablished)
+                {
+                    SessionService.Logout();
+                }
+
                 ApplicationErrorLogger.LogUnhandledException(
                     "Login Authentication",
                     ex,

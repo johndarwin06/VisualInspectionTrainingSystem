@@ -66,4 +66,8 @@
 
 - [x] UI Polish and secure trainee My Training History (Issue #15 / GitHub issue #19; implemented, tested, and manually accepted)
 
+# Sprint 14
+
+- [x] Material Design UI and analytics overhaul (Issue #15.1 / GitHub issue #53; implemented, tested, and manually accepted)
+
 No subsequent project issue has started.

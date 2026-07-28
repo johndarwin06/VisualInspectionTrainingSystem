@@ -2,6 +2,7 @@
 
 using System;
 using System.Windows;
+using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.ViewModels;
 
@@ -12,7 +13,7 @@ namespace VisualInspectionTrainingSystem.Views.History
     /// <summary>
     /// Hosts current-user training history and owns single-flight result-detail navigation.
     /// </summary>
-    public partial class TrainingHistoryWindow : Window
+    public partial class TrainingHistoryWindow : MetroWindow
     {
         #region Fields
 

@@ -21,6 +21,7 @@ namespace VisualInspectionTrainingSystem.Models
         {
             Summary = new ReportSummary();
             Sessions = new List<ReportSessionRow>();
+            ChartData = new AnalyticsChartData();
             GeneratedAtLocal = DateTime.Now;
         }
 
@@ -42,6 +43,11 @@ namespace VisualInspectionTrainingSystem.Models
         /// Gets or sets the deterministically ordered session rows.
         /// </summary>
         public List<ReportSessionRow> Sessions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the bounded daily chart data loaded with this snapshot.
+        /// </summary>
+        public AnalyticsChartData ChartData { get; set; }
 
         /// <summary>
         /// Gets or sets when the snapshot was generated in local time.

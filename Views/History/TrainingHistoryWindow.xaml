@@ -1,149 +1,426 @@
-<Window
+<mah:MetroWindow
     x:Class="VisualInspectionTrainingSystem.Views.History.TrainingHistoryWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:charts="clr-namespace:VisualInspectionTrainingSystem.Controls.Charts"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     Title="My Training History"
-    Width="1120"
-    Height="720"
-    MinWidth="760"
-    MinHeight="540"
+    Width="1200"
+    Height="780"
+    MinWidth="780"
+    MinHeight="560"
     AutomationProperties.Name="My training history"
-    Background="{StaticResource App.LightMutedSurfaceBrush}"
+    Background="{DynamicResource App.BackgroundBrush}"
     KeyboardNavigation.TabNavigation="Cycle"
     ResizeMode="CanResize"
     WindowStartupLocation="CenterOwner">
-    <Grid Margin="28" Style="{StaticResource ContentEntranceGridStyle}">
+
+    <mah:MetroWindow.Resources>
+        <Style
+            x:Key="HistoryTabItemStyle"
+            BasedOn="{StaticResource MaterialDesignTabItem}"
+            TargetType="TabItem">
+            <Setter Property="MinWidth" Value="150" />
+            <Setter Property="Padding" Value="20,11" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </mah:MetroWindow.Resources>
+
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="18" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="16" />
+            <RowDefinition Height="88" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="14" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock AutomationProperties.HeadingLevel="Level1" FontSize="28" FontWeight="Bold" Foreground="{StaticResource App.LightTextBrush}" Text="My Training History" />
-                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource App.LightSecondaryTextBrush}" Text="Review your completed training sessions and administrator-reviewed results." TextWrapping="Wrap" />
-            </StackPanel>
-            <Button Grid.Column="1" MinWidth="120" AutomationProperties.Name="Refresh training history" Command="{Binding RefreshCommand}" Style="{StaticResource PrimaryActionButtonStyle}">
-                <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="Refresh" Style="{StaticResource AppIconStyle}" />
-                    <TextBlock Text="Refresh" />
-                </StackPanel>
-            </Button>
-        </Grid>
-        <Border Grid.Row="2" Padding="18" Background="{StaticResource App.LightSurfaceBrush}" BorderBrush="{StaticResource App.LightBorderBrush}" BorderThickness="1" CornerRadius="10" Style="{StaticResource InteractiveCardStyle}">
+
+        <Border
+            Padding="28,0"
+            Background="{DynamicResource App.NavigationBrush}"
+            materialDesign:ElevationAssist.Elevation="Dp6">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*" MinWidth="180" />
-                    <ColumnDefinition Width="12" />
-                    <ColumnDefinition Width="*" MinWidth="130" />
-                    <ColumnDefinition Width="12" />
-                    <ColumnDefinition Width="*" MinWidth="130" />
-                    <ColumnDefinition Width="12" />
-                    <ColumnDefinition Width="*" MinWidth="165" />
-                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="6" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <TextBlock Grid.Column="0" Style="{StaticResource FieldLabelStyle}" Text="Search" />
-                <TextBlock Grid.Column="2" Style="{StaticResource FieldLabelStyle}" Text="Completed from" />
-                <TextBlock Grid.Column="4" Style="{StaticResource FieldLabelStyle}" Text="Completed through" />
-                <TextBlock Grid.Column="6" Style="{StaticResource FieldLabelStyle}" Text="Review status" />
-                <TextBox Grid.Row="2" Grid.Column="0" AutomationProperties.Name="Search by session or image filename" Style="{StaticResource AccessibleTextBoxStyle}" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" ToolTip="Search by exact session number or image filename" />
-                <DatePicker Grid.Row="2" Grid.Column="2" AutomationProperties.Name="Completed from date" SelectedDate="{Binding StartDate}" Style="{StaticResource AccessibleDatePickerStyle}" />
-                <DatePicker Grid.Row="2" Grid.Column="4" AutomationProperties.Name="Completed through date" SelectedDate="{Binding EndDate}" Style="{StaticResource AccessibleDatePickerStyle}" />
-                <ComboBox Grid.Row="2" Grid.Column="6" MinHeight="40" Padding="10,5" AutomationProperties.Name="Review status filter" ItemsSource="{Binding ReviewStatusOptions}" SelectedItem="{Binding SelectedReviewStatus}" />
-                <Button Grid.Row="2" Grid.Column="8" MinWidth="100" AutomationProperties.Name="Clear history filters" Command="{Binding ClearFiltersCommand}" Style="{StaticResource SecondaryActionButtonStyle}">
+
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <Border
+                        Width="50"
+                        Height="50"
+                        Margin="0,0,16,0"
+                        Background="{DynamicResource App.NavigationRaisedBrush}"
+                        CornerRadius="15">
+                        <materialDesign:PackIcon
+                            Width="28"
+                            Height="28"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource App.SecondaryBrush}"
+                            Kind="History" />
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock
+                            AutomationProperties.HeadingLevel="Level1"
+                            FontSize="25"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource App.DarkTextBrush}"
+                            Text="My Training History" />
+                        <TextBlock
+                            Margin="0,4,0,0"
+                            Foreground="{DynamicResource App.DarkSecondaryTextBrush}"
+                            Text="Personal progress, completed sessions, and reviewed outcomes" />
+                    </StackPanel>
+                </StackPanel>
+
+                <Button
+                    Grid.Column="1"
+                    MinWidth="126"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Refresh training history and progress"
+                    Command="{Binding RefreshCommand}"
+                    Style="{StaticResource DarkActionButtonStyle}">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="FilterOffOutline" Style="{StaticResource AppIconStyle}" />
-                        <TextBlock Text="Clear" />
+                        <materialDesign:PackIcon Kind="Refresh" Style="{StaticResource AppIconStyle}" />
+                        <TextBlock Text="Refresh" />
                     </StackPanel>
                 </Button>
             </Grid>
         </Border>
-        <Border Grid.Row="4" Background="{StaticResource App.LightSurfaceBrush}" BorderBrush="{StaticResource App.LightBorderBrush}" BorderThickness="1" CornerRadius="10">
-            <Grid>
-                <DataGrid x:Name="HistoryGrid" Margin="1" AutomationProperties.Name="Completed training sessions" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" EnableColumnVirtualization="True" EnableRowVirtualization="True" HeadersVisibility="Column" IsReadOnly="True" ItemsSource="{Binding Sessions}" RowHeaderWidth="0" SelectionMode="Single" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Width="145" Binding="{Binding CompletionTimeText}" Header="Completed" />
-                        <DataGridTextColumn Width="90" Binding="{Binding DurationText}" Header="Duration" />
-                        <DataGridTextColumn Width="85" Binding="{Binding TotalQuestions}" Header="Questions" />
-                        <DataGridTextColumn Width="70" Binding="{Binding UserGoodAnswers}" Header="GOOD" />
-                        <DataGridTextColumn Width="60" Binding="{Binding UserNgAnswers}" Header="NG" />
-                        <DataGridTextColumn Width="90" Binding="{Binding ReviewedAnswers}" Header="Reviewed" />
-                        <DataGridTextColumn Width="80" Binding="{Binding PendingAnswers}" Header="Pending" />
-                        <DataGridTextColumn Width="105" Binding="{Binding ReviewedAccuracyText}" Header="Accuracy*" />
-                        <DataGridTemplateColumn Width="150" Header="Review Status">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Border Margin="4" Padding="8,4" HorizontalAlignment="Left" CornerRadius="10">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Background" Value="{StaticResource App.WarningSurfaceBrush}" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ReviewStatusText}" Value="Reviewed"><Setter Property="Background" Value="{StaticResource App.SuccessSurfaceBrush}" /></DataTrigger>
-                                                    <DataTrigger Binding="{Binding ReviewStatusText}" Value="Partially Reviewed"><Setter Property="Background" Value="{StaticResource App.InfoSurfaceBrush}" /></DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <TextBlock FontWeight="SemiBold" Text="{Binding ReviewStatusText}">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="{StaticResource App.WarningBrush}" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding ReviewStatusText}" Value="Reviewed"><Setter Property="Foreground" Value="{StaticResource App.SuccessBrush}" /></DataTrigger>
-                                                        <DataTrigger Binding="{Binding ReviewStatusText}" Value="Partially Reviewed"><Setter Property="Foreground" Value="{StaticResource App.InfoBrush}" /></DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </Border>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Width="110" Header="Result">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button MinWidth="88" Margin="4" AutomationProperties.Name="Open training result" Command="{Binding DataContext.OpenResultCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Content="View Result" Style="{StaticResource SecondaryActionButtonStyle}" />
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <materialDesign:PackIcon Width="44" Height="44" HorizontalAlignment="Center" Foreground="{StaticResource App.LightSecondaryTextBrush}" Kind="History" />
-                    <TextBlock Margin="0,12,0,0" FontSize="16" Foreground="{StaticResource App.LightSecondaryTextBrush}" Text="{Binding EmptyStateText}" TextAlignment="Center" TextWrapping="Wrap" />
-                </StackPanel>
-                <Border Background="{StaticResource App.BusyScrimBrush}" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <ProgressBar Width="220" Height="6" IsIndeterminate="True" />
-                        <TextBlock Margin="0,14,0,0" FontSize="16" Foreground="White" Text="Loading your training history..." />
+
+        <TabControl
+            Grid.Row="1"
+            Margin="28,22,28,26"
+            AutomationProperties.Name="Training history sections"
+            Background="{DynamicResource App.SurfaceBrush}"
+            BorderBrush="{DynamicResource App.BorderBrush}"
+            materialDesign:ColorZoneAssist.Mode="PrimaryLight"
+            Style="{StaticResource MaterialDesignTabControl}">
+
+            <TabItem
+                AutomationProperties.Name="My Progress"
+                Style="{StaticResource HistoryTabItemStyle}">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon
+                            Margin="0,0,9,0"
+                            VerticalAlignment="Center"
+                            Kind="ChartLine" />
+                        <TextBlock VerticalAlignment="Center" Text="My Progress" />
                     </StackPanel>
-                </Border>
-            </Grid>
-        </Border>
-        <Grid Grid.Row="6">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock Foreground="{StaticResource App.LightSecondaryTextBrush}" Style="{StaticResource StatusMessageTextStyle}" Text="{Binding StatusMessage}" TextWrapping="Wrap" />
-                <TextBlock Margin="0,3,0,0" FontSize="11" Foreground="{StaticResource App.LightSecondaryTextBrush}" Text="* Accuracy uses reviewed answers only; pending answers are excluded." />
-            </StackPanel>
-            <Button Grid.Column="1" MinWidth="130" AutomationProperties.Name="Load more training sessions" Command="{Binding LoadMoreCommand}" Content="Load More" Style="{StaticResource SecondaryActionButtonStyle}" />
-        </Grid>
+                </TabItem.Header>
+
+                <Grid
+                    Margin="10"
+                    Background="{DynamicResource App.BackgroundBrush}"
+                    Style="{StaticResource ContentEntranceGridStyle}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="14" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Border Padding="18,14" Style="{StaticResource SurfaceCardStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="Personal analytics" />
+                                <TextBlock
+                                    Margin="0,4,0,0"
+                                    Style="{StaticResource SupportingTextStyle}"
+                                    Text="Completed activity and reviewed-only quality for your account"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                <TextBlock
+                                    Margin="0,0,0,5"
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource App.TextSecondaryBrush}"
+                                    Text="PROGRESS RANGE" />
+                                <ComboBox
+                                    Width="168"
+                                    AutomationProperties.Name="Personal progress range in days"
+                                    IsEnabled="{Binding CanSelectAnalyticsRange}"
+                                    ItemsSource="{Binding AnalyticsDayOptions}"
+                                    materialDesign:HintAssist.Hint="Range"
+                                    SelectedItem="{Binding SelectedAnalyticsDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    Style="{StaticResource MaterialDesignOutlinedComboBox}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock>
+                                                <Run Text="{Binding Mode=OneWay}" />
+                                                <Run Text=" days" />
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Row="2">
+                        <ScrollViewer
+                            HorizontalScrollBarVisibility="Auto"
+                            PanningMode="Both"
+                            VerticalScrollBarVisibility="Auto">
+                            <charts:AnalyticsChartsPanel
+                                Margin="0,0,6,6"
+                                DataContext="{Binding Charts}" />
+                        </ScrollViewer>
+
+                        <Border
+                            Background="{DynamicResource App.BusyScrimBrush}"
+                            CornerRadius="15"
+                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <ProgressBar Width="220" Height="7" IsIndeterminate="True" />
+                                <TextBlock
+                                    Margin="0,14,0,0"
+                                    FontSize="16"
+                                    Foreground="White"
+                                    Text="Loading your personal progress..." />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <Border
+                        Grid.Row="4"
+                        Padding="14,10"
+                        Background="{DynamicResource App.SurfaceVariantBrush}"
+                        CornerRadius="12">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon
+                                Margin="0,0,10,0"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource App.PrimaryBrush}"
+                                Kind="InformationOutline" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                AutomationProperties.LiveSetting="Polite"
+                                Foreground="{DynamicResource App.TextSecondaryBrush}"
+                                Text="{Binding StatusMessage}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem
+                AutomationProperties.Name="Sessions"
+                Style="{StaticResource HistoryTabItemStyle}">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon
+                            Margin="0,0,9,0"
+                            VerticalAlignment="Center"
+                            Kind="FormatListBulleted" />
+                        <TextBlock VerticalAlignment="Center" Text="Sessions" />
+                    </StackPanel>
+                </TabItem.Header>
+
+                <Grid
+                    Margin="10"
+                    Background="{DynamicResource App.BackgroundBrush}"
+                    Style="{StaticResource ContentEntranceGridStyle}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="14" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Border Style="{StaticResource FilterBarStyle}">
+                        <WrapPanel VerticalAlignment="Center">
+                            <TextBox
+                                Width="245"
+                                Margin="0,0,12,8"
+                                AutomationProperties.Name="Search by session or image filename"
+                                materialDesign:HintAssist.Hint="Search session or image"
+                                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                ToolTip="Search by exact session number or image filename" />
+                            <DatePicker
+                                Width="168"
+                                Margin="0,0,12,8"
+                                AutomationProperties.Name="Completed from date"
+                                materialDesign:HintAssist.Hint="Completed from"
+                                SelectedDate="{Binding StartDate}" />
+                            <DatePicker
+                                Width="168"
+                                Margin="0,0,12,8"
+                                AutomationProperties.Name="Completed through date"
+                                materialDesign:HintAssist.Hint="Completed through"
+                                SelectedDate="{Binding EndDate}" />
+                            <ComboBox
+                                Width="190"
+                                Margin="0,0,12,8"
+                                AutomationProperties.Name="Review status filter"
+                                ItemsSource="{Binding ReviewStatusOptions}"
+                                materialDesign:HintAssist.Hint="Review status"
+                                SelectedItem="{Binding SelectedReviewStatus}" />
+                            <Button
+                                MinWidth="108"
+                                Margin="0,0,0,8"
+                                AutomationProperties.Name="Clear history filters"
+                                Command="{Binding ClearFiltersCommand}"
+                                Style="{StaticResource SecondaryActionButtonStyle}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="FilterOffOutline" Style="{StaticResource AppIconStyle}" />
+                                    <TextBlock Text="Clear" />
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+
+                    <Border Grid.Row="2" Padding="1" Style="{StaticResource SurfaceCardStyle}">
+                        <Grid>
+                            <DataGrid
+                                x:Name="HistoryGrid"
+                                AutomationProperties.Name="Completed training sessions"
+                                AutoGenerateColumns="False"
+                                CanUserAddRows="False"
+                                CanUserDeleteRows="False"
+                                EnableColumnVirtualization="True"
+                                EnableRowVirtualization="True"
+                                HeadersVisibility="Column"
+                                IsReadOnly="True"
+                                ItemsSource="{Binding Sessions}"
+                                RowHeaderWidth="0"
+                                SelectionMode="Single"
+                                VirtualizingPanel.IsVirtualizing="True"
+                                VirtualizingPanel.VirtualizationMode="Recycling">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Width="150" Binding="{Binding CompletionTimeText}" Header="Completed" />
+                                    <DataGridTextColumn Width="95" Binding="{Binding DurationText}" Header="Duration" />
+                                    <DataGridTextColumn Width="90" Binding="{Binding TotalQuestions}" Header="Questions" />
+                                    <DataGridTextColumn Width="70" Binding="{Binding UserGoodAnswers}" Header="GOOD" />
+                                    <DataGridTextColumn Width="65" Binding="{Binding UserNgAnswers}" Header="NG" />
+                                    <DataGridTextColumn Width="90" Binding="{Binding ReviewedAnswers}" Header="Reviewed" />
+                                    <DataGridTextColumn Width="85" Binding="{Binding PendingAnswers}" Header="Pending" />
+                                    <DataGridTextColumn Width="110" Binding="{Binding ReviewedAccuracyText}" Header="Accuracy*" />
+                                    <DataGridTemplateColumn Width="155" Header="Review Status">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="4">
+                                                    <Border.Style>
+                                                        <Style BasedOn="{StaticResource PendingChipStyle}" TargetType="Border">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding ReviewStatusText}" Value="Reviewed">
+                                                                    <Setter Property="Background" Value="{DynamicResource App.SuccessSurfaceBrush}" />
+                                                                    <Setter Property="BorderBrush" Value="{DynamicResource App.SuccessBrush}" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding ReviewStatusText}" Value="Partially Reviewed">
+                                                                    <Setter Property="Background" Value="{DynamicResource App.InfoSurfaceBrush}" />
+                                                                    <Setter Property="BorderBrush" Value="{DynamicResource App.InfoBrush}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock
+                                                        FontWeight="SemiBold"
+                                                        Foreground="{DynamicResource App.TextSecondaryBrush}"
+                                                        Text="{Binding ReviewStatusText}" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Width="125" Header="Result">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button
+                                                    MinWidth="96"
+                                                    Margin="4"
+                                                    AutomationProperties.Name="Open training result"
+                                                    Command="{Binding DataContext.OpenResultCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"
+                                                    Content="View Result"
+                                                    Style="{StaticResource DataGridOutlinedActionButtonStyle}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <StackPanel
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource EmptyStateEntranceStyle}"
+                                Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Border
+                                    Width="70"
+                                    Height="70"
+                                    HorizontalAlignment="Center"
+                                    Background="{DynamicResource App.SurfaceVariantBrush}"
+                                    CornerRadius="22">
+                                    <materialDesign:PackIcon
+                                        Width="38"
+                                        Height="38"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Foreground="{DynamicResource App.TextMutedBrush}"
+                                        Kind="History" />
+                                </Border>
+                                <TextBlock
+                                    Margin="0,14,0,0"
+                                    FontSize="16"
+                                    Foreground="{DynamicResource App.TextSecondaryBrush}"
+                                    Text="{Binding EmptyStateText}"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <Border
+                                Background="{DynamicResource App.BusyScrimBrush}"
+                                CornerRadius="15"
+                                Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <ProgressBar Width="220" Height="7" IsIndeterminate="True" />
+                                    <TextBlock
+                                        Margin="0,14,0,0"
+                                        FontSize="16"
+                                        Foreground="White"
+                                        Text="Loading your training history..." />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Row="4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock
+                                Foreground="{DynamicResource App.TextSecondaryBrush}"
+                                Style="{StaticResource StatusMessageTextStyle}"
+                                Text="{Binding StatusMessage}"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                Margin="0,3,0,0"
+                                FontSize="11"
+                                Foreground="{DynamicResource App.TextMutedBrush}"
+                                Text="* Accuracy uses reviewed answers only; pending answers are excluded." />
+                        </StackPanel>
+                        <Button
+                            Grid.Column="1"
+                            MinWidth="138"
+                            AutomationProperties.Name="Load more training sessions"
+                            Command="{Binding LoadMoreCommand}"
+                            Content="Load More"
+                            Style="{StaticResource SecondaryActionButtonStyle}" />
+                    </Grid>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
-</Window>
+</mah:MetroWindow>

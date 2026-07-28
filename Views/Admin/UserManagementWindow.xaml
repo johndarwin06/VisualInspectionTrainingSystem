@@ -1,309 +1,161 @@
-<Window
+<mah:MetroWindow
     x:Class="VisualInspectionTrainingSystem.Views.Admin.UserManagementWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="clr-namespace:VisualInspectionTrainingSystem.Helpers"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:progress="clr-namespace:VisualInspectionTrainingSystem.Controls.Progress"
     Title="Administration - User Management"
     Width="1420"
-    Height="840"
-    MinWidth="960"
-    MinHeight="620"
+    Height="860"
+    MinWidth="1040"
+    MinHeight="680"
     AutomationProperties.Name="Administrator user management"
-    Background="#0F1720"
-    FontFamily="Segoe UI"
+    Background="{DynamicResource App.BackgroundBrush}"
     KeyboardNavigation.TabNavigation="Cycle"
     ResizeMode="CanResize"
     SnapsToDevicePixels="True"
     UseLayoutRounding="True"
     WindowStartupLocation="CenterOwner">
 
-    <Window.Resources>
-        <Style x:Key="ActionButton" BasedOn="{StaticResource DarkActionButtonStyle}" TargetType="Button">
+    <mah:MetroWindow.Resources>
+        <Style x:Key="ManagementActionButton" BasedOn="{StaticResource SecondaryActionButtonStyle}" TargetType="Button">
             <Setter Property="Height" Value="40" />
-            <Setter Property="Padding" Value="14,0" />
-            <Setter Property="Background" Value="#1F2937" />
-            <Setter Property="BorderBrush" Value="#4B5563" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="#F8FAFC" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="Margin" Value="0,8,0,0" />
         </Style>
-        <Style x:Key="FieldLabel" TargetType="TextBlock">
-            <Setter Property="Margin" Value="0,8,0,4" />
-            <Setter Property="Foreground" Value="#9FB2C3" />
-            <Setter Property="FontSize" Value="12" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-        </Style>
-        <Style BasedOn="{StaticResource AccessibleTextBoxStyle}" TargetType="TextBox">
-            <Setter Property="Height" Value="38" />
-            <Setter Property="Padding" Value="10,6" />
-            <Setter Property="Background" Value="#0F1720" />
-            <Setter Property="BorderBrush" Value="#4B5563" />
-            <Setter Property="Foreground" Value="#F8FAFC" />
-            <Setter Property="CaretBrush" Value="#F8FAFC" />
-        </Style>
-        <Style BasedOn="{StaticResource AccessiblePasswordBoxStyle}" TargetType="PasswordBox">
-            <Setter Property="Height" Value="38" />
-            <Setter Property="Padding" Value="10,6" />
-            <Setter Property="Background" Value="#0F1720" />
-            <Setter Property="BorderBrush" Value="#4B5563" />
-            <Setter Property="Foreground" Value="#F8FAFC" />
-            <Setter Property="CaretBrush" Value="#F8FAFC" />
-        </Style>
-        <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
-            <Setter Property="Height" Value="38" />
-            <Setter Property="Padding" Value="8,4" />
-            <Setter Property="Background" Value="#F8FAFC" />
-            <Setter Property="Foreground" Value="#111827" />
+        <Style x:Key="ManagementFieldLabel" BasedOn="{StaticResource FieldLabelStyle}" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,10,0,2" />
         </Style>
         <Style x:Key="GridCellText" TargetType="TextBlock">
             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
             <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self}, Path=Text}" />
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
-    </Window.Resources>
+    </mah:MetroWindow.Resources>
 
-    <Grid Margin="16">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="76" />
-            <RowDefinition Height="12" />
-            <RowDefinition Height="82" />
-            <RowDefinition Height="12" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="12" />
-            <RowDefinition Height="58" />
         </Grid.RowDefinitions>
 
-        <Border
-            Grid.Row="0"
-            Padding="20,12"
-            Background="#17212B"
-            BorderBrush="#2D4050"
-            BorderThickness="1"
-            CornerRadius="4">
+        <Border Grid.Row="0" Padding="28,0" Background="{DynamicResource App.NavigationBrush}" materialDesign:ElevationAssist.Elevation="Dp4">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="120" />
-                    <ColumnDefinition Width="10" />
-                    <ColumnDefinition Width="120" />
-                </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock
-                        AutomationProperties.HeadingLevel="Level1"
-                        FontSize="27"
-                        FontWeight="SemiBold"
-                        Foreground="#F8FAFC"
-                        Text="User Management" />
-                    <TextBlock
-                        Margin="0,4,0,0"
-                        Foreground="#9FB2C3"
-                        Text="Administrator-only account creation, activation, roles, and password reset" />
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <Border Width="44" Height="44" VerticalAlignment="Center" Background="#24FFFFFF" CornerRadius="12">
+                    <materialDesign:PackIcon Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Kind="AccountGroupOutline" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+                    <TextBlock AutomationProperties.HeadingLevel="Level1" FontSize="22" FontWeight="SemiBold" Foreground="White" Text="User Management" />
+                    <TextBlock Margin="0,2,0,0" FontSize="12" Foreground="#C7D2FE" Text="Accounts, activation, access roles, and credential resets" />
                 </StackPanel>
-                <Button
-                    Grid.Column="1"
-                    AutomationProperties.Name="Refresh users"
-                    Style="{StaticResource ActionButton}"
-                    Background="#1D4ED8"
-                    BorderBrush="#60A5FA"
-                    Command="{Binding RefreshCommand}"
-                    ToolTip="Reload user accounts">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="Refresh" Style="{StaticResource AppIconStyle}" />
-                        <TextBlock VerticalAlignment="Center" Text="Refresh" />
-                    </StackPanel>
-                </Button>
-                <Button
-                    Grid.Column="3"
-                    AutomationProperties.Name="Close user management"
-                    Style="{StaticResource ActionButton}"
-                    Command="{Binding CloseCommand}"
-                    ToolTip="Return to Administration">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="Close" Style="{StaticResource AppIconStyle}" />
-                        <TextBlock VerticalAlignment="Center" Text="Close" />
-                    </StackPanel>
-                </Button>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button AutomationProperties.Name="Refresh users" MinWidth="112" Command="{Binding RefreshCommand}" Style="{StaticResource DarkActionButtonStyle}" ToolTip="Reload user accounts">
+                        <StackPanel Orientation="Horizontal"><materialDesign:PackIcon Kind="Refresh" Style="{StaticResource AppIconStyle}" /><TextBlock Text="Refresh" /></StackPanel>
+                    </Button>
+                    <Button AutomationProperties.Name="Close user management" MinWidth="104" Margin="8,0,0,0" Command="{Binding CloseCommand}" Style="{StaticResource DarkActionButtonStyle}" ToolTip="Return to Administration">
+                        <StackPanel Orientation="Horizontal"><materialDesign:PackIcon Kind="Close" Style="{StaticResource AppIconStyle}" /><TextBlock Text="Close" /></StackPanel>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="10" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="10" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Padding="14" Background="#17212B" BorderBrush="#2D4050" BorderThickness="1" CornerRadius="4">
-                <StackPanel>
-                    <TextBlock Foreground="#9FB2C3" Text="TOTAL USERS" />
-                    <TextBlock FontSize="27" FontWeight="Bold" Foreground="#F8FAFC" Text="{Binding UserCount, Mode=OneWay}" />
-                </StackPanel>
-            </Border>
-            <Border Grid.Column="2" Padding="14" Background="#17212B" BorderBrush="#2D4050" BorderThickness="1" CornerRadius="4">
-                <StackPanel>
-                    <TextBlock Foreground="#9FB2C3" Text="ACTIVE USERS" />
-                    <TextBlock FontSize="27" FontWeight="Bold" Foreground="#22C55E" Text="{Binding ActiveUserCount, Mode=OneWay}" />
-                </StackPanel>
-            </Border>
-            <Border Grid.Column="4" Padding="14" Background="#17212B" BorderBrush="#2D4050" BorderThickness="1" CornerRadius="4">
-                <StackPanel>
-                    <TextBlock Foreground="#9FB2C3" Text="ACTIVE ADMINISTRATORS" />
-                    <TextBlock FontSize="27" FontWeight="Bold" Foreground="#60A5FA" Text="{Binding ActiveAdministratorCount, Mode=OneWay}" />
-                </StackPanel>
-            </Border>
-        </Grid>
+        <Grid Grid.Row="1" Margin="28,22,28,24" Style="{StaticResource ContentEntranceGridStyle}">
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="16" /><RowDefinition Height="*" /><RowDefinition Height="14" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 
-        <Grid Grid.Row="4">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.8*" />
-                <ColumnDefinition Width="12" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <Border Grid.Column="0" Padding="12" Background="#17212B" BorderBrush="#2D4050" BorderThickness="1" CornerRadius="4">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="42" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        Foreground="#F8FAFC"
-                        Text="Existing Users" />
-                    <DataGrid
-                        Grid.Row="1"
-                        AutomationProperties.Name="User accounts"
-                        AutoGenerateColumns="False"
-                        Background="#0F1720"
-                        BorderBrush="#2D4050"
-                        CanUserAddRows="False"
-                        CanUserDeleteRows="False"
-                        CanUserReorderColumns="True"
-                        CanUserResizeColumns="True"
-                        CanUserSortColumns="True"
-                        ColumnHeaderHeight="36"
-                        Foreground="#E5E7EB"
-                        GridLinesVisibility="Horizontal"
-                        HorizontalGridLinesBrush="#263746"
-                        ItemsSource="{Binding Users}"
-                        RowBackground="#0F1720"
-                        AlternatingRowBackground="#17212B"
-                        MinRowHeight="34"
-                        SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
-                        SelectionMode="Single"
-                        SelectionUnit="FullRow">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Width="110" IsReadOnly="True" Binding="{Binding EmployeeNo}" ElementStyle="{StaticResource GridCellText}" Header="Employee No." />
-                            <DataGridTextColumn Width="*" IsReadOnly="True" Binding="{Binding FullName}" ElementStyle="{StaticResource GridCellText}" Header="Full Name" />
-                            <DataGridTextColumn Width="140" IsReadOnly="True" Binding="{Binding Department}" ElementStyle="{StaticResource GridCellText}" Header="Department" />
-                            <DataGridTextColumn Width="80" IsReadOnly="True" Binding="{Binding Role}" Header="Role" />
-                            <DataGridTextColumn Width="130" IsReadOnly="True" Binding="{Binding ActivationStatus}" Header="Status" />
-                            <DataGridTextColumn Width="145" IsReadOnly="True" Binding="{Binding CreatedDate, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Header="Created" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Grid>
-            </Border>
-
-            <Border Grid.Column="2" Padding="16" Background="#17212B" BorderBrush="#2D4050" BorderThickness="1" CornerRadius="4">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel>
-                        <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#F8FAFC" Text="Add User" />
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="EMPLOYEE NUMBER (20 MAX)" />
-                        <TextBox AutomationProperties.Name="New employee number" MaxLength="20" Text="{Binding NewEmployeeNo, UpdateSourceTrigger=PropertyChanged}" ToolTip="Enter a unique employee number" />
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="FULL NAME (100 MAX)" />
-                        <TextBox AutomationProperties.Name="New user full name" MaxLength="100" Text="{Binding NewFullName, UpdateSourceTrigger=PropertyChanged}" ToolTip="Enter the user's full name" />
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="DEPARTMENT (50 MAX)" />
-                        <TextBox AutomationProperties.Name="New user department" MaxLength="50" Text="{Binding NewDepartment, UpdateSourceTrigger=PropertyChanged}" ToolTip="Enter the user's department" />
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="ROLE" />
-                        <ComboBox AutomationProperties.Name="New user role" ItemsSource="{Binding RoleOptions}" SelectedItem="{Binding NewRole, Mode=TwoWay}" ToolTip="Choose Admin or User" />
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="PASSWORD (8-72 UTF-8 BYTES)" />
-                        <PasswordBox
-                            AutomationProperties.Name="New user password"
-                            MaxLength="72"
-                            helpers:PasswordBoxHelper.BindPassword="True"
-                            helpers:PasswordBoxHelper.BoundPassword="{Binding NewPassword, Mode=TwoWay}" />
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="CONFIRM PASSWORD" />
-                        <PasswordBox
-                            AutomationProperties.Name="Confirm new user password"
-                            MaxLength="72"
-                            helpers:PasswordBoxHelper.BindPassword="True"
-                            helpers:PasswordBoxHelper.BoundPassword="{Binding NewConfirmPassword, Mode=TwoWay}" />
-                        <Button
-                            Margin="0,12,0,0"
-                            AutomationProperties.Name="Create user"
-                            Style="{StaticResource ActionButton}"
-                            Background="#166534"
-                            BorderBrush="#22C55E"
-                            Command="{Binding AddUserCommand}"
-                            Content="Create User" />
-
-                        <Border Margin="0,18,0,14" BorderBrush="#334155" BorderThickness="0,1,0,0" />
-                        <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#F8FAFC" Text="Selected User" />
-                        <TextBlock Margin="0,6,0,4" Foreground="#9FB2C3" Text="{Binding SelectedUserSummary}" TextWrapping="Wrap" />
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="ROLE FOR NEXT LOGIN" />
-                        <ComboBox AutomationProperties.Name="Selected user role" ItemsSource="{Binding RoleOptions}" SelectedItem="{Binding EditedRole, Mode=TwoWay}" ToolTip="Choose the role applied at the next login" />
-                        <Button
-                            Margin="0,10,0,0"
-                            AutomationProperties.Name="Update selected user role"
-                            Style="{StaticResource ActionButton}"
-                            Background="#1D4ED8"
-                            BorderBrush="#60A5FA"
-                            Command="{Binding UpdateRoleCommand}"
-                            Content="Update Role" />
-                        <Button
-                            Margin="0,10,0,0"
-                            AutomationProperties.Name="Toggle selected user activation"
-                            Style="{StaticResource ActionButton}"
-                            Background="#7F1D1D"
-                            BorderBrush="#EF4444"
-                            Command="{Binding ToggleActiveCommand}"
-                            Content="{Binding ActivationActionText}" />
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="NEW PASSWORD" />
-                        <PasswordBox
-                            AutomationProperties.Name="Selected user new password"
-                            MaxLength="72"
-                            helpers:PasswordBoxHelper.BindPassword="True"
-                            helpers:PasswordBoxHelper.BoundPassword="{Binding ResetPassword, Mode=TwoWay}" />
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="CONFIRM NEW PASSWORD" />
-                        <PasswordBox
-                            AutomationProperties.Name="Confirm selected user new password"
-                            MaxLength="72"
-                            helpers:PasswordBoxHelper.BindPassword="True"
-                            helpers:PasswordBoxHelper.BoundPassword="{Binding ResetConfirmPassword, Mode=TwoWay}" />
-                        <Button
-                            Margin="0,10,0,0"
-                            AutomationProperties.Name="Reset selected user password"
-                            Style="{StaticResource ActionButton}"
-                            Background="#92400E"
-                            BorderBrush="#F59E0B"
-                            Command="{Binding ResetPasswordCommand}"
-                            Content="Reset Password" />
-                    </StackPanel>
-                </ScrollViewer>
-            </Border>
-        </Grid>
-
-        <Border Grid.Row="6" Padding="14" Background="#17212B" BorderBrush="#2D4050" BorderThickness="1" CornerRadius="4">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock VerticalAlignment="Center" AutomationProperties.LiveSetting="Assertive" Foreground="#F8FAFC" Style="{StaticResource TrimmedTextWithToolTipStyle}" Text="{Binding StatusMessage}" />
-                <TextBlock Grid.Column="1" VerticalAlignment="Center" Foreground="#9FB2C3" Text="Passwords are hashed with BCrypt and are never displayed." />
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Border Grid.Column="0" Style="{StaticResource MetricCardStyle}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="TOTAL USERS" /><TextBlock Margin="0,6,0,0" Style="{StaticResource MetricValueTextStyle}" Text="{Binding UserCount, Mode=OneWay}" /></StackPanel><materialDesign:PackIcon Grid.Column="1" Width="30" Height="30" Foreground="{DynamicResource App.PrimaryBrush}" Kind="AccountMultipleOutline" /></Grid></Border>
+                <Border Grid.Column="2" Style="{StaticResource MetricCardStyle}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="ACTIVE USERS" /><TextBlock Margin="0,6,0,0" Foreground="{DynamicResource App.SuccessBrush}" Style="{StaticResource MetricValueTextStyle}" Text="{Binding ActiveUserCount, Mode=OneWay}" /></StackPanel><materialDesign:PackIcon Grid.Column="1" Width="30" Height="30" Foreground="{DynamicResource App.SuccessBrush}" Kind="AccountCheckOutline" /></Grid></Border>
+                <Border Grid.Column="4" Style="{StaticResource MetricCardStyle}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="ACTIVE ADMINISTRATORS" /><TextBlock Margin="0,6,0,0" Foreground="{DynamicResource App.InfoBrush}" Style="{StaticResource MetricValueTextStyle}" Text="{Binding ActiveAdministratorCount, Mode=OneWay}" /></StackPanel><materialDesign:PackIcon Grid.Column="1" Width="30" Height="30" Foreground="{DynamicResource App.InfoBrush}" Kind="ShieldAccountOutline" /></Grid></Border>
             </Grid>
-        </Border>
 
-        <progress:ModernProgressBar
-            Grid.RowSpan="7"
-            Panel.ZIndex="100"
-            IsActive="{Binding IsBusy}"
-            Message="{Binding StatusMessage}" />
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="1.75*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Padding="18" Style="{StaticResource SurfaceCardStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="14" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="Existing users" />
+                            <TextBlock Margin="0,3,0,0" Style="{StaticResource SupportingTextStyle}" Text="Select an account to manage its next-login role, activation, or password." />
+                        </StackPanel>
+                        <DataGrid
+                            Grid.Row="2"
+                            AutomationProperties.Name="User accounts"
+                            AutoGenerateColumns="False"
+                            BorderThickness="0"
+                            CanUserAddRows="False"
+                            CanUserDeleteRows="False"
+                            CanUserReorderColumns="True"
+                            CanUserResizeColumns="True"
+                            CanUserSortColumns="True"
+                            IsReadOnly="True"
+                            ItemsSource="{Binding Users}"
+                            MinRowHeight="40"
+                            SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
+                            SelectionMode="Single"
+                            SelectionUnit="FullRow"
+                            >
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Width="110" Binding="{Binding EmployeeNo}" ElementStyle="{StaticResource GridCellText}" Header="Employee No." />
+                                <DataGridTextColumn Width="*" Binding="{Binding FullName}" ElementStyle="{StaticResource GridCellText}" Header="Full Name" />
+                                <DataGridTextColumn Width="140" Binding="{Binding Department}" ElementStyle="{StaticResource GridCellText}" Header="Department" />
+                                <DataGridTextColumn Width="90" Binding="{Binding Role}" Header="Role" />
+                                <DataGridTextColumn Width="130" Binding="{Binding ActivationStatus}" Header="Status" />
+                                <DataGridTextColumn Width="145" Binding="{Binding CreatedDate, StringFormat={}{0:yyyy-MM-dd HH:mm}}" Header="Created" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Column="2" Padding="20,16" Style="{StaticResource SurfaceCardStyle}">
+                    <TabControl materialDesign:ColorZoneAssist.Mode="PrimaryLight">
+                        <TabItem Header="ADD USER">
+                            <ScrollViewer Margin="2,14,2,2" VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="Create an account" />
+                                    <TextBlock Margin="0,3,0,8" Style="{StaticResource SupportingTextStyle}" Text="New accounts use BCrypt-protected credentials." />
+                                    <TextBox AutomationProperties.Name="New employee number" MaxLength="20" materialDesign:HintAssist.Hint="Employee number" Text="{Binding NewEmployeeNo, UpdateSourceTrigger=PropertyChanged}" ToolTip="Enter a unique employee number" />
+                                    <TextBox Margin="0,8,0,0" AutomationProperties.Name="New user full name" MaxLength="100" materialDesign:HintAssist.Hint="Full name" Text="{Binding NewFullName, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBox Margin="0,8,0,0" AutomationProperties.Name="New user department" MaxLength="50" materialDesign:HintAssist.Hint="Department" Text="{Binding NewDepartment, UpdateSourceTrigger=PropertyChanged}" />
+                                    <ComboBox Margin="0,8,0,0" AutomationProperties.Name="New user role" materialDesign:HintAssist.Hint="Role" ItemsSource="{Binding RoleOptions}" SelectedItem="{Binding NewRole, Mode=TwoWay}" />
+                                    <PasswordBox Margin="0,8,0,0" AutomationProperties.Name="New user password" MaxLength="72" materialDesign:HintAssist.Hint="Password (8-72 UTF-8 bytes)" helpers:PasswordBoxHelper.BindPassword="True" helpers:PasswordBoxHelper.BoundPassword="{Binding NewPassword, Mode=TwoWay}" />
+                                    <PasswordBox Margin="0,8,0,0" AutomationProperties.Name="Confirm new user password" MaxLength="72" materialDesign:HintAssist.Hint="Confirm password" helpers:PasswordBoxHelper.BindPassword="True" helpers:PasswordBoxHelper.BoundPassword="{Binding NewConfirmPassword, Mode=TwoWay}" />
+                                    <Button Margin="0,14,0,0" AutomationProperties.Name="Create user" Command="{Binding AddUserCommand}" Content="Create User" Style="{StaticResource PrimaryActionButtonStyle}" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="SELECTED USER">
+                            <ScrollViewer Margin="2,14,2,2" VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="Manage selected account" />
+                                    <Border Margin="0,8,0,8" Padding="12,9" Background="{DynamicResource App.SurfaceVariantBrush}" CornerRadius="10">
+                                        <TextBlock Foreground="{DynamicResource App.TextSecondaryBrush}" Text="{Binding SelectedUserSummary}" TextWrapping="Wrap" />
+                                    </Border>
+                                    <ComboBox AutomationProperties.Name="Selected user role" materialDesign:HintAssist.Hint="Role for next login" ItemsSource="{Binding RoleOptions}" SelectedItem="{Binding EditedRole, Mode=TwoWay}" />
+                                    <Button AutomationProperties.Name="Update selected user role" Command="{Binding UpdateRoleCommand}" Content="Update Role" Style="{StaticResource ManagementActionButton}" />
+                                    <Button AutomationProperties.Name="Toggle selected user activation" Command="{Binding ToggleActiveCommand}" Content="{Binding ActivationActionText}" Style="{StaticResource DangerActionButtonStyle}" Margin="0,8,0,0" />
+                                    <Border Margin="0,16,0,10" BorderBrush="{DynamicResource App.DividerBrush}" BorderThickness="0,1,0,0" />
+                                    <TextBlock FontWeight="SemiBold" Foreground="{DynamicResource App.TextPrimaryBrush}" Text="Reset password" />
+                                    <PasswordBox Margin="0,8,0,0" AutomationProperties.Name="Selected user new password" MaxLength="72" materialDesign:HintAssist.Hint="New password" helpers:PasswordBoxHelper.BindPassword="True" helpers:PasswordBoxHelper.BoundPassword="{Binding ResetPassword, Mode=TwoWay}" />
+                                    <PasswordBox Margin="0,8,0,0" AutomationProperties.Name="Confirm selected user new password" MaxLength="72" materialDesign:HintAssist.Hint="Confirm new password" helpers:PasswordBoxHelper.BindPassword="True" helpers:PasswordBoxHelper.BoundPassword="{Binding ResetConfirmPassword, Mode=TwoWay}" />
+                                    <Button AutomationProperties.Name="Reset selected user password" Command="{Binding ResetPasswordCommand}" Content="Reset Password" Style="{StaticResource ManagementActionButton}" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
+                </Border>
+            </Grid>
+
+            <Border Grid.Row="4" Padding="15,11" Background="{DynamicResource App.SurfaceVariantBrush}" CornerRadius="12">
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Orientation="Horizontal"><materialDesign:PackIcon Margin="0,0,10,0" VerticalAlignment="Center" Foreground="{DynamicResource App.PrimaryBrush}" Kind="InformationOutline" /><TextBlock VerticalAlignment="Center" AutomationProperties.LiveSetting="Assertive" Foreground="{DynamicResource App.TextPrimaryBrush}" Style="{StaticResource TrimmedTextWithToolTipStyle}" Text="{Binding StatusMessage}" /></StackPanel><TextBlock Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource SupportingTextStyle}" Text="Passwords are hashed with BCrypt and are never displayed." /></Grid>
+            </Border>
+        </Grid>
+
+        <progress:ModernProgressBar Grid.RowSpan="2" Panel.ZIndex="100" IsActive="{Binding IsBusy}" Message="{Binding StatusMessage}" />
     </Grid>
-</Window>
+</mah:MetroWindow>

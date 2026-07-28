@@ -113,6 +113,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             _statusMessage = "Loading the Last 7 Days report...";
 
             Sessions = new ObservableCollection<ReportSessionRow>();
+            Charts = new AnalyticsChartViewModel();
 
             _refreshCommand = new RelayCommand(BeginRefresh, CanRunCommand);
             _exportCsvCommand = new RelayCommand(BeginCsvExport, CanExport);
@@ -150,6 +151,15 @@ namespace VisualInspectionTrainingSystem.ViewModels
         public ObservableCollection<ReportSessionRow> Sessions
         {
             get;
+        }
+
+        /// <summary>
+        /// Gets chart presentation built only from the active consistent report snapshot.
+        /// </summary>
+        public AnalyticsChartViewModel Charts
+        {
+            get;
+            private set;
         }
 
         #endregion
@@ -1119,6 +1129,9 @@ namespace VisualInspectionTrainingSystem.ViewModels
             Summary = snapshot == null
                 ? new ReportSummary()
                 : snapshot.Summary;
+            Charts.Update(snapshot == null
+                ? null
+                : snapshot.ChartData);
             Sessions.Clear();
 
             if (snapshot != null && snapshot.Sessions != null)
@@ -1142,6 +1155,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
         private void ClearReportData()
         {
             Summary = new ReportSummary();
+            Charts.Update(null);
             Sessions.Clear();
             IsDisplayLimited = false;
             NotifyCollectionStateChanged();
@@ -1359,6 +1373,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             }
 
             _isDisposed = true;
+            Charts.Dispose();
             _operationVersion++;
             CancelActiveOperation();
         }

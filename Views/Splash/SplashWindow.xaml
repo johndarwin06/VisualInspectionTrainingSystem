@@ -2,6 +2,7 @@
     x:Class="VisualInspectionTrainingSystem.Views.Splash.SplashWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     Title="Visual Inspection Training System"
     Width="1000"
     Height="600"
@@ -14,89 +15,97 @@
     WindowStyle="None">
 
     <Border
-        Background="{StaticResource App.LightSurfaceBrush}"
-        CornerRadius="15">
-        <Grid>
-            <Image
-                AutomationProperties.Name="Visual Inspection Training System"
-                Source="/Assets/Backgrounds/splash.png"
-                Stretch="UniformToFill" />
+        Background="{DynamicResource App.SurfaceBrush}"
+        CornerRadius="24"
+        materialDesign:ElevationAssist.Elevation="Dp12">
+        <Grid ClipToBounds="True">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="3*" /><ColumnDefinition Width="2*" /></Grid.ColumnDefinitions>
 
-            <Border Background="#52000000" />
+            <Border Grid.Column="0" Background="{DynamicResource App.NavigationBrush}" CornerRadius="24,0,0,24">
+                <Grid ClipToBounds="True">
+                    <Ellipse Width="440" Height="440" Margin="-220,-180,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="#12FFFFFF" />
+                    <Ellipse Width="360" Height="360" Margin="0,0,-170,-190" HorizontalAlignment="Right" VerticalAlignment="Bottom" Fill="#14FFFFFF" />
+                    <Path Width="460" Height="170" Margin="0,44,-130,0" HorizontalAlignment="Right" VerticalAlignment="Top" Data="M 0,90 C 110,10 220,160 460,30 L 460,170 L 0,170 Z" Fill="#1267E8F9" Stretch="Fill" />
 
-            <Border
-                MinHeight="188"
-                Padding="32,24,32,22"
-                VerticalAlignment="Bottom"
-                Background="#F7FFFFFF">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                    <StackPanel Margin="64,58,56,52">
+                        <Border Width="76" Height="76" HorizontalAlignment="Left" Background="#22FFFFFF" CornerRadius="20">
+                            <materialDesign:PackIcon Width="42" Height="42" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Kind="ImageSearchOutline" />
+                        </Border>
+                        <TextBlock Margin="0,28,0,0" FontSize="40" FontWeight="SemiBold" Foreground="White" Text="Inspect with confidence." TextWrapping="Wrap" />
+                        <TextBlock Margin="0,16,24,0" FontSize="17" Foreground="#DDE7FF" LineHeight="26" Text="Practice visual classification, review outcomes, and build repeatable quality decisions." TextWrapping="Wrap" />
 
+                        <StackPanel Margin="0,34,0,0">
+                            <StackPanel Margin="0,0,0,12" Orientation="Horizontal">
+                                <materialDesign:PackIcon Width="20" Height="20" Foreground="#67E8F9" Kind="CheckDecagramOutline" />
+                                <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14" Foreground="White" Text="Controlled training sessions" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,12" Orientation="Horizontal">
+                                <materialDesign:PackIcon Width="20" Height="20" Foreground="#67E8F9" Kind="CheckDecagramOutline" />
+                                <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14" Foreground="White" Text="Reviewed GOOD and NG decisions" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Width="20" Height="20" Foreground="#67E8F9" Kind="CheckDecagramOutline" />
+                                <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" FontSize="14" Foreground="White" Text="Actionable progress analytics" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Column="1" Margin="44,52,44,42">
+                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                <StackPanel>
+                    <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.PrimaryBrush}" Text="VISUAL INSPECTION" />
+                    <TextBlock Margin="0,7,0,0" FontSize="28" FontWeight="SemiBold" Foreground="{DynamicResource App.TextPrimaryBrush}" Text="Training System" />
+                    <TextBlock Margin="0,6,0,0" Style="{StaticResource SupportingTextStyle}" Text="Preparing your secure workspace" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                    <Border Width="64" Height="64" HorizontalAlignment="Left" Background="{DynamicResource App.InfoSurfaceBrush}" CornerRadius="18">
+                        <materialDesign:PackIcon Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource App.PrimaryBrush}" Kind="ProgressClock" />
+                    </Border>
                     <TextBlock
-                        Grid.Row="0"
+                        Margin="0,20,0,0"
                         AutomationProperties.LiveSetting="Polite"
-                        FontSize="20"
+                        FontSize="18"
                         FontWeight="SemiBold"
-                        Foreground="{StaticResource App.AccentBrush}"
+                        Foreground="{DynamicResource App.TextPrimaryBrush}"
                         Style="{StaticResource TrimmedTextWithToolTipStyle}"
                         Text="{Binding StatusMessage}" />
-
                     <TextBlock
-                        Grid.Row="1"
-                        MaxHeight="48"
+                        MaxHeight="58"
                         Margin="0,8,0,0"
                         AutomationProperties.LiveSetting="Polite"
-                        Foreground="{StaticResource App.LightSecondaryTextBrush}"
+                        Foreground="{DynamicResource App.TextSecondaryBrush}"
+                        LineHeight="20"
                         Text="{Binding DiagnosticMessage}"
                         TextWrapping="Wrap"
                         ToolTip="{Binding DiagnosticMessage}" />
-
                     <ProgressBar
-                        Grid.Row="2"
-                        Height="18"
-                        Margin="0,16,0,0"
+                        Height="6"
+                        Margin="0,24,0,0"
                         AutomationProperties.Name="Startup progress"
-                        Background="#E6EDF3"
-                        BorderBrush="#9BA9B5"
-                        Foreground="{StaticResource App.SuccessBrush}"
                         Maximum="100"
                         Minimum="0"
                         Value="{Binding Progress}" />
+                </StackPanel>
 
-                    <Grid Grid.Row="3" Margin="0,14,0,0">
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            FontSize="12"
-                            Foreground="{StaticResource App.LightSecondaryTextBrush}"
-                            Text="Visual Inspection Training System" />
-
-                        <StackPanel
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Foreground="{StaticResource App.LightSecondaryTextBrush}"
-                                Text="{Binding Version}" />
-                            <Button
-                                MinWidth="88"
-                                Margin="22,0,0,0"
-                                AutomationProperties.Name="Exit application startup"
-                                Command="{Binding ExitCommand}"
-                                Content="Exit"
-                                IsCancel="True"
-                                Style="{StaticResource DangerActionButtonStyle}"
-                                ToolTip="Cancel startup and close the application" />
-                        </StackPanel>
-                    </Grid>
+                <Grid Grid.Row="2">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock FontSize="11" Foreground="{DynamicResource App.TextMutedBrush}" Text="{Binding Version}" />
+                        <TextBlock Margin="0,2,0,0" FontSize="10" Foreground="{DynamicResource App.TextMutedBrush}" Text="Quality training workspace" />
+                    </StackPanel>
+                    <Button
+                        MinWidth="88"
+                        HorizontalAlignment="Right"
+                        AutomationProperties.Name="Exit application startup"
+                        Command="{Binding ExitCommand}"
+                        Content="Exit"
+                        IsCancel="True"
+                        Style="{StaticResource DangerActionButtonStyle}"
+                        ToolTip="Cancel startup and close the application" />
                 </Grid>
-            </Border>
+            </Grid>
         </Grid>
     </Border>
 </Window>

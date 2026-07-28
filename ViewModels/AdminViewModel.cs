@@ -14,10 +14,6 @@ using VisualInspectionTrainingSystem.Commands;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Repositories;
 using VisualInspectionTrainingSystem.Services;
-using VisualInspectionTrainingSystem.Views.Admin;
-using VisualInspectionTrainingSystem.Views.Dashboard;
-using VisualInspectionTrainingSystem.Views.Login;
-using VisualInspectionTrainingSystem.Views.Reports;
 
 #endregion
 
@@ -89,6 +85,30 @@ namespace VisualInspectionTrainingSystem.ViewModels
         private int _loadGeneration;
         private int _previewGeneration;
         private int _isDisposed;
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Requests Dashboard navigation from the authenticated application shell.
+        /// </summary>
+        public event Action DashboardRequested;
+
+        /// <summary>
+        /// Requests Reports navigation from the authenticated application shell.
+        /// </summary>
+        public event Action ReportsRequested;
+
+        /// <summary>
+        /// Requests User Management navigation from the authenticated application shell.
+        /// </summary>
+        public event Action UserManagementRequested;
+
+        /// <summary>
+        /// Requests logout from the authenticated application shell.
+        /// </summary>
+        public event Action LogoutRequested;
 
         #endregion
 
@@ -1046,64 +1066,17 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         private void OpenDashboard()
         {
-            OpenSingleWindow(
-                () => new DashboardWindow(),
-                "Dashboard");
+            if (SessionService.IsCurrentUserAdministrator)
+            {
+                DashboardRequested?.Invoke();
+            }
         }
 
         private void OpenReports()
         {
-            OpenSingleWindow(
-                () => new ReportsWindow(),
-                "Reports");
-        }
-
-        /// <summary>
-        /// Activates an existing administrator tool window or creates one instance safely.
-        /// </summary>
-        /// <typeparam name="TWindow">Administrator tool window type.</typeparam>
-        /// <param name="factory">Window factory invoked only when no instance is open.</param>
-        /// <param name="windowName">Non-sensitive name used for diagnostics and user feedback.</param>
-        private static void OpenSingleWindow<TWindow>(
-            Func<TWindow> factory,
-            string windowName)
-            where TWindow : Window
-        {
-            if (Application.Current == null)
-                return;
-
-            TWindow existing = Application.Current.Windows
-                .OfType<TWindow>()
-                .FirstOrDefault();
-
-            if (existing != null)
+            if (SessionService.IsCurrentUserAdministrator)
             {
-                if (existing.WindowState == WindowState.Minimized)
-                    existing.WindowState = WindowState.Normal;
-
-                existing.Activate();
-                return;
-            }
-
-            try
-            {
-                TWindow window = factory();
-                window.Owner = Application.Current.Windows
-                    .OfType<AdminWindow>()
-                    .FirstOrDefault();
-                window.Show();
-            }
-            catch (Exception ex)
-            {
-                ApplicationErrorLogger.LogUnhandledException(
-                    "Open " + windowName,
-                    ex,
-                    false);
-                ApplicationDialogService.Show(
-                    windowName + " could not be opened. Please try again or contact support if the problem continues.",
-                    windowName,
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                ReportsRequested?.Invoke();
             }
         }
 
@@ -1112,8 +1085,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
         /// </summary>
         private void OpenUserManagement()
         {
-            if (!SessionService.IsCurrentUserAdministrator ||
-                Application.Current == null)
+            if (!SessionService.IsCurrentUserAdministrator)
             {
                 ApplicationDialogService.Show(
                     "Administrator authorization is required for User Management.",
@@ -1123,61 +1095,12 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 return;
             }
 
-            UserManagementWindow existing = Application.Current.Windows
-                .OfType<UserManagementWindow>()
-                .FirstOrDefault();
-
-            if (existing != null)
-            {
-                if (existing.WindowState == WindowState.Minimized)
-                    existing.WindowState = WindowState.Normal;
-
-                existing.Activate();
-                return;
-            }
-
-            try
-            {
-                UserManagementWindow window = new UserManagementWindow();
-                window.Owner = Application.Current.Windows
-                    .OfType<AdminWindow>()
-                    .FirstOrDefault();
-                window.Show();
-            }
-            catch (UserManagementException ex)
-            {
-                ApplicationErrorLogger.LogUnhandledException(
-                    "Open User Management",
-                    ex,
-                    false);
-                ApplicationDialogService.Show(
-                    ex.Message,
-                    "User Management",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
-            catch (Exception ex)
-            {
-                ApplicationErrorLogger.LogUnhandledException(
-                    "Open User Management",
-                    ex,
-                    false);
-                ApplicationDialogService.Show(
-                    "User Management could not be opened. Please try again or contact support if the problem continues.",
-                    "User Management",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
+            UserManagementRequested?.Invoke();
         }
 
         private void Logout()
         {
-            SessionService.Logout();
-            new LoginWindow().Show();
-            CloseWindow<DashboardWindow>();
-            CloseWindow<ReportsWindow>();
-            CloseWindow<UserManagementWindow>();
-            CloseWindow<AdminWindow>();
+            LogoutRequested?.Invoke();
         }
 
         #endregion
@@ -1465,20 +1388,6 @@ namespace VisualInspectionTrainingSystem.ViewModels
                    exception.Message.IndexOf(
                        "Refresh",
                        StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-
-        private static void CloseWindow<T>() where T : Window
-        {
-            if (Application.Current == null)
-                return;
-
-            for (int index = Application.Current.Windows.Count - 1; index >= 0; index--)
-            {
-                Window window = Application.Current.Windows[index];
-
-                if (window is T)
-                    window.Close();
-            }
         }
 
         #endregion

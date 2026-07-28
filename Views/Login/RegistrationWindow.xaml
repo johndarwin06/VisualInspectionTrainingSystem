@@ -1,192 +1,233 @@
-<Window
+<mah:MetroWindow
     x:Class="VisualInspectionTrainingSystem.Views.Login.RegistrationWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="clr-namespace:VisualInspectionTrainingSystem.Helpers"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:progress="clr-namespace:VisualInspectionTrainingSystem.Controls.Progress"
     Title="Create Account - Visual Inspection Training System"
-    Width="580"
-    Height="720"
-    MinWidth="500"
-    MinHeight="580"
+    Width="980"
+    Height="740"
+    MinWidth="760"
+    MinHeight="620"
     AutomationProperties.Name="Create trainee account"
-    Background="{StaticResource App.LightMutedSurfaceBrush}"
+    Background="{DynamicResource App.BackgroundBrush}"
     KeyboardNavigation.TabNavigation="Cycle"
     ResizeMode="CanResize"
-    WindowStartupLocation="CenterOwner">
+    ShowIconOnTitleBar="False"
+    ShowSystemMenuOnRightClick="True"
+    WindowStartupLocation="CenterOwner"
+    WindowTransitionsEnabled="True">
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.82*" MinWidth="280" />
+            <ColumnDefinition Width="1.18*" MinWidth="460" />
+        </Grid.ColumnDefinitions>
 
-        <Border Padding="28,18" Background="{StaticResource App.AccentBrush}">
-            <StackPanel>
+        <Grid Background="{DynamicResource App.NavigationBrush}" ClipToBounds="True">
+            <Ellipse
+                Width="330"
+                Height="330"
+                Margin="-160,-170,0,0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Fill="{DynamicResource App.SecondaryBrush}"
+                Opacity="0.16" />
+            <Ellipse
+                Width="260"
+                Height="260"
+                Margin="0,0,-120,-130"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Fill="{DynamicResource App.NavigationRaisedBrush}" />
+
+            <StackPanel Margin="42" VerticalAlignment="Center">
+                <Border
+                    Width="70"
+                    Height="70"
+                    HorizontalAlignment="Left"
+                    Background="{DynamicResource App.NavigationRaisedBrush}"
+                    CornerRadius="22"
+                    materialDesign:ElevationAssist.Elevation="Dp4">
+                    <materialDesign:PackIcon
+                        Width="38"
+                        Height="38"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="{DynamicResource App.SecondaryBrush}"
+                        Kind="AccountPlusOutline" />
+                </Border>
                 <TextBlock
+                    Margin="0,24,0,0"
                     AutomationProperties.HeadingLevel="Level1"
-                    FontSize="26"
+                    FontFamily="Segoe UI Variable Display, Segoe UI"
+                    FontSize="31"
                     FontWeight="Bold"
-                    Foreground="White"
-                    Text="CREATE ACCOUNT" />
-                <TextBlock
-                    Margin="0,5,0,0"
-                    Foreground="#DCEBFA"
-                    Text="Trainee registration requires administrator activation"
+                    Foreground="{DynamicResource App.DarkTextBrush}"
+                    Text="Create your trainee account"
                     TextWrapping="Wrap" />
-            </StackPanel>
-        </Border>
+                <TextBlock
+                    Margin="0,15,0,0"
+                    FontSize="15"
+                    Foreground="{DynamicResource App.DarkSecondaryTextBrush}"
+                    LineHeight="23"
+                    Text="Registration creates a secure inactive trainee profile. An administrator must verify and activate the account before the first sign-in."
+                    TextWrapping="Wrap" />
 
-        <Border
-            Grid.Row="1"
-            Margin="28,22,28,26"
-            Padding="24,16"
-            Background="{StaticResource App.LightSurfaceBrush}"
-            BorderBrush="{StaticResource App.LightBorderBrush}"
-            BorderThickness="1"
-            CornerRadius="8">
-            <ScrollViewer
-                HorizontalScrollBarVisibility="Disabled"
-                VerticalScrollBarVisibility="Auto">
-                <StackPanel>
-                    <Label
-                        Margin="0,10,0,5"
-                        Padding="0"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource App.LightTextBrush}"
-                        Target="{Binding ElementName=EmployeeInput}">
-                        Employee Number
-                    </Label>
-                    <TextBox
-                        x:Name="EmployeeInput"
-                        TabIndex="0"
-                        AutomationProperties.Name="Employee Number"
-                        MaxLength="20"
-                        Text="{Binding EmployeeNo, UpdateSourceTrigger=PropertyChanged}"
-                        ToolTip="Enter a unique employee number" />
-
-                    <Label
-                        Margin="0,10,0,5"
-                        Padding="0"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource App.LightTextBrush}"
-                        Target="{Binding ElementName=FullNameInput}">
-                        Full Name
-                    </Label>
-                    <TextBox
-                        x:Name="FullNameInput"
-                        TabIndex="1"
-                        AutomationProperties.Name="Full Name"
-                        MaxLength="100"
-                        Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}"
-                        ToolTip="Enter the trainee's full name" />
-
-                    <Label
-                        Margin="0,10,0,5"
-                        Padding="0"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource App.LightTextBrush}"
-                        Target="{Binding ElementName=DepartmentInput}">
-                        Department
-                    </Label>
-                    <TextBox
-                        x:Name="DepartmentInput"
-                        TabIndex="2"
-                        AutomationProperties.Name="Department"
-                        MaxLength="50"
-                        Text="{Binding Department, UpdateSourceTrigger=PropertyChanged}"
-                        ToolTip="Enter the trainee's department" />
-
-                    <Label
-                        Margin="0,10,0,5"
-                        Padding="0"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource App.LightTextBrush}"
-                        Target="{Binding ElementName=PasswordInput}">
-                        Password (8-72 UTF-8 bytes)
-                    </Label>
-                    <PasswordBox
-                        x:Name="PasswordInput"
-                        TabIndex="3"
-                        AutomationProperties.Name="Password"
-                        MaxLength="72"
-                        helpers:PasswordBoxHelper.BindPassword="True"
-                        helpers:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay}"
-                        ToolTip="Enter a password between 8 and 72 UTF-8 bytes" />
-
-                    <Label
-                        Margin="0,10,0,5"
-                        Padding="0"
-                        FontWeight="SemiBold"
-                        Foreground="{StaticResource App.LightTextBrush}"
-                        Target="{Binding ElementName=ConfirmPasswordInput}">
-                        Confirm Password
-                    </Label>
-                    <PasswordBox
-                        x:Name="ConfirmPasswordInput"
-                        TabIndex="4"
-                        AutomationProperties.Name="Confirm Password"
-                        MaxLength="72"
-                        helpers:PasswordBoxHelper.BindPassword="True"
-                        helpers:PasswordBoxHelper.BoundPassword="{Binding ConfirmPassword, Mode=TwoWay}"
-                        ToolTip="Enter the same password again" />
-
-                    <TextBlock
-                        Margin="0,14,0,0"
-                        MinHeight="40"
-                        AutomationProperties.LiveSetting="Assertive"
-                        Style="{StaticResource StatusMessageTextStyle}"
-                        Text="{Binding StatusMessage}"
-                        ToolTip="{Binding StatusMessage}" />
-
-                    <Grid Margin="0,12,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="12" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Button
-                            Grid.Column="0"
-                            TabIndex="5"
-                            AutomationProperties.Name="Submit trainee registration"
-                            Command="{Binding SubmitCommand}"
-                            IsDefault="True"
-                            Style="{StaticResource PrimaryActionButtonStyle}"
-                            ToolTip="Submit an inactive trainee account for administrator activation">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="AccountCheckOutline" Style="{StaticResource AppIconStyle}" />
-                                <TextBlock VerticalAlignment="Center" Text="SUBMIT" />
-                            </StackPanel>
-                        </Button>
-                        <Button
-                            Grid.Column="2"
-                            TabIndex="6"
-                            AutomationProperties.Name="Cancel registration"
-                            Command="{Binding CancelCommand}"
-                            IsCancel="True"
-                            Style="{StaticResource SecondaryActionButtonStyle}"
-                            ToolTip="Close registration and return to Login">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Close" Style="{StaticResource AppIconStyle}" />
-                                <TextBlock VerticalAlignment="Center" Text="CANCEL" />
-                            </StackPanel>
-                        </Button>
-                    </Grid>
-
-                    <TextBlock
-                        Margin="0,16,0,0"
-                        Foreground="{StaticResource App.LightSecondaryTextBrush}"
-                        Text="Accounts cannot sign in until an administrator activates them. Registration never grants administrator access."
-                        TextWrapping="Wrap" />
+                <StackPanel Margin="0,30,0,0">
+                    <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
+                        <materialDesign:PackIcon Width="21" Height="21" Margin="0,0,10,0" Foreground="{DynamicResource App.SuccessBrush}" Kind="ShieldLockOutline" />
+                        <TextBlock Foreground="{DynamicResource App.DarkTextBrush}" Text="Password stored securely" />
+                    </StackPanel>
+                    <StackPanel Margin="0,0,0,14" Orientation="Horizontal">
+                        <materialDesign:PackIcon Width="21" Height="21" Margin="0,0,10,0" Foreground="{DynamicResource App.WarningBrush}" Kind="AccountClockOutline" />
+                        <TextBlock Foreground="{DynamicResource App.DarkTextBrush}" Text="Activation required" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Width="21" Height="21" Margin="0,0,10,0" Foreground="{DynamicResource App.SecondaryBrush}" Kind="AccountCheckOutline" />
+                        <TextBlock Foreground="{DynamicResource App.DarkTextBrush}" Text="Trainee access only" />
+                    </StackPanel>
                 </StackPanel>
-            </ScrollViewer>
-        </Border>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Column="1" Margin="32,26">
+            <Border
+                MaxWidth="570"
+                Padding="34,28"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Style="{StaticResource SurfaceCardStyle}"
+                materialDesign:ElevationAssist.Elevation="Dp3">
+                <ScrollViewer
+                    HorizontalScrollBarVisibility="Disabled"
+                    VerticalScrollBarVisibility="Auto">
+                    <StackPanel Style="{StaticResource EmptyStateEntranceStyle}">
+                        <TextBlock
+                            AutomationProperties.HeadingLevel="Level1"
+                            Style="{StaticResource PageTitleTextStyle}"
+                            Text="Trainee registration" />
+                        <TextBlock
+                            Margin="0,6,0,20"
+                            Style="{StaticResource SupportingTextStyle}"
+                            Text="Enter your work profile and choose a strong password."
+                            TextWrapping="Wrap" />
+
+                        <TextBox
+                            x:Name="EmployeeInput"
+                            TabIndex="0"
+                            Margin="0,0,0,14"
+                            AutomationProperties.Name="Employee Number"
+                            MaxLength="20"
+                            materialDesign:HintAssist.Hint="Employee Number"
+                            Text="{Binding EmployeeNo, UpdateSourceTrigger=PropertyChanged}"
+                            ToolTip="Enter a unique employee number" />
+
+                        <TextBox
+                            x:Name="FullNameInput"
+                            TabIndex="1"
+                            Margin="0,0,0,14"
+                            AutomationProperties.Name="Full Name"
+                            MaxLength="100"
+                            materialDesign:HintAssist.Hint="Full Name"
+                            Text="{Binding FullName, UpdateSourceTrigger=PropertyChanged}"
+                            ToolTip="Enter the trainee's full name" />
+
+                        <TextBox
+                            x:Name="DepartmentInput"
+                            TabIndex="2"
+                            Margin="0,0,0,14"
+                            AutomationProperties.Name="Department"
+                            MaxLength="50"
+                            materialDesign:HintAssist.Hint="Department"
+                            Text="{Binding Department, UpdateSourceTrigger=PropertyChanged}"
+                            ToolTip="Enter the trainee's department" />
+
+                        <PasswordBox
+                            x:Name="PasswordInput"
+                            TabIndex="3"
+                            Margin="0,0,0,14"
+                            AutomationProperties.Name="Password"
+                            MaxLength="72"
+                            helpers:PasswordBoxHelper.BindPassword="True"
+                            helpers:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay}"
+                            materialDesign:HintAssist.HelperText="Use 8–72 UTF-8 bytes"
+                            materialDesign:HintAssist.Hint="Password"
+                            ToolTip="Enter a password between 8 and 72 UTF-8 bytes" />
+
+                        <PasswordBox
+                            x:Name="ConfirmPasswordInput"
+                            TabIndex="4"
+                            AutomationProperties.Name="Confirm Password"
+                            MaxLength="72"
+                            helpers:PasswordBoxHelper.BindPassword="True"
+                            helpers:PasswordBoxHelper.BoundPassword="{Binding ConfirmPassword, Mode=TwoWay}"
+                            materialDesign:HintAssist.Hint="Confirm Password"
+                            ToolTip="Enter the same password again" />
+
+                        <Border Margin="0,18,0,0" Padding="12,9" Style="{StaticResource PendingChipStyle}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Width="19" Height="19" Margin="0,0,9,0" Foreground="{DynamicResource App.WarningBrush}" Kind="InformationOutline" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Foreground="{DynamicResource App.TextSecondaryBrush}"
+                                    Text="Administrator activation is required before login."
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock
+                            Margin="0,13,0,0"
+                            MinHeight="36"
+                            AutomationProperties.LiveSetting="Assertive"
+                            Style="{StaticResource StatusMessageTextStyle}"
+                            Text="{Binding StatusMessage}"
+                            ToolTip="{Binding StatusMessage}" />
+
+                        <Grid Margin="0,14,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.35*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button
+                                Grid.Column="0"
+                                TabIndex="5"
+                                AutomationProperties.Name="Submit trainee registration"
+                                Command="{Binding SubmitCommand}"
+                                IsDefault="True"
+                                Style="{StaticResource PrimaryActionButtonStyle}"
+                                ToolTip="Submit an inactive trainee account for administrator activation">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="AccountCheckOutline" Style="{StaticResource AppIconStyle}" />
+                                    <TextBlock VerticalAlignment="Center" Text="Submit Registration" />
+                                </StackPanel>
+                            </Button>
+                            <Button
+                                Grid.Column="2"
+                                TabIndex="6"
+                                AutomationProperties.Name="Cancel registration"
+                                Command="{Binding CancelCommand}"
+                                IsCancel="True"
+                                Style="{StaticResource SecondaryActionButtonStyle}"
+                                ToolTip="Close registration and return to Login">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="ArrowLeft" Style="{StaticResource AppIconStyle}" />
+                                    <TextBlock VerticalAlignment="Center" Text="Back to Login" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
 
         <progress:ModernProgressBar
-            Grid.RowSpan="2"
+            Grid.ColumnSpan="2"
             Panel.ZIndex="100"
             IsActive="{Binding IsBusy}"
             Message="Submitting registration..." />
     </Grid>
-</Window>
+</mah:MetroWindow>

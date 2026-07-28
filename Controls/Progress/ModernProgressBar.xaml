@@ -23,49 +23,49 @@
         </Style>
     </UserControl.Style>
 
-    <Border
-        Padding="24"
-        Background="{StaticResource App.BusyScrimBrush}"
-        CornerRadius="4">
+    <Border Padding="24" Background="{DynamicResource App.BusyScrimBrush}">
         <Border
-            MaxWidth="440"
-            Padding="28,24"
+            MaxWidth="430"
+            Padding="30,26"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Background="{StaticResource App.DarkSurfaceBrush}"
-            BorderBrush="{StaticResource App.FocusBrush}"
+            Background="{DynamicResource App.SurfaceRaisedBrush}"
+            BorderBrush="{DynamicResource App.BorderBrush}"
             BorderThickness="1"
-            CornerRadius="8">
+            CornerRadius="18"
+            materialDesign:ElevationAssist.Elevation="Dp12">
             <StackPanel HorizontalAlignment="Center">
-                <materialDesign:PackIcon
-                    Width="30"
-                    Height="30"
-                    HorizontalAlignment="Center"
-                    AutomationProperties.Name="Operation in progress"
-                    Foreground="{StaticResource App.FocusBrush}"
-                    Kind="ProgressClock" />
-                <ProgressBar
-                    Width="260"
-                    Height="8"
-                    Margin="0,16,0,0"
-                    AutomationProperties.Name="Loading progress"
-                    Background="#263746"
-                    Foreground="{StaticResource App.FocusBrush}"
-                    IsIndeterminate="True" />
+                <Border Width="58" Height="58" HorizontalAlignment="Center" Background="{DynamicResource App.InfoSurfaceBrush}" CornerRadius="17">
+                    <materialDesign:PackIcon
+                        Width="29"
+                        Height="29"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="Operation in progress"
+                        Foreground="{DynamicResource App.PrimaryBrush}"
+                        Kind="ProgressClock" />
+                </Border>
                 <TextBlock
-                    Margin="0,14,0,0"
+                    Margin="0,16,0,0"
                     HorizontalAlignment="Center"
                     AutomationProperties.LiveSetting="Polite"
+                    FontSize="16"
                     FontWeight="SemiBold"
-                    Foreground="{StaticResource App.DarkTextBrush}"
+                    Foreground="{DynamicResource App.TextPrimaryBrush}"
                     Text="{Binding Message, ElementName=Root}"
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
+                <ProgressBar
+                    Width="272"
+                    Height="6"
+                    Margin="0,18,0,0"
+                    AutomationProperties.Name="Loading progress"
+                    IsIndeterminate="True" />
                 <TextBlock
-                    Margin="0,6,0,0"
+                    Margin="0,12,0,0"
                     HorizontalAlignment="Center"
-                    Foreground="{StaticResource App.DarkSecondaryTextBrush}"
-                    Text="Please wait. You can still close this window safely."
+                    Foreground="{DynamicResource App.TextMutedBrush}"
+                    Text="Please wait. This window can still be closed safely."
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
             </StackPanel>

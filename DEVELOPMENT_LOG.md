@@ -1,5 +1,20 @@
 # DEVELOPMENT LOG
 
+## 2026-07-28
+
+### Issue #15.1 - Material Design UI and Analytics Overhaul
+
+- Replaced the competing authenticated navigation surfaces with one role-aware MahApps shell. The shell exposes only authorized administrator or trainee destinations, owns one modeless workspace at a time, restores minimized workspaces instead of duplicating them, transfers `Application.MainWindow` safely during logout, and suppresses workspace reactivation while shutting down.
+- Composed `BundledTheme`, Material Design 3 defaults, MahApps controls/fonts/theme, and the Material/MahApps bridge before custom dictionaries. Added process-wide light/dark switching and rebuilt every application surface with consistent Material fields, actions, cards, tables, status chips, dialogs, focus visuals, responsive scrolling, modern window chrome, and subtle state animations.
+- Added reusable chart-neutral `ChartPoint`, `AnalyticsChartData`, and snapshot models. LiveChartsCore ViewModels translate those models into replaceable Cartesian and pie series, follow application theme changes, preserve nullable reviewed accuracy, provide bounded safe empty states, and release theme subscriptions on disposal.
+- Extended Dashboard to load headline metrics, deterministic recent sessions, and 7/30-day charts in one repository-owned `RepeatableRead` snapshot. Session and answer aggregates remain separate so answer cardinality cannot multiply duration, and normalized supported GOOD/NG semantics keep pending truth out of reviewed/wrong values.
+- Added authenticated trainee-only 7/30-day progress analytics. History rows remain available when the optional chart query fails; the chart shows a fixed unavailable state and the technical exception is logged without exposing credentials or connection details.
+- Added bounded Reports chart aggregation inside the existing summary/session `RepeatableRead` transaction. The 500-row interactive disclosure, 10,000-session export safeguard, deterministic ordering, CSV/XLSX/PDF generation, and nullable reviewed accuracy remain unchanged.
+- Final automation passed 555 Material UI/resource assertions, 173 shell/navigation assertions, 11,685 controlled MySQL analytics assertions, 76 Result Module assertions, 29 configurable quiz-size assertions, and independent 20- and 11-assertion optional-history-chart failure checks. Cleanup verified zero temporary answer, session, and user rows while preserving existing accounts.
+- Native deployment passed 96 assertions for each of Debug x64, Debug x86, Release x64, and Release x86. Real WPF Cartesian/pie rendering, Material/MahApps resource construction, light-dark-light refresh, architecture-correct SkiaSharp/HarfBuzz loading, and clean chart disposal all passed.
+- Final Debug and Release rebuilds completed with zero errors and one existing `MVVMTKCFG0002` warning each. `git diff --check` passed, and the complete production diff contained no unrelated module, secret, local configuration, log, probe, export, or generated binary.
+- Real WPF acceptance passed every redesigned administrator and trainee surface, role authorization, theme switching, window chrome, resizing, keyboard interaction, Review Workflow, Dashboard, Reports, User Management, Login/Registration, Training Setup, both quiz sizes, Result, Training History/detail, refresh, logout, and shutdown. No clipping, inconsistent/plain controls, crash, freeze, binding failure, raw database error, sensitive message, or unexpected diagnostic dialog occurred.
+
 ## 2026-07-26
 
 ### Issue #15 - UI Polish
