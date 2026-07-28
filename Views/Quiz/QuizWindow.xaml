@@ -10,174 +10,246 @@
     MinWidth="900"
     MinHeight="650"
     AutomationProperties.Name="Visual inspection quiz"
-    Background="#101820"
-    FontFamily="Segoe UI"
+    Background="{DynamicResource App.DarkBackgroundBrush}"
+    FontFamily="Segoe UI Variable Text, Segoe UI"
     KeyboardNavigation.TabNavigation="Cycle"
     ResizeMode="CanResize"
     SnapsToDevicePixels="True"
     UseLayoutRounding="True"
     WindowStartupLocation="CenterScreen">
 
-    <Grid Margin="18">
+    <Window.Resources>
+        <Style
+            x:Key="GoodQuizButtonStyle"
+            BasedOn="{StaticResource PrimaryActionButtonStyle}"
+            TargetType="Button">
+            <Setter Property="MinHeight" Value="116" />
+            <Setter Property="Background" Value="{DynamicResource App.SuccessBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource App.SuccessBrush}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="18" />
+            <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp4" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp8" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp2" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style
+            x:Key="NgQuizButtonStyle"
+            BasedOn="{StaticResource GoodQuizButtonStyle}"
+            TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource App.DangerBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource App.DangerBrush}" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="22" Style="{StaticResource ContentEntranceGridStyle}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" MinHeight="110" />
-            <RowDefinition Height="14" />
+            <RowDefinition Height="Auto" MinHeight="104" />
+            <RowDefinition Height="18" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="16" />
-            <RowDefinition Height="Auto" MinHeight="120" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="Auto" MinHeight="116" />
         </Grid.RowDefinitions>
 
+        <!-- Session header -->
         <Border
             Grid.Row="0"
             Padding="24,18"
-            Background="#17212B"
-            BorderBrush="#263746"
+            Background="{DynamicResource App.DarkSurfaceBrush}"
+            BorderBrush="{DynamicResource App.DarkBorderBrush}"
             BorderThickness="1"
-            CornerRadius="4">
+            CornerRadius="18"
+            materialDesign:ElevationAssist.Elevation="Dp4">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="340" />
+                    <ColumnDefinition Width="390" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock
-                        AutomationProperties.HeadingLevel="Level1"
-                        FontSize="30"
-                        FontWeight="SemiBold"
-                        Foreground="#F8FAFC"
-                        Text="Visual Inspection Training" />
-
-                    <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <Border
+                        Width="58"
+                        Height="58"
+                        Margin="0,0,18,0"
+                        Background="{DynamicResource App.NavigationRaisedBrush}"
+                        CornerRadius="18">
+                        <materialDesign:PackIcon
+                            Width="32"
+                            Height="32"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource App.SecondaryBrush}"
+                            Kind="ImageSearchOutline" />
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
                         <TextBlock
-                            FontSize="15"
+                            AutomationProperties.HeadingLevel="Level1"
+                            FontFamily="Segoe UI Variable Display, Segoe UI"
+                            FontSize="27"
                             FontWeight="SemiBold"
-                            Foreground="#8EA3B5"
-                            Text="Trainee" />
+                            Foreground="{DynamicResource App.DarkTextBrush}"
+                            Text="Visual Inspection Training" />
+                        <StackPanel Margin="0,7,0,0" Orientation="Horizontal">
+                            <TextBlock Foreground="{DynamicResource App.DarkSecondaryTextBrush}" Text="Trainee" />
+                            <TextBlock
+                                Margin="10,0,0,0"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource App.DarkTextBrush}"
+                                Style="{StaticResource TrimmedTextWithToolTipStyle}"
+                                Text="{Binding CurrentUser}" />
+                        </StackPanel>
                         <TextBlock
-                            Margin="12,0,0,0"
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Foreground="#FFFFFF"
-                            Text="{Binding CurrentUser}" />
+                            Margin="0,4,0,0"
+                            AutomationProperties.LiveSetting="Polite"
+                            Foreground="{DynamicResource App.SecondaryBrush}"
+                            Text="{Binding QuizNotice}" />
                     </StackPanel>
-                    <TextBlock
-                        Margin="0,5,0,0"
-                        AutomationProperties.LiveSetting="Polite"
-                        FontSize="13"
-                        Foreground="#BAE6FD"
-                        Text="{Binding QuizNotice}" />
                 </StackPanel>
 
                 <Border
                     Grid.Column="1"
-                    Padding="18,10"
-                    HorizontalAlignment="Right"
+                    Padding="18,13"
+                    HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
-                    Background="#0E1720"
-                    BorderBrush="#33495C"
+                    Background="{DynamicResource App.DarkRaisedSurfaceBrush}"
+                    BorderBrush="{DynamicResource App.DarkBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="4">
-                    <StackPanel HorizontalAlignment="Right">
-                        <TextBlock
-                            HorizontalAlignment="Right"
-                            FontSize="13"
-                            FontWeight="SemiBold"
-                            Foreground="#8EA3B5"
-                            Text="QUESTION PROGRESS" />
-                        <TextBlock
-                            Margin="0,2,0,0"
-                            HorizontalAlignment="Right"
-                            FontSize="28"
-                            FontWeight="Bold"
-                            Foreground="#38BDF8"
-                            Text="{Binding QuestionProgressText}" />
-                        <Grid Margin="0,4,0,0">
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                FontSize="13"
-                                Foreground="#CBD5E1"
-                                Text="{Binding AnsweredRemainingText}" />
-                            <TextBlock
-                                HorizontalAlignment="Right"
-                                FontSize="13"
-                                FontWeight="SemiBold"
-                                Foreground="#E2E8F0"
-                                Text="{Binding CompletionPercentage, StringFormat={}{0:0}%}" />
-                        </Grid>
-                        <ProgressBar
-                            Height="8"
-                            Margin="0,6,0,0"
-                            Maximum="100"
-                            Value="{Binding CompletionPercentage, Mode=OneWay}" />
-                    </StackPanel>
+                    CornerRadius="14">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border
+                            Width="48"
+                            Height="48"
+                            Margin="0,0,14,0"
+                            Background="{DynamicResource App.NavigationBrush}"
+                            CornerRadius="14">
+                            <materialDesign:PackIcon
+                                Width="25"
+                                Height="25"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource App.SecondaryBrush}"
+                                Kind="ProgressCheck" />
+                        </Border>
+                        <StackPanel Grid.Column="1">
+                            <Grid>
+                                <TextBlock
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource App.DarkSecondaryTextBrush}"
+                                    Text="QUESTION PROGRESS" />
+                                <TextBlock
+                                    HorizontalAlignment="Right"
+                                    FontSize="20"
+                                    FontWeight="Bold"
+                                    Foreground="{DynamicResource App.SecondaryBrush}"
+                                    Text="{Binding QuestionProgressText}" />
+                            </Grid>
+                            <ProgressBar
+                                Height="8"
+                                Margin="0,7,0,0"
+                                Maximum="100"
+                                Value="{Binding CompletionPercentage, Mode=OneWay}" />
+                            <Grid Margin="0,5,0,0">
+                                <TextBlock
+                                    Foreground="{DynamicResource App.DarkSecondaryTextBrush}"
+                                    Text="{Binding AnsweredRemainingText}" />
+                                <TextBlock
+                                    HorizontalAlignment="Right"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource App.DarkTextBrush}"
+                                    Text="{Binding CompletionPercentage, StringFormat={}{0:0}%}" />
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
                 </Border>
             </Grid>
         </Border>
 
+        <!-- Inspection stage -->
         <Border
             Grid.Row="2"
-            Padding="18"
-            Background="#0B1117"
-            BorderBrush="#33495C"
+            Padding="16"
+            Background="{DynamicResource App.DarkSurfaceBrush}"
+            BorderBrush="{DynamicResource App.DarkBorderBrush}"
             BorderThickness="1"
-            CornerRadius="4">
+            CornerRadius="20"
+            materialDesign:ElevationAssist.Elevation="Dp6">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="42" />
+                    <RowDefinition Height="52" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0">
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock
-                            FontSize="14"
-                            FontWeight="SemiBold"
-                            Foreground="#CBD5E1"
-                            Text="INSPECTION IMAGE" />
-                        <TextBlock
-                            Margin="0,2,0,0"
-                            AutomationProperties.LiveSetting="Polite"
-                            FontSize="12"
-                            Foreground="#94A3B8"
-                            Text="{Binding ImageStatus}" />
+                <Grid Margin="4,0">
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        <materialDesign:PackIcon
+                            Width="22"
+                            Height="22"
+                            Margin="0,0,10,0"
+                            Foreground="{DynamicResource App.SecondaryBrush}"
+                            Kind="ImageOutline" />
+                        <StackPanel>
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Foreground="{DynamicResource App.DarkTextBrush}"
+                                Text="INSPECTION IMAGE" />
+                            <TextBlock
+                                Margin="0,2,0,0"
+                                AutomationProperties.LiveSetting="Polite"
+                                FontSize="12"
+                                Foreground="{DynamicResource App.DarkSecondaryTextBrush}"
+                                Text="{Binding ImageStatus}" />
+                        </StackPanel>
                     </StackPanel>
 
-                    <StackPanel
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
-                        <TextBlock
-                            FontSize="13"
-                            Foreground="#94A3B8"
-                            Text="G = GOOD" />
-                        <TextBlock
-                            Margin="22,0,0,0"
-                            FontSize="13"
-                            Foreground="#94A3B8"
-                            Text="N = NG" />
-                        <TextBlock
-                            Margin="22,0,0,0"
-                            FontSize="13"
-                            Foreground="#94A3B8"
-                            Text="Esc = Exit" />
+                    <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Border Margin="0,0,8,0" Padding="10,5" Background="{DynamicResource App.DarkRaisedSurfaceBrush}" CornerRadius="100">
+                            <TextBlock Foreground="{DynamicResource App.DarkSecondaryTextBrush}" Text="G  ·  GOOD" />
+                        </Border>
+                        <Border Margin="0,0,8,0" Padding="10,5" Background="{DynamicResource App.DarkRaisedSurfaceBrush}" CornerRadius="100">
+                            <TextBlock Foreground="{DynamicResource App.DarkSecondaryTextBrush}" Text="N  ·  NG" />
+                        </Border>
+                        <Border Padding="10,5" Background="{DynamicResource App.DarkRaisedSurfaceBrush}" CornerRadius="100">
+                            <TextBlock Foreground="{DynamicResource App.DarkSecondaryTextBrush}" Text="ESC  ·  Exit" />
+                        </Border>
                     </StackPanel>
                 </Grid>
 
                 <Border
                     Grid.Row="1"
-                    Background="#05080C"
-                    BorderBrush="#1F2A36"
+                    Background="#03070B"
+                    BorderBrush="{DynamicResource App.DarkBorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="3">
+                    CornerRadius="14">
                     <Grid>
                         <Image
-                            Margin="12"
-                            AutomationProperties.Name="Current inspection image"
+                            Margin="16"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
+                            AutomationProperties.Name="Current inspection image"
                             Source="{Binding CurrentImage}"
-                            Stretch="Uniform" />
+                            Stretch="Uniform">
+                            <Image.Triggers>
+                                <EventTrigger RoutedEvent="Image.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.2" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Image.Triggers>
+                        </Image>
                         <progress:ModernProgressBar
                             Panel.ZIndex="100"
                             IsActive="{Binding IsImageLoading}"
@@ -187,96 +259,79 @@
             </Grid>
         </Border>
 
+        <!-- Classification actions -->
         <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="18" />
+                <ColumnDefinition Width="20" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
             <Button
                 Grid.Column="0"
-                MinHeight="120"
                 AutomationProperties.HelpText="Classify the image as GOOD. Keyboard shortcut G."
                 AutomationProperties.Name="GOOD answer"
-                Background="#15803D"
-                BorderBrush="#22C55E"
-                BorderThickness="2"
                 Command="{Binding GoodCommand}"
-                Cursor="Hand"
-                Foreground="#FFFFFF">
+                Style="{StaticResource GoodQuizButtonStyle}">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <StackPanel
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border
+                        Width="58"
+                        Height="58"
+                        Background="#26FFFFFF"
+                        CornerRadius="18">
                         <materialDesign:PackIcon
-                            Width="36"
-                            Height="36"
-                            Margin="0,0,12,0"
+                            Width="34"
+                            Height="34"
+                            HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Kind="CheckBold" />
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            FontSize="36"
-                            FontWeight="Bold"
-                            Text="GOOD" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="18,0" VerticalAlignment="Center">
+                        <TextBlock FontSize="30" FontWeight="Bold" Text="GOOD" />
+                        <TextBlock Margin="0,3,0,0" FontSize="14" Text="Acceptable appearance" />
                     </StackPanel>
-                    <TextBlock
-                        Grid.Row="1"
-                        Margin="0,0,0,16"
-                        HorizontalAlignment="Center"
-                        FontSize="16"
-                        FontWeight="SemiBold"
-                        Text="Press G" />
+                    <Border Grid.Column="2" Padding="13,7" VerticalAlignment="Center" Background="#26FFFFFF" CornerRadius="100">
+                        <TextBlock FontWeight="SemiBold" Text="Press G" />
+                    </Border>
                 </Grid>
             </Button>
 
             <Button
                 Grid.Column="2"
-                MinHeight="120"
                 AutomationProperties.HelpText="Classify the image as NG. Keyboard shortcut N."
                 AutomationProperties.Name="NG answer"
-                Background="#B91C1C"
-                BorderBrush="#EF4444"
-                BorderThickness="2"
                 Command="{Binding NgCommand}"
-                Cursor="Hand"
-                Foreground="#FFFFFF">
+                Style="{StaticResource NgQuizButtonStyle}">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <StackPanel
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border
+                        Width="58"
+                        Height="58"
+                        Background="#26FFFFFF"
+                        CornerRadius="18">
                         <materialDesign:PackIcon
-                            Width="36"
-                            Height="36"
-                            Margin="0,0,12,0"
+                            Width="34"
+                            Height="34"
+                            HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Kind="CloseThick" />
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            FontSize="36"
-                            FontWeight="Bold"
-                            Text="NG" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="18,0" VerticalAlignment="Center">
+                        <TextBlock FontSize="30" FontWeight="Bold" Text="NG" />
+                        <TextBlock Margin="0,3,0,0" FontSize="14" Text="Nonconforming appearance" />
                     </StackPanel>
-                    <TextBlock
-                        Grid.Row="1"
-                        Margin="0,0,0,16"
-                        HorizontalAlignment="Center"
-                        FontSize="16"
-                        FontWeight="SemiBold"
-                        Text="Press N" />
+                    <Border Grid.Column="2" Padding="13,7" VerticalAlignment="Center" Background="#26FFFFFF" CornerRadius="100">
+                        <TextBlock FontWeight="SemiBold" Text="Press N" />
+                    </Border>
                 </Grid>
             </Button>
         </Grid>

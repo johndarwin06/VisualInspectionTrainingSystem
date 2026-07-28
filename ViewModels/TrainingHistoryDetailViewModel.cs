@@ -253,6 +253,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             int version = ++_loadVersion;
             CancellationTokenSource cancellation = ReplaceCancellation(
                 ref _loadCancellation);
+            CancellationToken cancellationToken = cancellation.Token;
 
             IsLoading = true;
             StatusMessage = "Loading your training result...";
@@ -265,9 +266,9 @@ namespace VisualInspectionTrainingSystem.ViewModels
             {
                 TrainingHistorySessionDetail detail = await AwaitWithCancellation(
                     worker,
-                    cancellation.Token);
+                    cancellationToken);
 
-                if (!CanPublishLoad(version, cancellation.Token))
+                if (!CanPublishLoad(version, cancellationToken))
                     return;
 
                 Answers.Clear();
@@ -293,7 +294,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             }
             catch (Exception ex)
             {
-                if (CanPublishLoad(version, cancellation.Token))
+                if (CanPublishLoad(version, cancellationToken))
                 {
                     ApplicationErrorLogger.LogUnhandledException(
                         "Training History Detail Load",
@@ -339,6 +340,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             }
 
             CancellationTokenSource cancellation = new CancellationTokenSource();
+            CancellationToken cancellationToken = cancellation.Token;
             _previewCancellation = cancellation;
             IsPreviewLoading = true;
             PreviewStatus = "Loading image preview...";
@@ -346,7 +348,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
             Task previewTask = LoadPreviewAsync(
                 answer,
                 version,
-                cancellation);
+                cancellation,
+                cancellationToken);
             ObserveAbandonedTask(previewTask);
         }
 
@@ -356,7 +359,8 @@ namespace VisualInspectionTrainingSystem.ViewModels
         private async Task LoadPreviewAsync(
             TrainingHistoryAnswerDetail answer,
             long version,
-            CancellationTokenSource cancellation)
+            CancellationTokenSource cancellation,
+            CancellationToken cancellationToken)
         {
             try
             {
@@ -365,11 +369,11 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     CancellationToken.None);
                 string path = await AwaitWithCancellation(
                     pathWorker,
-                    cancellation.Token);
+                    cancellationToken);
 
                 if (string.IsNullOrWhiteSpace(path))
                 {
-                    if (CanPublishPreview(answer, version, cancellation.Token))
+                    if (CanPublishPreview(answer, version, cancellationToken))
                         PreviewStatus = "Image preview is unavailable.";
 
                     return;
@@ -377,12 +381,12 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
                 Task<BitmapImage> imageWorker = _imageService.LoadBitmapAsync(
                     path,
-                    cancellation.Token);
+                    cancellationToken);
                 BitmapImage bitmap = await AwaitWithCancellation(
                     imageWorker,
-                    cancellation.Token);
+                    cancellationToken);
 
-                if (!CanPublishPreview(answer, version, cancellation.Token))
+                if (!CanPublishPreview(answer, version, cancellationToken))
                     return;
 
                 SelectedImagePreview = bitmap;
@@ -394,7 +398,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             }
             catch (Exception ex)
             {
-                if (CanPublishPreview(answer, version, cancellation.Token))
+                if (CanPublishPreview(answer, version, cancellationToken))
                 {
                     ApplicationErrorLogger.LogUnhandledException(
                         "Training History Preview",

@@ -1,4 +1,44 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+
+    <ResourceDictionary.MergedDictionaries>
+        <materialDesign:BundledTheme
+            BaseTheme="Dark"
+            PrimaryColor="Indigo"
+            SecondaryColor="Cyan" />
+        <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
+        <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/DesignTokems/Brushes.xaml" />
+        <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/DesignTokems/Spacing.xaml" />
+        <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/DesignTokems/CornerRadius.xaml" />
+        <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/DesignTokems/Shadows.xaml" />
+        <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/Styles/TextBlock/Typography.xaml" />
+        <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/Styles/Button/BaseButton.xaml" />
+        <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/Styles/Button/PrimaryButton.xaml" />
+        <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/Styles/Border/Cards.xaml" />
+        <ResourceDictionary Source="/VisualInpsectionTrainingSystem;component/Resources/Styles/ApplicationStyles.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- Theme-specific semantic overrides keep feature XAML theme-independent. -->
+    <SolidColorBrush x:Key="App.BackgroundBrush" Color="{DynamicResource Color.Dark.Background}" />
+    <SolidColorBrush x:Key="App.SurfaceBrush" Color="{DynamicResource Color.Dark.Surface}" />
+    <SolidColorBrush x:Key="App.SurfaceVariantBrush" Color="{DynamicResource Color.Dark.Raised}" />
+    <SolidColorBrush x:Key="App.SurfaceRaisedBrush" Color="{DynamicResource Color.Dark.Raised}" />
+    <SolidColorBrush x:Key="App.BorderBrush" Color="{DynamicResource Color.Dark.Border}" />
+    <SolidColorBrush x:Key="App.DividerBrush" Color="#263A4C" />
+    <SolidColorBrush x:Key="App.TextPrimaryBrush" Color="{DynamicResource Color.Dark.Text}" />
+    <SolidColorBrush x:Key="App.TextSecondaryBrush" Color="{DynamicResource Color.Dark.TextMuted}" />
+    <SolidColorBrush x:Key="App.TextMutedBrush" Color="#8FA3B5" />
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{DynamicResource Color.Dark.Background}" />
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{DynamicResource Color.Dark.Surface}" />
+    <SolidColorBrush x:Key="CardBorderBrush" Color="{DynamicResource Color.Dark.Border}" />
+    <SolidColorBrush x:Key="PrimaryTextBrush" Color="{DynamicResource Color.Dark.Text}" />
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="{DynamicResource Color.Dark.TextMuted}" />
+    <SolidColorBrush x:Key="App.LightSurfaceBrush" Color="{DynamicResource Color.Dark.Surface}" />
+    <SolidColorBrush x:Key="App.LightMutedSurfaceBrush" Color="{DynamicResource Color.Dark.Raised}" />
+    <SolidColorBrush x:Key="App.LightBorderBrush" Color="{DynamicResource Color.Dark.Border}" />
+    <SolidColorBrush x:Key="App.LightTextBrush" Color="{DynamicResource Color.Dark.Text}" />
+    <SolidColorBrush x:Key="App.LightSecondaryTextBrush" Color="{DynamicResource Color.Dark.TextMuted}" />
+
 </ResourceDictionary>

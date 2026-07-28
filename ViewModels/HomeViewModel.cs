@@ -15,7 +15,7 @@ using VisualInspectionTrainingSystem.Views.Login;
 namespace VisualInspectionTrainingSystem.ViewModels
 {
     /// <summary>
-    /// Provides commands, quiz-size selection, and navigation requests for the home screen.
+    /// Provides commands, profile presentation, quiz-size selection, and navigation requests for Home.
     /// </summary>
     public class HomeViewModel : BaseViewModel
     {
@@ -81,7 +81,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
         #endregion
 
-        #region Display Properties
+        #region Profile Properties
 
         /// <summary>
         /// Gets the personalized welcome message for the signed-in user.
@@ -99,6 +99,51 @@ namespace VisualInspectionTrainingSystem.ViewModels
                 return "Welcome, " + name;
             }
         }
+
+        /// <summary>
+        /// Gets a concise, non-sensitive department and role summary.
+        /// </summary>
+        public string ProfileSummary
+        {
+            get
+            {
+                User currentUser = SessionService.CurrentUser;
+                string department = currentUser == null ||
+                                    string.IsNullOrWhiteSpace(currentUser.Department)
+                    ? "Department not specified"
+                    : currentUser.Department.Trim();
+                string role = currentUser != null &&
+                              string.Equals(
+                                  UserRoles.Normalize(currentUser.Role),
+                                  UserRoles.Admin,
+                                  StringComparison.Ordinal)
+                    ? "Administrator"
+                    : "Trainee";
+
+                return department + "  •  " + role;
+            }
+        }
+
+        /// <summary>
+        /// Gets the authenticated employee-number summary for the profile chip.
+        /// </summary>
+        public string EmployeeNumberSummary
+        {
+            get
+            {
+                User currentUser = SessionService.CurrentUser;
+                string employeeNumber = currentUser == null ||
+                                        string.IsNullOrWhiteSpace(currentUser.EmployeeNo)
+                    ? "Unavailable"
+                    : currentUser.EmployeeNo.Trim();
+
+                return "Employee " + employeeNumber;
+            }
+        }
+
+        #endregion
+
+        #region Quiz Selection Properties
 
         /// <summary>
         /// Gets the two supported trainee quiz sizes.
@@ -158,7 +203,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
         /// </summary>
         public string QuizSizeSummary
         {
-            get { return "Selected: " + SelectedQuizSize + " questions"; }
+            get { return SelectedQuizSize + " inspection images selected"; }
         }
 
         /// <summary>

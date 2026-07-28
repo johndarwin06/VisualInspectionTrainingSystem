@@ -9,8 +9,8 @@
     MaxWidth="680"
     MaxHeight="620"
     AutomationProperties.Name="Application message"
-    Padding="0"
-    Background="{StaticResource App.LightMutedSurfaceBrush}"
+    Padding="14"
+    Background="{DynamicResource App.BackgroundBrush}"
     PreviewKeyDown="OnPreviewKeyDown"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
@@ -18,37 +18,41 @@
     WindowStartupLocation="CenterOwner">
 
     <Border
-        Background="{StaticResource App.LightSurfaceBrush}"
-        BorderBrush="{StaticResource App.LightBorderBrush}"
+        x:Name="DialogSurface"
+        Background="{DynamicResource App.SurfaceBrush}"
+        BorderBrush="{DynamicResource App.BorderBrush}"
         BorderThickness="1"
-        CornerRadius="8">
+        CornerRadius="18"
+        Opacity="0"
+        RenderTransformOrigin="0.5,0.5"
+        materialDesign:ElevationAssist.Elevation="Dp8">
+        <Border.RenderTransform><ScaleTransform ScaleX="0.97" ScaleY="0.97" /></Border.RenderTransform>
+        <Border.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.18" />
+                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.18" />
+                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.18" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Border.Triggers>
+
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 
-            <Grid Margin="28,26,28,22">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="44" />
-                    <ColumnDefinition Width="16" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <Border
-                    Width="44"
-                    Height="44"
-                    VerticalAlignment="Top"
-                    Background="#E6F0F8"
-                    CornerRadius="22">
+            <Grid Margin="28,28,28,24">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="52" /><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Border Width="52" Height="52" VerticalAlignment="Top" Background="{DynamicResource App.InfoSurfaceBrush}" CornerRadius="16">
                     <materialDesign:PackIcon
                         x:Name="DialogIcon"
-                        Width="24"
-                        Height="24"
+                        Width="27"
+                        Height="27"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Dialog status"
-                        Foreground="{StaticResource App.AccentBrush}"
+                        Foreground="{DynamicResource App.PrimaryBrush}"
                         Kind="InformationOutline" />
                 </Border>
 
@@ -56,47 +60,26 @@
                     <TextBlock
                         x:Name="CaptionText"
                         AutomationProperties.HeadingLevel="Level1"
-                        FontSize="20"
+                        FontSize="21"
                         FontWeight="SemiBold"
-                        Foreground="{StaticResource App.LightTextBrush}"
+                        Foreground="{DynamicResource App.TextPrimaryBrush}"
                         TextWrapping="Wrap" />
-                    <ScrollViewer
-                        Margin="0,10,0,0"
-                        MaxHeight="320"
-                        HorizontalScrollBarVisibility="Disabled"
-                        VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer Margin="0,10,0,0" MaxHeight="320" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                         <TextBlock
                             x:Name="MessageText"
                             AutomationProperties.LiveSetting="Assertive"
-                            Foreground="{StaticResource App.LightSecondaryTextBrush}"
+                            Foreground="{DynamicResource App.TextSecondaryBrush}"
                             LineHeight="22"
                             TextWrapping="Wrap" />
                     </ScrollViewer>
                 </StackPanel>
             </Grid>
 
-            <Border
-                Grid.Row="1"
-                Padding="20,16"
-                Background="#F8FAFC"
-                BorderBrush="{StaticResource App.LightBorderBrush}"
-                BorderThickness="0,1,0,0">
+            <Border Grid.Row="1" Padding="20,16" Background="{DynamicResource App.SurfaceVariantBrush}" BorderBrush="{DynamicResource App.DividerBrush}" BorderThickness="0,1,0,0" CornerRadius="0,0,18,18">
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                    <Button
-                        x:Name="TertiaryButton"
-                        Margin="0,0,10,0"
-                        Click="OnResultButtonClick"
-                        Style="{StaticResource SecondaryActionButtonStyle}" />
-                    <Button
-                        x:Name="SecondaryButton"
-                        Margin="0,0,10,0"
-                        Click="OnResultButtonClick"
-                        Style="{StaticResource SecondaryActionButtonStyle}" />
-                    <Button
-                        x:Name="PrimaryButton"
-                        Click="OnResultButtonClick"
-                        IsDefault="True"
-                        Style="{StaticResource PrimaryActionButtonStyle}" />
+                    <Button x:Name="TertiaryButton" Margin="0,0,10,0" Click="OnResultButtonClick" Style="{StaticResource SecondaryActionButtonStyle}" />
+                    <Button x:Name="SecondaryButton" Margin="0,0,10,0" Click="OnResultButtonClick" Style="{StaticResource SecondaryActionButtonStyle}" />
+                    <Button x:Name="PrimaryButton" Click="OnResultButtonClick" IsDefault="True" Style="{StaticResource PrimaryActionButtonStyle}" />
                 </StackPanel>
             </Border>
         </Grid>

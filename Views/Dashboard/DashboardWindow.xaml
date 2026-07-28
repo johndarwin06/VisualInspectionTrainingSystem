@@ -6,367 +6,210 @@
     xmlns:progress="clr-namespace:VisualInspectionTrainingSystem.Controls.Progress"
     Title="Dashboard"
     Width="1280"
-    Height="760"
+    Height="780"
     MinWidth="960"
-    MinHeight="600"
+    MinHeight="620"
     AutomationProperties.Name="Training dashboard"
-    Background="#0F1720"
-    FontFamily="Segoe UI"
+    Background="{DynamicResource App.BackgroundBrush}"
     KeyboardNavigation.TabNavigation="Cycle"
     ResizeMode="CanResize"
     SnapsToDevicePixels="True"
     UseLayoutRounding="True"
     WindowStartupLocation="CenterScreen">
 
-    <Grid Margin="18">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="82" />
-            <RowDefinition Height="14" />
-            <RowDefinition Height="210" />
-            <RowDefinition Height="14" />
+            <RowDefinition Height="76" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="14" />
-            <RowDefinition Height="58" />
         </Grid.RowDefinitions>
 
         <Border
             Grid.Row="0"
-            Padding="22,14"
-            Background="#17212B"
-            BorderBrush="#2D4050"
-            BorderThickness="1"
-            CornerRadius="4">
+            Padding="28,0"
+            Background="{DynamicResource App.NavigationBrush}"
+            materialDesign:ElevationAssist.Elevation="Dp4">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel VerticalAlignment="Center">
+                <Border
+                    Width="44"
+                    Height="44"
+                    VerticalAlignment="Center"
+                    Background="#24FFFFFF"
+                    CornerRadius="12">
+                    <materialDesign:PackIcon
+                        Width="24"
+                        Height="24"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Foreground="White"
+                        Kind="ViewDashboardOutline" />
+                </Border>
+
+                <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
                     <TextBlock
                         AutomationProperties.HeadingLevel="Level1"
-                        FontSize="28"
+                        FontSize="22"
                         FontWeight="SemiBold"
-                        Foreground="#F8FAFC"
+                        Foreground="White"
                         Text="Training Dashboard" />
                     <TextBlock
-                        Margin="0,6,0,0"
-                        FontSize="14"
-                        Foreground="#9FB2C3"
-                        Text="Today's completed training and trainee answer analytics." />
+                        Margin="0,2,0,0"
+                        FontSize="12"
+                        Foreground="#C7D2FE"
+                        Text="Today's completed training and trainee answer analytics" />
                 </StackPanel>
 
                 <Button
-                    Grid.Column="1"
+                    Grid.Column="2"
                     AutomationProperties.Name="Refresh dashboard"
-                    Width="140"
-                    Height="46"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Background="#2563EB"
-                    BorderBrush="#60A5FA"
-                    BorderThickness="1"
+                    MinWidth="124"
                     Command="{Binding RefreshCommand}"
-                    Cursor="Hand"
-                    FontSize="16"
-                    FontWeight="SemiBold"
-                    Foreground="#FFFFFF"
+                    Style="{StaticResource DarkActionButtonStyle}"
                     ToolTip="Reload today's metrics and recent sessions">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="Refresh" Style="{StaticResource AppIconStyle}" />
-                        <TextBlock VerticalAlignment="Center" Text="Refresh" />
+                        <TextBlock Text="Refresh" />
                     </StackPanel>
                 </Button>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="10" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="10" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="10" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="10" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <Border
-                Grid.Column="0"
-                AutomationProperties.Name="Today's completed training metric"
-                Padding="16"
-                Background="#0B1117"
-                BorderBrush="#33495C"
-                BorderThickness="1"
-                CornerRadius="4">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="#8EA3B5"
-                        Text="TODAY'S TRAINING" />
-                    <TextBlock
-                        Margin="0,14,0,0"
-                        FontSize="36"
-                        FontWeight="Bold"
-                        Foreground="#F8FAFC"
-                        Text="{Binding TodaysTrainingText}" />
-                    <TextBlock
-                        Margin="0,12,0,0"
-                        FontSize="12"
-                        Foreground="#9FB2C3"
-                        Text="{Binding TodayScopeText}" />
-                    <TextBlock
-                        Margin="0,5,0,0"
-                        FontSize="11"
-                        Foreground="#70869A"
-                        Text="Completed sessions"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-            </Border>
-
-            <Border
-                Grid.Column="2"
-                AutomationProperties.Name="Today's reviewed-only average accuracy metric"
-                Padding="16"
-                Background="#0B1117"
-                BorderBrush="#1D4ED8"
-                BorderThickness="1"
-                CornerRadius="4">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="#93C5FD"
-                        Text="AVERAGE ACCURACY" />
-                    <TextBlock
-                        Margin="0,14,0,0"
-                        FontSize="36"
-                        FontWeight="Bold"
-                        Foreground="#60A5FA"
-                        Text="{Binding AverageReviewedAccuracyText}" />
-                    <TextBlock
-                        Margin="0,12,0,0"
-                        FontSize="12"
-                        Foreground="#9FB2C3"
-                        Text="Today · Reviewed only" />
-                    <TextBlock
-                        Margin="0,5,0,0"
-                        FontSize="11"
-                        Foreground="#70869A"
-                        Text="{Binding ReviewedAccuracyDetailText}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-            </Border>
-
-            <Border
-                Grid.Column="4"
-                AutomationProperties.Name="Today's time spent metric"
-                Padding="16"
-                Background="#0B1117"
-                BorderBrush="#7C3AED"
-                BorderThickness="1"
-                CornerRadius="4">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="#C4B5FD"
-                        Text="TIME SPENT" />
-                    <TextBlock
-                        Margin="0,14,0,0"
-                        FontSize="28"
-                        FontWeight="Bold"
-                        Foreground="#A78BFA"
-                        Text="{Binding TimeSpentText}"
-                        TextWrapping="Wrap" />
-                    <TextBlock
-                        Margin="0,12,0,0"
-                        FontSize="12"
-                        Foreground="#9FB2C3"
-                        Text="{Binding TodayScopeText}" />
-                    <TextBlock
-                        Margin="0,5,0,0"
-                        FontSize="11"
-                        Foreground="#70869A"
-                        Text="Valid completed durations"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-            </Border>
-
-            <Border
-                Grid.Column="6"
-                AutomationProperties.Name="Today's trainee GOOD count metric"
-                Padding="16"
-                Background="#0B1117"
-                BorderBrush="#166534"
-                BorderThickness="1"
-                CornerRadius="4">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="#86EFAC"
-                        Text="GOOD COUNT" />
-                    <TextBlock
-                        Margin="0,14,0,0"
-                        FontSize="36"
-                        FontWeight="Bold"
-                        Foreground="#22C55E"
-                        Text="{Binding GoodCountText}" />
-                    <TextBlock
-                        Margin="0,12,0,0"
-                        FontSize="12"
-                        Foreground="#9FB2C3"
-                        Text="{Binding TodayScopeText}" />
-                    <TextBlock
-                        Margin="0,5,0,0"
-                        FontSize="11"
-                        Foreground="#70869A"
-                        Text="Includes pending review"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-            </Border>
-
-            <Border
-                Grid.Column="8"
-                AutomationProperties.Name="Today's trainee NG count metric"
-                Padding="16"
-                Background="#0B1117"
-                BorderBrush="#991B1B"
-                BorderThickness="1"
-                CornerRadius="4">
-                <StackPanel>
-                    <TextBlock
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="#FCA5A5"
-                        Text="NG COUNT" />
-                    <TextBlock
-                        Margin="0,14,0,0"
-                        FontSize="36"
-                        FontWeight="Bold"
-                        Foreground="#EF4444"
-                        Text="{Binding NgCountText}" />
-                    <TextBlock
-                        Margin="0,12,0,0"
-                        FontSize="12"
-                        Foreground="#9FB2C3"
-                        Text="{Binding TodayScopeText}" />
-                    <TextBlock
-                        Margin="0,5,0,0"
-                        FontSize="11"
-                        Foreground="#70869A"
-                        Text="Includes pending review"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Border
-            Grid.Row="4"
-            Padding="14"
-            Background="#0B1117"
-            BorderBrush="#33495C"
-            BorderThickness="1"
-            CornerRadius="4">
-            <Grid>
+        <ScrollViewer
+            Grid.Row="1"
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <Grid Margin="28,24,28,28" Style="{StaticResource ContentEntranceGridStyle}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="34" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="20" />
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="16" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <TextBlock
-                    VerticalAlignment="Center"
-                    FontSize="16"
-                    FontWeight="SemiBold"
-                    Foreground="#F8FAFC"
-                    Text="Recent Sessions (all dates)" />
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                <DataGrid
-                    Grid.Row="1"
-                    AutomationProperties.Name="Recent training sessions"
-                    AlternatingRowBackground="#17212B"
-                    AutoGenerateColumns="False"
-                    Background="#111827"
-                    BorderBrush="#263746"
-                    BorderThickness="1"
-                    CanUserAddRows="False"
-                    CanUserDeleteRows="False"
-                    CanUserResizeRows="False"
-                    ColumnHeaderHeight="38"
-                    Foreground="#E5E7EB"
-                    GridLinesVisibility="Horizontal"
-                    HeadersVisibility="Column"
-                    HorizontalGridLinesBrush="#263746"
-                    IsReadOnly="True"
-                    ItemsSource="{Binding RecentSessions}"
-                    RowBackground="#0F1720"
-                    MinRowHeight="36"
-                    SelectionMode="Single"
-                    SelectionUnit="FullRow">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn
-                            Width="90"
-                            Binding="{Binding SessionID}"
-                            Header="Session" />
-                        <DataGridTextColumn
-                            Width="140"
-                            Binding="{Binding EmployeeNo}"
-                            Header="Employee" />
-                        <DataGridTextColumn
-                            Width="170"
-                            Binding="{Binding StartTime, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
-                            Header="Start Time" />
-                        <DataGridTextColumn
-                            Width="170"
-                            Binding="{Binding EndTime, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
-                            Header="End Time" />
-                        <DataGridTextColumn
-                            Width="120"
-                            Binding="{Binding TotalQuestions}"
-                            Header="Questions" />
-                        <DataGridTextColumn
-                            Width="110"
-                            Binding="{Binding CorrectAnswers}"
-                            Header="Correct" />
-                        <DataGridTextColumn
-                            Width="110"
-                            Binding="{Binding WrongAnswers}"
-                            Header="Wrong" />
-                        <DataGridTextColumn
-                            Width="120"
-                            Binding="{Binding Accuracy, StringFormat={}{0:0.00}%}"
-                            Header="Accuracy" />
-                        <DataGridTextColumn
-                            Width="*"
-                            Binding="{Binding Status}"
-                            Header="Status" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                    <Border Grid.Column="0" AutomationProperties.Name="Today's completed training metric" Style="{StaticResource MetricCardStyle}">
+                        <StackPanel>
+                            <materialDesign:PackIcon Width="22" Height="22" Foreground="{DynamicResource App.PrimaryBrush}" Kind="SchoolOutline" />
+                            <TextBlock Margin="0,12,0,0" Style="{StaticResource MetricValueTextStyle}" Text="{Binding TodaysTrainingText}" />
+                            <TextBlock Margin="0,7,0,0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="TODAY'S TRAINING" />
+                            <TextBlock Margin="0,5,0,0" Style="{StaticResource SupportingTextStyle}" Text="Completed sessions" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" AutomationProperties.Name="Today's reviewed-only average accuracy metric" Style="{StaticResource MetricCardStyle}">
+                        <StackPanel>
+                            <materialDesign:PackIcon Width="22" Height="22" Foreground="{DynamicResource App.InfoBrush}" Kind="BullseyeArrow" />
+                            <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource App.InfoBrush}" Style="{StaticResource MetricValueTextStyle}" Text="{Binding AverageReviewedAccuracyText}" />
+                            <TextBlock Margin="0,7,0,0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="REVIEWED ACCURACY" />
+                            <TextBlock Margin="0,5,0,0" Style="{StaticResource SupportingTextStyle}" Text="{Binding ReviewedAccuracyDetailText}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="4" AutomationProperties.Name="Today's time spent metric" Style="{StaticResource MetricCardStyle}">
+                        <StackPanel>
+                            <materialDesign:PackIcon Width="22" Height="22" Foreground="{DynamicResource App.SecondaryBrush}" Kind="TimerOutline" />
+                            <TextBlock Margin="0,12,0,0" FontSize="26" Foreground="{DynamicResource App.SecondaryBrush}" Style="{StaticResource MetricValueTextStyle}" Text="{Binding TimeSpentText}" TextWrapping="Wrap" />
+                            <TextBlock Margin="0,7,0,0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="TIME SPENT" />
+                            <TextBlock Margin="0,5,0,0" Style="{StaticResource SupportingTextStyle}" Text="Valid completed durations" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="6" AutomationProperties.Name="Today's trainee GOOD count metric" Style="{StaticResource MetricCardStyle}">
+                        <StackPanel>
+                            <materialDesign:PackIcon Width="22" Height="22" Foreground="{DynamicResource App.SuccessBrush}" Kind="CheckCircleOutline" />
+                            <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource App.SuccessBrush}" Style="{StaticResource MetricValueTextStyle}" Text="{Binding GoodCountText}" />
+                            <TextBlock Margin="0,7,0,0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="GOOD COUNT" />
+                            <TextBlock Margin="0,5,0,0" Style="{StaticResource SupportingTextStyle}" Text="Includes pending review" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="8" AutomationProperties.Name="Today's trainee NG count metric" Style="{StaticResource MetricCardStyle}">
+                        <StackPanel>
+                            <materialDesign:PackIcon Width="22" Height="22" Foreground="{DynamicResource App.DangerBrush}" Kind="AlertCircleOutline" />
+                            <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource App.DangerBrush}" Style="{StaticResource MetricValueTextStyle}" Text="{Binding NgCountText}" />
+                            <TextBlock Margin="0,7,0,0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="NG COUNT" />
+                            <TextBlock Margin="0,5,0,0" Style="{StaticResource SupportingTextStyle}" Text="Includes pending review" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionTitleTextStyle}" Text="Recent sessions" />
+                        <TextBlock Margin="0,3,0,0" Style="{StaticResource SupportingTextStyle}" Text="Latest training activity across all dates" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Padding="12,6" VerticalAlignment="Center" Background="{DynamicResource App.InfoSurfaceBrush}" CornerRadius="12">
+                        <TextBlock FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.InfoBrush}" Text="TODAY · LOCAL TIME" />
+                    </Border>
+                </Grid>
+
+                <Border Grid.Row="4" MinHeight="280" Padding="1" Style="{StaticResource SurfaceCardStyle}">
+                    <DataGrid
+                        AutomationProperties.Name="Recent training sessions"
+                        AutoGenerateColumns="False"
+                        BorderThickness="0"
+                        CanUserAddRows="False"
+                        CanUserDeleteRows="False"
+                        CanUserResizeRows="False"
+                        IsReadOnly="True"
+                        ItemsSource="{Binding RecentSessions}"
+                        MinRowHeight="40"
+                        SelectionMode="Single"
+                        SelectionUnit="FullRow">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Width="90" Binding="{Binding SessionID}" Header="Session" />
+                            <DataGridTextColumn Width="140" Binding="{Binding EmployeeNo}" Header="Employee" />
+                            <DataGridTextColumn Width="170" Binding="{Binding StartTime, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Header="Start Time" />
+                            <DataGridTextColumn Width="170" Binding="{Binding EndTime, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Header="End Time" />
+                            <DataGridTextColumn Width="120" Binding="{Binding TotalQuestions}" Header="Questions" />
+                            <DataGridTextColumn Width="110" Binding="{Binding CorrectAnswers}" Header="Correct" />
+                            <DataGridTextColumn Width="110" Binding="{Binding WrongAnswers}" Header="Wrong" />
+                            <DataGridTextColumn Width="120" Binding="{Binding Accuracy, StringFormat={}{0:0.00}%}" Header="Accuracy" />
+                            <DataGridTextColumn Width="*" Binding="{Binding Status}" Header="Status" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <Border Grid.Row="6" Padding="16,12" Background="{DynamicResource App.SurfaceVariantBrush}" CornerRadius="12">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Margin="0,0,10,0" VerticalAlignment="Center" Foreground="{DynamicResource App.PrimaryBrush}" Kind="InformationOutline" />
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            AutomationProperties.LiveSetting="Polite"
+                            Foreground="{DynamicResource App.TextSecondaryBrush}"
+                            Style="{StaticResource TrimmedTextWithToolTipStyle}"
+                            Text="{Binding StatusMessage}" />
+                    </StackPanel>
+                </Border>
             </Grid>
-        </Border>
-
-        <Border
-            Grid.Row="6"
-            Padding="16,0"
-            Background="#17212B"
-            BorderBrush="#263746"
-            BorderThickness="1"
-            CornerRadius="4">
-            <TextBlock
-                VerticalAlignment="Center"
-                AutomationProperties.LiveSetting="Polite"
-                FontSize="14"
-                Foreground="#CBD5E1"
-                Style="{StaticResource TrimmedTextWithToolTipStyle}"
-                Text="{Binding StatusMessage}" />
-        </Border>
+        </ScrollViewer>
 
         <progress:ModernProgressBar
-            Grid.RowSpan="7"
+            Grid.RowSpan="2"
             Panel.ZIndex="100"
             IsActive="{Binding IsBusy}"
             Message="{Binding StatusMessage}" />

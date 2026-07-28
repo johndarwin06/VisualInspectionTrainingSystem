@@ -333,6 +333,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
 
             int operationVersion = ++_operationVersion;
             CancellationTokenSource cancellation = new CancellationTokenSource();
+            CancellationToken cancellationToken = cancellation.Token;
             CancellationTokenSource previous = _operationCancellation;
             _operationCancellation = cancellation;
 
@@ -355,9 +356,9 @@ namespace VisualInspectionTrainingSystem.ViewModels
             {
                 TrainingHistoryPage page = await AwaitWithCancellation(
                     worker,
-                    cancellation.Token);
+                    cancellationToken);
 
-                if (!CanPublish(operationVersion, cancellation.Token))
+                if (!CanPublish(operationVersion, cancellationToken))
                     return;
 
                 if (!append)
@@ -385,7 +386,7 @@ namespace VisualInspectionTrainingSystem.ViewModels
             }
             catch (Exception ex)
             {
-                if (CanPublish(operationVersion, cancellation.Token))
+                if (CanPublish(operationVersion, cancellationToken))
                 {
                     ApplicationErrorLogger.LogUnhandledException(
                         "Training History Load",

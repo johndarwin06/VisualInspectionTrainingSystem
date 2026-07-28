@@ -10,7 +10,7 @@
     MinWidth="980"
     MinHeight="620"
     AutomationProperties.Name="Administrator review workflow"
-    Background="#0F1720"
+    Background="{DynamicResource App.BackgroundBrush}"
     FontFamily="Segoe UI"
     KeyboardNavigation.TabNavigation="Cycle"
     ResizeMode="CanResize"
@@ -20,58 +20,38 @@
 
     <Window.Resources>
         <Style x:Key="ActionButton" BasedOn="{StaticResource DarkActionButtonStyle}" TargetType="Button">
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Padding" Value="14,0" />
-            <Setter Property="Background" Value="#1F2937" />
-            <Setter Property="BorderBrush" Value="#4B5563" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="MinHeight" Value="42" />
+            <Setter Property="Padding" Value="14,8" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
         </Style>
-        <Style x:Key="SummaryBorder" TargetType="Border">
-            <Setter Property="Padding" Value="14" />
-            <Setter Property="Background" Value="#17212B" />
-            <Setter Property="BorderBrush" Value="#2D4050" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="4" />
-        </Style>
-        <Style BasedOn="{StaticResource AccessibleTextBoxStyle}" TargetType="TextBox">
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Padding" Value="10,6" />
-            <Setter Property="Background" Value="#0F1720" />
-            <Setter Property="BorderBrush" Value="#4B5563" />
-            <Setter Property="Foreground" Value="#F8FAFC" />
-            <Setter Property="CaretBrush" Value="#F8FAFC" />
-        </Style>
-        <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
-            <Setter Property="Height" Value="40" />
-            <Setter Property="Padding" Value="8,4" />
-            <Setter Property="Background" Value="#F8FAFC" />
-            <Setter Property="Foreground" Value="#111827" />
+        <Style x:Key="SummaryBorder" BasedOn="{StaticResource MetricCardStyle}" TargetType="Border">
+            <Setter Property="MinHeight" Value="88" />
+            <Setter Property="Padding" Value="16" />
         </Style>
     </Window.Resources>
 
-    <Grid Margin="16">
+    <Grid Margin="22" Style="{StaticResource ContentEntranceGridStyle}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="74" />
-            <RowDefinition Height="12" />
-            <RowDefinition Height="104" />
-            <RowDefinition Height="12" />
-            <RowDefinition Height="82" />
-            <RowDefinition Height="12" />
+            <RowDefinition Height="78" />
+            <RowDefinition Height="16" />
+            <RowDefinition Height="112" />
+            <RowDefinition Height="16" />
+            <RowDefinition Height="92" />
+            <RowDefinition Height="16" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="12" />
-            <RowDefinition Height="94" />
+            <RowDefinition Height="16" />
+            <RowDefinition Height="100" />
         </Grid.RowDefinitions>
 
         <Border
             Grid.Row="0"
-            Padding="20,12"
-            Background="#17212B"
-            BorderBrush="#2D4050"
+            Padding="22,12"
+            Background="{DynamicResource App.NavigationBrush}"
+            BorderBrush="{DynamicResource App.NavigationRaisedBrush}"
             BorderThickness="1"
-            CornerRadius="4">
+            CornerRadius="18"
+            materialDesign:ElevationAssist.Elevation="Dp4">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -89,15 +69,15 @@
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock
                         AutomationProperties.HeadingLevel="Level1"
-                        FontSize="27"
+                        FontSize="25"
                         FontWeight="SemiBold"
-                        Foreground="#F8FAFC"
+                        Foreground="{DynamicResource App.DarkTextBrush}"
                         Text="Administrator Review Workflow"
                         TextWrapping="Wrap" />
                     <TextBlock
                         Margin="0,4,0,0"
                         FontSize="13"
-                        Foreground="#9FB2C3"
+                        Foreground="{DynamicResource App.DarkSecondaryTextBrush}"
                         Text="{Binding FilterSummary}" />
                 </StackPanel>
 
@@ -138,8 +118,8 @@
                     Grid.Column="7"
                     AutomationProperties.Name="Refresh review workflow"
                     Style="{StaticResource ActionButton}"
-                    Background="#1D4ED8"
-                    BorderBrush="#60A5FA"
+                    Background="{DynamicResource App.PrimaryBrush}"
+                    BorderBrush="{DynamicResource App.SecondaryBrush}"
                     Command="{Binding RefreshCommand}"
                     ToolTip="Reload review data">
                     <StackPanel Orientation="Horizontal">
@@ -151,8 +131,8 @@
                     Grid.Column="9"
                     AutomationProperties.Name="Log out"
                     Style="{StaticResource ActionButton}"
-                    Background="#7F1D1D"
-                    BorderBrush="#EF4444"
+                    Background="{DynamicResource App.DangerBrush}"
+                    BorderBrush="{DynamicResource App.DangerSurfaceBrush}"
                     Command="{Binding LogoutCommand}"
                     ToolTip="Return to Login">
                     <StackPanel Orientation="Horizontal">
@@ -166,10 +146,7 @@
         <Border
             Grid.Row="2"
             Padding="16"
-            Background="#17212B"
-            BorderBrush="#2D4050"
-            BorderThickness="1"
-            CornerRadius="4">
+            Style="{StaticResource FilterBarStyle}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -196,13 +173,13 @@
                     Grid.ColumnSpan="5"
                     FontSize="12"
                     FontWeight="SemiBold"
-                    Foreground="#9FB2C3"
+                    Foreground="{DynamicResource App.TextSecondaryBrush}"
                     Text="SEARCH EMPLOYEE, ANSWER, SESSION, FILE, HASH, USER ANSWER, OR TRUTH" />
                 <TextBlock
                     Grid.Column="6"
                     FontSize="12"
                     FontWeight="SemiBold"
-                    Foreground="#9FB2C3"
+                    Foreground="{DynamicResource App.TextSecondaryBrush}"
                     Text="FILTER" />
 
                 <TextBox
@@ -215,8 +192,8 @@
                     Grid.Row="2"
                     Grid.Column="2"
                     Style="{StaticResource ActionButton}"
-                    Background="#1D4ED8"
-                    BorderBrush="#60A5FA"
+                    Background="{DynamicResource App.PrimaryBrush}"
+                    BorderBrush="{DynamicResource App.SecondaryBrush}"
                     Command="{Binding SearchCommand}"
                     Content="Search" />
                 <Button
@@ -249,7 +226,7 @@
                     VerticalAlignment="Center"
                     FontSize="13"
                     FontWeight="SemiBold"
-                    Foreground="#F8FAFC"
+                    Foreground="{DynamicResource App.TextPrimaryBrush}"
                     Text="{Binding SelectionSummary}"
                     TextWrapping="Wrap" />
             </Grid>
@@ -267,26 +244,26 @@
             </Grid.ColumnDefinitions>
             <Border Grid.Column="0" Style="{StaticResource SummaryBorder}">
                 <StackPanel>
-                    <TextBlock Foreground="#9FB2C3" Text="TOTAL ANSWERS" />
-                    <TextBlock FontSize="27" FontWeight="Bold" Foreground="#F8FAFC" Text="{Binding TotalAnswers}" />
+                    <TextBlock Foreground="{DynamicResource App.TextSecondaryBrush}" Text="TOTAL ANSWERS" />
+                    <TextBlock Style="{StaticResource MetricValueTextStyle}" Text="{Binding TotalAnswers}" />
                 </StackPanel>
             </Border>
             <Border Grid.Column="2" Style="{StaticResource SummaryBorder}">
                 <StackPanel>
-                    <TextBlock Foreground="#9FB2C3" Text="PENDING" />
-                    <TextBlock FontSize="27" FontWeight="Bold" Foreground="#F59E0B" Text="{Binding PendingAnswers}" />
+                    <TextBlock Foreground="{DynamicResource App.TextSecondaryBrush}" Text="PENDING" />
+                    <TextBlock FontSize="28" FontWeight="Bold" Foreground="{DynamicResource App.WarningBrush}" Text="{Binding PendingAnswers}" />
                 </StackPanel>
             </Border>
             <Border Grid.Column="4" Style="{StaticResource SummaryBorder}">
                 <StackPanel>
-                    <TextBlock Foreground="#9FB2C3" Text="REVIEWED" />
-                    <TextBlock FontSize="27" FontWeight="Bold" Foreground="#22C55E" Text="{Binding ReviewedAnswers}" />
+                    <TextBlock Foreground="{DynamicResource App.TextSecondaryBrush}" Text="REVIEWED" />
+                    <TextBlock FontSize="28" FontWeight="Bold" Foreground="{DynamicResource App.SuccessBrush}" Text="{Binding ReviewedAnswers}" />
                 </StackPanel>
             </Border>
             <Border Grid.Column="6" Style="{StaticResource SummaryBorder}">
                 <StackPanel>
-                    <TextBlock Foreground="#9FB2C3" Text="VISIBLE / SELECTED" />
-                    <TextBlock FontSize="27" FontWeight="Bold" Foreground="#60A5FA">
+                    <TextBlock Foreground="{DynamicResource App.TextSecondaryBrush}" Text="VISIBLE / SELECTED" />
+                    <TextBlock FontSize="28" FontWeight="Bold" Foreground="{DynamicResource App.PrimaryBrush}">
                         <Run Text="{Binding VisibleAnswers, Mode=OneWay}" />
                         <Run Text=" / " />
                         <Run Text="{Binding SelectedCount, Mode=OneWay}" />
@@ -304,11 +281,8 @@
 
             <Border
                 Grid.Column="0"
-                Padding="12"
-                Background="#17212B"
-                BorderBrush="#2D4050"
-                BorderThickness="1"
-                CornerRadius="4">
+                Padding="16"
+                Style="{StaticResource SurfaceCardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="34" />
@@ -318,28 +292,22 @@
                         VerticalAlignment="Center"
                         FontSize="17"
                         FontWeight="SemiBold"
-                        Foreground="#F8FAFC"
+                        Foreground="{DynamicResource App.TextPrimaryBrush}"
                         Text="Answer Review Queue" />
                     <DataGrid
                         AutomationProperties.Name="Review answer queue"
                         Grid.Row="1"
                         AutoGenerateColumns="False"
-                        Background="#0F1720"
-                        BorderBrush="#2D4050"
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
                         CanUserReorderColumns="True"
                         CanUserResizeColumns="True"
                         CanUserSortColumns="True"
                         ColumnHeaderHeight="36"
-                        Foreground="#E5E7EB"
                         GridLinesVisibility="Horizontal"
                         HeadersVisibility="Column"
-                        HorizontalGridLinesBrush="#263746"
                         ItemsSource="{Binding Answers}"
-                        RowBackground="#0F1720"
-                        AlternatingRowBackground="#17212B"
-                    MinRowHeight="34"
+                        MinRowHeight="40"
                         SelectedItem="{Binding SelectedAnswer, Mode=TwoWay}"
                         SelectionMode="Single"
                         SelectionUnit="FullRow">
@@ -370,11 +338,8 @@
 
             <Border
                 Grid.Column="2"
-                Padding="16"
-                Background="#17212B"
-                BorderBrush="#2D4050"
-                BorderThickness="1"
-                CornerRadius="4">
+                Padding="18"
+                Style="{StaticResource SurfaceCardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -386,19 +351,20 @@
                     <TextBlock
                         FontSize="19"
                         FontWeight="SemiBold"
-                        Foreground="#F8FAFC"
+                        Foreground="{DynamicResource App.TextPrimaryBrush}"
                         Text="{Binding SelectedImageCaption}" />
                     <Border
                         Grid.Row="1"
                         Margin="0,12,0,10"
-                        Background="#050A0E"
-                        BorderBrush="#334155"
-                        BorderThickness="1">
+                        Background="{DynamicResource App.DarkBackgroundBrush}"
+                        BorderBrush="{DynamicResource App.BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12">
                         <Image AutomationProperties.Name="Selected inspection image preview" Source="{Binding SelectedImage}" Stretch="Uniform" />
                     </Border>
                     <TextBlock
                         Grid.Row="2"
-                        Foreground="#9FB2C3"
+                        Foreground="{DynamicResource App.TextSecondaryBrush}"
                         Text="{Binding SelectedImageStatus}"
                         TextWrapping="Wrap" />
                     <Grid Grid.Row="4">
@@ -413,16 +379,16 @@
                             <RowDefinition Height="30" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        <TextBlock Foreground="#9FB2C3" Text="User answer" />
-                        <TextBlock Grid.Column="1" FontWeight="Bold" Foreground="#F8FAFC" Text="{Binding SelectedUserAnswerText}" />
-                        <TextBlock Grid.Row="1" Foreground="#9FB2C3" Text="Admin truth" />
-                        <TextBlock Grid.Row="1" Grid.Column="1" FontWeight="Bold" Foreground="#FCD34D" Text="{Binding SelectedCorrectAnswerText}" />
-                        <TextBlock Grid.Row="2" Foreground="#9FB2C3" Text="Result" />
-                        <TextBlock Grid.Row="2" Grid.Column="1" FontWeight="Bold" Foreground="#F8FAFC" Text="{Binding SelectedIsCorrectText}" />
-                        <TextBlock Grid.Row="3" Foreground="#9FB2C3" Text="Answered" />
-                        <TextBlock Grid.Row="3" Grid.Column="1" Foreground="#F8FAFC" Text="{Binding SelectedAnswerTimeText}" />
-                        <TextBlock Grid.Row="4" Foreground="#9FB2C3" Text="Review state" />
-                        <TextBlock Grid.Row="4" Grid.Column="1" Foreground="#60A5FA" Text="{Binding SelectedReviewStatusText}" TextWrapping="Wrap" />
+                        <TextBlock Foreground="{DynamicResource App.TextSecondaryBrush}" Text="User answer" />
+                        <TextBlock Grid.Column="1" FontWeight="Bold" Foreground="{DynamicResource App.TextPrimaryBrush}" Text="{Binding SelectedUserAnswerText}" />
+                        <TextBlock Grid.Row="1" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="Admin truth" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" FontWeight="Bold" Foreground="{DynamicResource App.WarningBrush}" Text="{Binding SelectedCorrectAnswerText}" />
+                        <TextBlock Grid.Row="2" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="Result" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" FontWeight="Bold" Foreground="{DynamicResource App.TextPrimaryBrush}" Text="{Binding SelectedIsCorrectText}" />
+                        <TextBlock Grid.Row="3" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="Answered" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Foreground="{DynamicResource App.TextPrimaryBrush}" Text="{Binding SelectedAnswerTimeText}" />
+                        <TextBlock Grid.Row="4" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="Review state" />
+                        <TextBlock Grid.Row="4" Grid.Column="1" Foreground="{DynamicResource App.InfoBrush}" Text="{Binding SelectedReviewStatusText}" TextWrapping="Wrap" />
                     </Grid>
                 </Grid>
             </Border>
@@ -430,11 +396,8 @@
 
         <Border
             Grid.Row="8"
-            Padding="14"
-            Background="#17212B"
-            BorderBrush="#2D4050"
-            BorderThickness="1"
-            CornerRadius="4">
+            Padding="16"
+            Style="{StaticResource SurfaceCardStyle}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -449,44 +412,44 @@
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock
                         FontSize="14"
-                        Foreground="#F8FAFC"
+                        Foreground="{DynamicResource App.TextPrimaryBrush}"
                         Text="{Binding StatusMessage}"
                         TextTrimming="CharacterEllipsis" />
                     <TextBlock
                         Margin="0,5,0,0"
-                        Foreground="#9FB2C3"
+                        Foreground="{DynamicResource App.TextSecondaryBrush}"
                         Text="Stable SHA-256 identity controls reuse; ImageID remains display-only." />
                 </StackPanel>
                 <Button
                     Grid.Column="1"
                     AutomationProperties.Name="Mark selected answer GOOD"
                     Style="{StaticResource ActionButton}"
-                    Background="#166534"
-                    BorderBrush="#22C55E"
+                    Background="{DynamicResource App.SuccessBrush}"
+                    BorderBrush="{DynamicResource App.SuccessBrush}"
                     Command="{Binding MarkGoodCommand}"
                     Content="Selected = GOOD" />
                 <Button
                     Grid.Column="3"
                     AutomationProperties.Name="Mark selected answer NG"
                     Style="{StaticResource ActionButton}"
-                    Background="#991B1B"
-                    BorderBrush="#EF4444"
+                    Background="{DynamicResource App.DangerBrush}"
+                    BorderBrush="{DynamicResource App.DangerBrush}"
                     Command="{Binding MarkNgCommand}"
                     Content="Selected = NG" />
                 <Button
                     Grid.Column="5"
                     AutomationProperties.Name="Bulk review selected answers as GOOD"
                     Style="{StaticResource ActionButton}"
-                    Background="#15803D"
-                    BorderBrush="#4ADE80"
+                    Background="{DynamicResource App.SuccessBrush}"
+                    BorderBrush="{DynamicResource App.SuccessBrush}"
                     Command="{Binding BulkGoodCommand}"
                     Content="Bulk GOOD" />
                 <Button
                     Grid.Column="7"
                     AutomationProperties.Name="Bulk review selected answers as NG"
                     Style="{StaticResource ActionButton}"
-                    Background="#B91C1C"
-                    BorderBrush="#F87171"
+                    Background="{DynamicResource App.DangerBrush}"
+                    BorderBrush="{DynamicResource App.DangerBrush}"
                     Command="{Binding BulkNgCommand}"
                     Content="Bulk NG" />
             </Grid>

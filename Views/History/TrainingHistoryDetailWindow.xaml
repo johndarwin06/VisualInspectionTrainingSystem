@@ -9,11 +9,11 @@
     MinWidth="820"
     MinHeight="560"
     AutomationProperties.Name="Read-only training result"
-    Background="{StaticResource App.LightMutedSurfaceBrush}"
+    Background="{DynamicResource App.BackgroundBrush}"
     KeyboardNavigation.TabNavigation="Cycle"
     ResizeMode="CanResize"
     WindowStartupLocation="CenterOwner">
-    <Grid Margin="28" Style="{StaticResource ContentEntranceGridStyle}">
+    <Grid Margin="28,24" Style="{StaticResource ContentEntranceGridStyle}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="18" />
@@ -29,8 +29,8 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock AutomationProperties.HeadingLevel="Level1" FontSize="28" FontWeight="Bold" Foreground="{StaticResource App.LightTextBrush}" Text="{Binding SessionTitle}" />
-                <TextBlock Margin="0,5,0,0" Foreground="{StaticResource App.LightSecondaryTextBrush}" Text="Read-only answer details and reviewed outcomes for your completed session." TextWrapping="Wrap" />
+                <TextBlock AutomationProperties.HeadingLevel="Level1" Style="{StaticResource PageTitleTextStyle}" Text="{Binding SessionTitle}" />
+                <TextBlock Margin="0,5,0,0" Style="{StaticResource SupportingTextStyle}" Text="Read-only answer details and reviewed outcomes for your completed session." TextWrapping="Wrap" />
             </StackPanel>
             <Button Grid.Column="1" MinWidth="120" AutomationProperties.Name="Refresh training result" Command="{Binding RefreshCommand}" Style="{StaticResource PrimaryActionButtonStyle}">
                 <StackPanel Orientation="Horizontal">
@@ -40,19 +40,19 @@
             </Button>
         </Grid>
         <UniformGrid Grid.Row="2" Columns="5">
-            <Border Margin="0,0,8,0" Padding="14" Background="{StaticResource App.LightSurfaceBrush}" BorderBrush="{StaticResource App.LightBorderBrush}" BorderThickness="1" CornerRadius="9" Style="{StaticResource InteractiveCardStyle}">
+            <Border Margin="0,0,8,0" Style="{StaticResource MetricCardStyle}">
                 <StackPanel><TextBlock Style="{StaticResource FieldLabelStyle}" Text="Completed" /><TextBlock Margin="0,5,0,0" FontWeight="SemiBold" Text="{Binding Summary.CompletionTimeText, TargetNullValue=N/A}" /></StackPanel>
             </Border>
-            <Border Margin="2,0,8,0" Padding="14" Background="{StaticResource App.LightSurfaceBrush}" BorderBrush="{StaticResource App.LightBorderBrush}" BorderThickness="1" CornerRadius="9" Style="{StaticResource InteractiveCardStyle}">
+            <Border Margin="2,0,8,0" Style="{StaticResource MetricCardStyle}">
                 <StackPanel><TextBlock Style="{StaticResource FieldLabelStyle}" Text="Duration" /><TextBlock Margin="0,5,0,0" FontWeight="SemiBold" Text="{Binding Summary.DurationText, TargetNullValue=N/A}" /></StackPanel>
             </Border>
-            <Border Margin="2,0,8,0" Padding="14" Background="{StaticResource App.LightSurfaceBrush}" BorderBrush="{StaticResource App.LightBorderBrush}" BorderThickness="1" CornerRadius="9" Style="{StaticResource InteractiveCardStyle}">
+            <Border Margin="2,0,8,0" Style="{StaticResource MetricCardStyle}">
                 <StackPanel><TextBlock Style="{StaticResource FieldLabelStyle}" Text="Questions" /><TextBlock Margin="0,5,0,0" FontWeight="SemiBold" Text="{Binding Summary.TotalQuestions, TargetNullValue=0}" /></StackPanel>
             </Border>
-            <Border Margin="2,0,8,0" Padding="14" Background="{StaticResource App.LightSurfaceBrush}" BorderBrush="{StaticResource App.LightBorderBrush}" BorderThickness="1" CornerRadius="9" Style="{StaticResource InteractiveCardStyle}">
+            <Border Margin="2,0,8,0" Style="{StaticResource MetricCardStyle}">
                 <StackPanel><TextBlock Style="{StaticResource FieldLabelStyle}" Text="Reviewed Accuracy" /><TextBlock Margin="0,5,0,0" FontWeight="SemiBold" Foreground="{StaticResource App.AccentBrush}" Text="{Binding Summary.ReviewedAccuracyText, TargetNullValue=N/A}" /></StackPanel>
             </Border>
-            <Border Margin="2,0,0,0" Padding="14" Background="{StaticResource App.LightSurfaceBrush}" BorderBrush="{StaticResource App.LightBorderBrush}" BorderThickness="1" CornerRadius="9" Style="{StaticResource InteractiveCardStyle}">
+            <Border Margin="2,0,0,0" Style="{StaticResource MetricCardStyle}">
                 <StackPanel><TextBlock Style="{StaticResource FieldLabelStyle}" Text="Review Status" /><TextBlock Margin="0,5,0,0" FontWeight="SemiBold" Text="{Binding Summary.ReviewStatusText, TargetNullValue=Unavailable}" /></StackPanel>
             </Border>
         </UniformGrid>
@@ -62,7 +62,7 @@
                 <ColumnDefinition Width="16" />
                 <ColumnDefinition Width="*" MinWidth="260" />
             </Grid.ColumnDefinitions>
-            <Border Background="{StaticResource App.LightSurfaceBrush}" BorderBrush="{StaticResource App.LightBorderBrush}" BorderThickness="1" CornerRadius="10">
+            <Border Padding="1" Style="{StaticResource SurfaceCardStyle}">
                 <DataGrid Margin="1" AutomationProperties.Name="Training answer details" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" EnableRowVirtualization="True" IsReadOnly="True" ItemsSource="{Binding Answers}" SelectedItem="{Binding SelectedAnswer}" SelectionMode="Single" RowHeaderWidth="0" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
                     <DataGrid.Columns>
                         <DataGridTextColumn Width="50" Binding="{Binding QuestionNumber}" Header="#" />
@@ -74,7 +74,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </Border>
-            <Border Grid.Column="2" Padding="16" Background="{StaticResource App.LightSurfaceBrush}" BorderBrush="{StaticResource App.LightBorderBrush}" BorderThickness="1" CornerRadius="10">
+            <Border Grid.Column="2" Padding="18" Style="{StaticResource SurfaceCardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -84,10 +84,10 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <StackPanel>
-                        <TextBlock AutomationProperties.HeadingLevel="Level2" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource App.LightTextBrush}" Text="Selected Image" />
-                        <TextBlock Margin="0,4,0,0" Foreground="{StaticResource App.LightSecondaryTextBrush}" Style="{StaticResource TrimmedTextWithToolTipStyle}" Text="{Binding SelectedAnswer.ImageDisplayText, TargetNullValue=Select an answer}" />
+                        <TextBlock AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionTitleTextStyle}" Text="Selected Image" />
+                        <TextBlock Margin="0,4,0,0" Foreground="{DynamicResource App.TextSecondaryBrush}" Style="{StaticResource TrimmedTextWithToolTipStyle}" Text="{Binding SelectedAnswer.ImageDisplayText, TargetNullValue=Select an answer}" />
                     </StackPanel>
-                    <Border Grid.Row="2" Background="{StaticResource App.LightMutedSurfaceBrush}" BorderBrush="{StaticResource App.LightBorderBrush}" BorderThickness="1" CornerRadius="8">
+                    <Border Grid.Row="2" Background="{DynamicResource App.DarkBackgroundBrush}" BorderBrush="{DynamicResource App.BorderBrush}" BorderThickness="1" CornerRadius="14" materialDesign:ElevationAssist.Elevation="Dp2">
                         <Grid>
                             <Image Margin="8" Source="{Binding SelectedImagePreview}" Stretch="Uniform" />
                             <ProgressBar Width="150" Height="6" IsIndeterminate="True" Visibility="{Binding IsPreviewLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
