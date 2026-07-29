@@ -4,7 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Threading;
+using Wpf.Ui.Appearance;
+using Wpf.Ui.Controls;
 
 #endregion
 
@@ -34,6 +37,12 @@ namespace VisualInspectionTrainingSystem.Services
             new Lazy<ApplicationThemeService>(
                 () => new ApplicationThemeService(),
                 true);
+
+        /// <summary>
+        /// Keeps Fluent controls aligned with the established application Indigo brand.
+        /// </summary>
+        private static readonly Color BrandAccentColor =
+            Color.FromRgb(0x43, 0x58, 0xC7);
 
         private volatile bool _isDarkTheme;
 
@@ -191,6 +200,7 @@ namespace VisualInspectionTrainingSystem.Services
                     requestedDictionary,
                     insertionIndex);
 
+                ApplyFluentTheme(isDarkTheme);
                 _isDarkTheme = isDarkTheme;
 
                 if (themeChanged)
@@ -245,6 +255,27 @@ namespace VisualInspectionTrainingSystem.Services
             application.Resources.MergedDictionaries.Insert(
                 boundedIndex,
                 requestedDictionary);
+        }
+
+        /// <summary>
+        /// Keeps WPF-UI, Violeta, and custom application resources on the same theme.
+        /// </summary>
+        /// <param name="isDarkTheme">True when the dark palette is requested.</param>
+        private static void ApplyFluentTheme(bool isDarkTheme)
+        {
+            ApplicationTheme theme = isDarkTheme
+                ? ApplicationTheme.Dark
+                : ApplicationTheme.Light;
+
+            ApplicationThemeManager.Apply(
+                theme,
+                WindowBackdropType.Mica,
+                false);
+            ApplicationAccentColorManager.Apply(
+                BrandAccentColor,
+                theme,
+                false,
+                false);
         }
 
         #endregion

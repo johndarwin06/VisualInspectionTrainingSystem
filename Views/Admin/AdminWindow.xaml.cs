@@ -1,8 +1,8 @@
 #region Namespaces
 
 using System;
-using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.ViewModels;
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
 
 #endregion
 
@@ -11,7 +11,7 @@ namespace VisualInspectionTrainingSystem.Views.Admin
     /// <summary>
     /// Hosts the focused administrator review workflow and forwards window lifecycle cleanup only.
     /// </summary>
-    public partial class AdminWindow : MetroWindow
+    public partial class AdminWindow : FluentWindow
     {
         #region Fields
 

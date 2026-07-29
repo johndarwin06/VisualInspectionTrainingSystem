@@ -2,8 +2,8 @@
 
 using System;
 using System.Windows;
-using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.ViewModels;
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
 
 #endregion
 
@@ -12,7 +12,7 @@ namespace VisualInspectionTrainingSystem.Views.Admin
     /// <summary>
     /// Hosts the User Management ViewModel and forwards window lifecycle events only.
     /// </summary>
-    public partial class UserManagementWindow : MetroWindow
+    public partial class UserManagementWindow : FluentWindow
     {
         #region Fields
 

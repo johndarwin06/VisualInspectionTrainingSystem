@@ -2,10 +2,10 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- Material flat button retained under the legacy public base key. -->
+    <!-- Fluent button retained under the established public base key. -->
     <Style
         x:Key="BaseButtonStyle"
-        BasedOn="{StaticResource MaterialDesignFlatButton}"
+        BasedOn="{StaticResource DefaultButtonStyle}"
         TargetType="{x:Type Button}">
         <Setter Property="Height" Value="45" />
         <Setter Property="MinWidth" Value="120" />

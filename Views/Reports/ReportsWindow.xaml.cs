@@ -2,8 +2,8 @@
 
 using System;
 using System.Windows;
-using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.ViewModels;
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
 
 #endregion
 
@@ -12,7 +12,7 @@ namespace VisualInspectionTrainingSystem.Views.Reports
     /// <summary>
     /// Provides lifecycle integration for the MVVM Reports window.
     /// </summary>
-    public partial class ReportsWindow : MetroWindow
+    public partial class ReportsWindow : FluentWindow
     {
         #region Constructors
 

@@ -1,19 +1,20 @@
 #region Namespaces
 
-using MaterialDesignThemes.Wpf;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
+using SymbolRegular = Wpf.Ui.Controls.SymbolRegular;
 
 #endregion
 
 namespace VisualInspectionTrainingSystem.Views.Dialogs
 {
     /// <summary>
-    /// Hosts the consistent application confirmation and notification surface.
+    /// Hosts the consistent Fluent application confirmation and notification surface.
     /// </summary>
-    public partial class ApplicationDialogWindow : Window
+    public partial class ApplicationDialogWindow : FluentWindow
     {
         #region Fields
 
@@ -42,7 +43,6 @@ namespace VisualInspectionTrainingSystem.Views.Dialogs
             _result = MessageBoxResult.None;
             Title = caption;
             CaptionText.Text = caption;
-            MessageText.Text = message;
             ConfigureIcon(icon);
             ConfigureButtons(buttons);
         }
@@ -72,22 +72,22 @@ namespace VisualInspectionTrainingSystem.Views.Dialogs
             switch (icon)
             {
                 case MessageBoxImage.Error:
-                    DialogIcon.Kind = PackIconKind.AlertCircleOutline;
+                    DialogIcon.Symbol = SymbolRegular.ErrorCircle24;
                     DialogIcon.Foreground = FindBrush("App.DangerBrush");
                     break;
 
                 case MessageBoxImage.Warning:
-                    DialogIcon.Kind = PackIconKind.AlertOutline;
+                    DialogIcon.Symbol = SymbolRegular.Warning24;
                     DialogIcon.Foreground = FindBrush("App.WarningBrush");
                     break;
 
                 case MessageBoxImage.Question:
-                    DialogIcon.Kind = PackIconKind.HelpCircleOutline;
+                    DialogIcon.Symbol = SymbolRegular.QuestionCircle24;
                     DialogIcon.Foreground = FindBrush("App.AccentBrush");
                     break;
 
                 default:
-                    DialogIcon.Kind = PackIconKind.InformationOutline;
+                    DialogIcon.Symbol = SymbolRegular.Info24;
                     DialogIcon.Foreground = FindBrush("App.AccentBrush");
                     break;
             }

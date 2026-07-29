@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Windows;
-using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.ViewModels;
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
 
 #endregion
 
@@ -14,7 +14,7 @@ namespace VisualInspectionTrainingSystem.Views.Result
     /// <summary>
     /// Displays the read-only result dashboard for one completed quiz.
     /// </summary>
-    public partial class ResultWindow : MetroWindow
+    public partial class ResultWindow : FluentWindow
     {
         #region Fields
 

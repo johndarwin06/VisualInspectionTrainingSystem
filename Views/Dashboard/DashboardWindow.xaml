@@ -1,11 +1,10 @@
-<mah:MetroWindow
+<ui:FluentWindow
     x:Class="VisualInspectionTrainingSystem.Views.Dashboard.DashboardWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:charts="clr-namespace:VisualInspectionTrainingSystem.Controls.Charts"
-    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:progress="clr-namespace:VisualInspectionTrainingSystem.Controls.Progress"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="Dashboard"
     Width="1280"
     Height="780"
@@ -16,7 +15,10 @@
     KeyboardNavigation.TabNavigation="Cycle"
     ResizeMode="CanResize"
     SnapsToDevicePixels="True"
+    Style="{StaticResource FluentAppWindowStyle}"
     UseLayoutRounding="True"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
     WindowStartupLocation="CenterScreen">
 
     <Grid>
@@ -28,8 +30,7 @@
         <Border
             Grid.Row="0"
             Padding="28,0"
-            Background="{DynamicResource App.NavigationBrush}"
-            materialDesign:ElevationAssist.Elevation="Dp4">
+            Background="{DynamicResource App.NavigationBrush}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -43,13 +44,13 @@
                     VerticalAlignment="Center"
                     Background="#24FFFFFF"
                     CornerRadius="12">
-                    <materialDesign:PackIcon
+                    <ui:SymbolIcon
                         Width="24"
                         Height="24"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Foreground="White"
-                        Kind="ViewDashboardOutline" />
+                        Symbol="DataTrending24" />
                 </Border>
 
                 <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
@@ -74,7 +75,7 @@
                     Style="{StaticResource DarkActionButtonStyle}"
                     ToolTip="Reload today's metrics and recent sessions">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="Refresh" Style="{StaticResource AppIconStyle}" />
+                        <ui:SymbolIcon Symbol="ArrowSync24" Style="{StaticResource AppIconStyle}" />
                         <TextBlock Text="Refresh" />
                     </StackPanel>
                 </Button>
@@ -115,7 +116,7 @@
 
                     <Border Grid.Column="0" AutomationProperties.Name="Today's completed training metric" Style="{StaticResource MetricCardStyle}">
                         <StackPanel>
-                            <materialDesign:PackIcon Width="22" Height="22" Foreground="{DynamicResource App.PrimaryBrush}" Kind="SchoolOutline" />
+                            <ui:SymbolIcon Width="22" Height="22" Foreground="{DynamicResource App.PrimaryBrush}" Symbol="PeopleTeam24" />
                             <TextBlock Margin="0,12,0,0" Style="{StaticResource MetricValueTextStyle}" Text="{Binding TodaysTrainingText}" />
                             <TextBlock Margin="0,7,0,0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="TODAY'S TRAINING" />
                             <TextBlock Margin="0,5,0,0" Style="{StaticResource SupportingTextStyle}" Text="Completed sessions" TextWrapping="Wrap" />
@@ -124,7 +125,7 @@
 
                     <Border Grid.Column="2" AutomationProperties.Name="Today's reviewed-only average accuracy metric" Style="{StaticResource MetricCardStyle}">
                         <StackPanel>
-                            <materialDesign:PackIcon Width="22" Height="22" Foreground="{DynamicResource App.InfoBrush}" Kind="BullseyeArrow" />
+                            <ui:SymbolIcon Width="22" Height="22" Foreground="{DynamicResource App.InfoBrush}" Symbol="Target24" />
                             <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource App.InfoBrush}" Style="{StaticResource MetricValueTextStyle}" Text="{Binding AverageReviewedAccuracyText}" />
                             <TextBlock Margin="0,7,0,0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="REVIEWED ACCURACY" />
                             <TextBlock Margin="0,5,0,0" Style="{StaticResource SupportingTextStyle}" Text="{Binding ReviewedAccuracyDetailText}" TextWrapping="Wrap" />
@@ -133,7 +134,7 @@
 
                     <Border Grid.Column="4" AutomationProperties.Name="Today's time spent metric" Style="{StaticResource MetricCardStyle}">
                         <StackPanel>
-                            <materialDesign:PackIcon Width="22" Height="22" Foreground="{DynamicResource App.SecondaryBrush}" Kind="TimerOutline" />
+                            <ui:SymbolIcon Width="22" Height="22" Foreground="{DynamicResource App.SecondaryBrush}" Symbol="Clock24" />
                             <TextBlock Margin="0,12,0,0" FontSize="26" Foreground="{DynamicResource App.SecondaryBrush}" Style="{StaticResource MetricValueTextStyle}" Text="{Binding TimeSpentText}" TextWrapping="Wrap" />
                             <TextBlock Margin="0,7,0,0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="TIME SPENT" />
                             <TextBlock Margin="0,5,0,0" Style="{StaticResource SupportingTextStyle}" Text="Valid completed durations" TextWrapping="Wrap" />
@@ -142,7 +143,7 @@
 
                     <Border Grid.Column="6" AutomationProperties.Name="Today's trainee GOOD count metric" Style="{StaticResource MetricCardStyle}">
                         <StackPanel>
-                            <materialDesign:PackIcon Width="22" Height="22" Foreground="{DynamicResource App.SuccessBrush}" Kind="CheckCircleOutline" />
+                            <ui:SymbolIcon Width="22" Height="22" Foreground="{DynamicResource App.SuccessBrush}" Symbol="CheckmarkCircle24" />
                             <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource App.SuccessBrush}" Style="{StaticResource MetricValueTextStyle}" Text="{Binding GoodCountText}" />
                             <TextBlock Margin="0,7,0,0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="GOOD COUNT" />
                             <TextBlock Margin="0,5,0,0" Style="{StaticResource SupportingTextStyle}" Text="Includes pending review" TextWrapping="Wrap" />
@@ -151,7 +152,7 @@
 
                     <Border Grid.Column="8" AutomationProperties.Name="Today's trainee NG count metric" Style="{StaticResource MetricCardStyle}">
                         <StackPanel>
-                            <materialDesign:PackIcon Width="22" Height="22" Foreground="{DynamicResource App.DangerBrush}" Kind="AlertCircleOutline" />
+                            <ui:SymbolIcon Width="22" Height="22" Foreground="{DynamicResource App.DangerBrush}" Symbol="Warning24" />
                             <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource App.DangerBrush}" Style="{StaticResource MetricValueTextStyle}" Text="{Binding NgCountText}" />
                             <TextBlock Margin="0,7,0,0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource App.TextSecondaryBrush}" Text="NG COUNT" />
                             <TextBlock Margin="0,5,0,0" Style="{StaticResource SupportingTextStyle}" Text="Includes pending review" TextWrapping="Wrap" />
@@ -175,12 +176,13 @@
                         AutomationProperties.Name="Dashboard trend range"
                         IsEnabled="{Binding CanSelectTrendRange}"
                         ItemsSource="{Binding TrendDayOptions}"
-                        materialDesign:HintAssist.Hint="Trend range (days)"
                         SelectedItem="{Binding SelectedTrendDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        Style="{StaticResource MaterialDesignOutlinedComboBox}" />
+                        ToolTip="Trend range in days" />
                 </Grid>
 
-                <charts:AnalyticsChartsPanel Grid.Row="4" DataContext="{Binding Charts}" />
+                <ui:Card Grid.Row="4" Style="{StaticResource FluentSurfaceCardStyle}">
+                    <charts:AnalyticsChartsPanel DataContext="{Binding Charts}" />
+                </ui:Card>
 
                 <Grid Grid.Row="6">
                     <Grid.ColumnDefinitions>
@@ -227,7 +229,7 @@
 
                 <Border Grid.Row="10" Padding="16,12" Background="{DynamicResource App.SurfaceVariantBrush}" CornerRadius="12">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Margin="0,0,10,0" VerticalAlignment="Center" Foreground="{DynamicResource App.PrimaryBrush}" Kind="InformationOutline" />
+                        <ui:SymbolIcon Margin="0,0,10,0" VerticalAlignment="Center" Foreground="{DynamicResource App.PrimaryBrush}" Symbol="Info24" />
                         <TextBlock
                             VerticalAlignment="Center"
                             AutomationProperties.LiveSetting="Polite"
@@ -245,4 +247,4 @@
             IsActive="{Binding IsBusy}"
             Message="{Binding StatusMessage}" />
     </Grid>
-</mah:MetroWindow>
+</ui:FluentWindow>

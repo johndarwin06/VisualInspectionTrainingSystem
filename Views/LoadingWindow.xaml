@@ -1,20 +1,37 @@
-<Window
+<ui:FluentWindow
     x:Class="VisualInspectionTrainingSystem.Views.LoadingWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:progress="clr-namespace:VisualInspectionTrainingSystem.Controls.Progress"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="Working - Visual Inspection Training System"
     Width="460"
     Height="240"
     AutomationProperties.Name="Operation in progress"
-    Background="{StaticResource App.DarkBackgroundBrush}"
+    Background="{DynamicResource App.BackgroundBrush}"
+    ExtendsContentIntoTitleBar="True"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
+    Style="{StaticResource FluentAppWindowStyle}"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
     WindowStartupLocation="CenterOwner">
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar
+            Grid.Row="0"
+            Icon="{ui:SymbolIcon ArrowSync24}"
+            Style="{StaticResource FluentAppTitleBarStyle}"
+            Title="Working" />
+
         <progress:ModernProgressBar
+            Grid.Row="1"
             IsActive="True"
             Message="Please wait while the operation completes..." />
     </Grid>
-</Window>
+</ui:FluentWindow>

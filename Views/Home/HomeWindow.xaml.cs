@@ -1,12 +1,12 @@
 #region Namespaces
 
-using MahApps.Metro.Controls;
 using System;
 using System.Windows;
 using VisualInspectionTrainingSystem.ViewModels;
 using VisualInspectionTrainingSystem.Views.History;
 using VisualInspectionTrainingSystem.Views.Quiz;
 using VisualInspectionTrainingSystem.Views.Result;
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
 
 #endregion
 
@@ -15,7 +15,7 @@ namespace VisualInspectionTrainingSystem.Views.Home
     /// <summary>
     /// Hosts the focused trainee setup task and owns single-flight quiz and compatibility history navigation.
     /// </summary>
-    public partial class HomeWindow : MetroWindow
+    public partial class HomeWindow : FluentWindow
     {
         #region Fields
 

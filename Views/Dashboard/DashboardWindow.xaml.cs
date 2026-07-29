@@ -2,8 +2,8 @@
 
 using System;
 using System.Windows;
-using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.ViewModels;
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
 
 #endregion
 
@@ -12,7 +12,7 @@ namespace VisualInspectionTrainingSystem.Views.Dashboard
     /// <summary>
     /// Hosts the administrator Dashboard and cancels refresh work during window closure.
     /// </summary>
-    public partial class DashboardWindow : MetroWindow
+    public partial class DashboardWindow : FluentWindow
     {
         #region Constructors
 

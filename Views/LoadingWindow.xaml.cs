@@ -1,27 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+#region Namespaces
+
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
+
+#endregion
 
 namespace VisualInspectionTrainingSystem.Views
 {
     /// <summary>
-    /// Interaction logic for LoadingWindow.xaml
+    /// Displays the shared Fluent progress surface for a foreground operation.
     /// </summary>
-    public partial class LoadingWindow : Window
+    public partial class LoadingWindow : FluentWindow
     {
+        #region Constructor
+
+        /// <summary>
+        /// Initializes the operation progress window.
+        /// </summary>
         public LoadingWindow()
         {
             InitializeComponent();
         }
+
+        #endregion
     }
 }

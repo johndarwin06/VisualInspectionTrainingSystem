@@ -1,9 +1,8 @@
-<mah:MetroWindow
+<ui:FluentWindow
     x:Class="VisualInspectionTrainingSystem.Views.Result.ResultWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:progress="clr-namespace:VisualInspectionTrainingSystem.Controls.Progress"
     Title="Training Result"
     Width="1280"
@@ -16,10 +15,13 @@
     KeyboardNavigation.TabNavigation="Cycle"
     ResizeMode="CanResize"
     SnapsToDevicePixels="True"
+    Style="{StaticResource FluentAppWindowStyle}"
     UseLayoutRounding="True"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
     WindowStartupLocation="CenterOwner">
 
-    <mah:MetroWindow.Resources>
+    <ui:FluentWindow.Resources>
         <Style x:Key="MetricCard" BasedOn="{StaticResource SurfaceCardStyle}" TargetType="Border">
             <Setter Property="Margin" Value="6" />
             <Setter Property="Padding" Value="18" />
@@ -27,7 +29,6 @@
             <Setter Property="BorderBrush" Value="{DynamicResource App.DarkBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="16" />
-            <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp2" />
         </Style>
 
         <Style x:Key="MetricHeader" TargetType="TextBlock">
@@ -56,7 +57,7 @@
             <Setter Property="Foreground" Value="{DynamicResource App.DarkTextBrush}" />
         </Style>
 
-        <Style x:Key="ChartBar" BasedOn="{StaticResource MaterialDesignLinearProgressBar}" TargetType="ProgressBar">
+        <Style x:Key="ChartBar" TargetType="ProgressBar">
             <Setter Property="Height" Value="12" />
             <Setter Property="Margin" Value="0,6,0,14" />
             <Setter Property="Maximum" Value="100" />
@@ -70,12 +71,12 @@
             <Setter Property="Cursor" Value="Hand" />
         </Style>
 
-        <Style BasedOn="{StaticResource MaterialDesignTabItem}" TargetType="TabItem">
+        <Style TargetType="TabItem">
             <Setter Property="Padding" Value="20,10" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
-    </mah:MetroWindow.Resources>
+    </ui:FluentWindow.Resources>
 
     <Grid Margin="22" Style="{StaticResource ContentEntranceGridStyle}">
         <Grid.RowDefinitions>
@@ -91,7 +92,7 @@
             BorderBrush="{DynamicResource App.DarkBorderBrush}"
             BorderThickness="1"
             CornerRadius="18"
-            materialDesign:ElevationAssist.Elevation="Dp4">
+            >
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -501,7 +502,7 @@
                             BorderBrush="{DynamicResource App.DarkBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="16"
-                            materialDesign:ElevationAssist.Elevation="Dp2">
+                            >
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
@@ -730,4 +731,4 @@
             </TabItem>
         </TabControl>
     </Grid>
-</mah:MetroWindow>
+</ui:FluentWindow>

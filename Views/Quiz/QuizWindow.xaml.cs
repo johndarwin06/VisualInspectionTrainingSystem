@@ -4,9 +4,9 @@ using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
-using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.Services;
 using VisualInspectionTrainingSystem.ViewModels;
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
 
 #endregion
 
@@ -15,7 +15,7 @@ namespace VisualInspectionTrainingSystem.Views.Quiz
     /// <summary>
     /// Hosts the quiz view and routes local keyboard shortcuts to its view model commands.
     /// </summary>
-    public partial class QuizWindow : MetroWindow
+    public partial class QuizWindow : FluentWindow
     {
         #region Fields
 

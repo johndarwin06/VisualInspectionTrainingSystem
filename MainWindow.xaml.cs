@@ -4,7 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
-using MahApps.Metro.Controls;
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Services;
 using VisualInspectionTrainingSystem.ViewModels;
@@ -22,7 +22,7 @@ namespace VisualInspectionTrainingSystem
     /// <summary>
     /// Owns the single authenticated, role-aware application shell and one active workflow window.
     /// </summary>
-    public partial class MainWindow : MetroWindow
+    public partial class MainWindow : FluentWindow
     {
         #region Constants
 

@@ -1,5 +1,18 @@
 # DEVELOPMENT LOG
 
+## 2026-07-29
+
+### Issue #15.2 - Fluent UI Migration
+
+- Created the follow-up to Issue #53 from the merged PR #54 baseline without rewriting or reverting that history. Replaced the presentation layer with WPF-UI 4.3.0 and WPF-UI.Violeta 4.3.0.3 while keeping .NET Framework 4.8.1, C# 7.3, MVVM, MySQL, CommunityToolkit.Mvvm, Microsoft.Xaml.Behaviors.Wpf, and LiveChartsCore 2.0.5.
+- Established WPF-UI and Violeta theme/control dictionaries before project semantic resources. `ApplicationThemeService` now coordinates Fluent light/dark state and the existing chart theme event, while subtle navigation/chart motion respects disabled Windows client-area animations.
+- Migrated every production surface and shared state: Splash, authentication and registration, the role-aware shell, administrator and trainee workspaces, Training Setup, Quiz, Result, Training History/detail, Review Workflow, User Management, Dashboard, Reports, dialogs, loading overlays, validation, empty, and error states.
+- Preserved single-flight owned navigation, role authorization, 10/20-question behavior, exactly-one Result presentation, responsive cancellation, late-result rejection, safe close/logout, DataGrid sorting/filtering/selection/virtualization, normalized GOOD/NG analytics, reviewed-only nullable accuracy, repeatable-read Reports, and existing export generation.
+- Removed MahApps.Metro, MaterialDesignThemes, MaterialDesignColors, MaterialDesignThemes.MahApps, and ControlzEx from `packages.config`, project references/imports, themes, styles, XAML namespaces, code-behind base types, and production resources. No obsolete production reference remains.
+- Passed 147 temporary assertions: 37 Fluent resource/construction, 58 source/architecture, 11 controlled MySQL analytics and exact cleanup, and 41 Result/quiz-size/Reports/order/safeguard regressions. AnyCPU Debug and Release and supported x86/x64 builds completed with zero errors and the one existing `MVVMTKCFG0002` warning each; native WPF-UI, Violeta, LiveChartsCore, SkiaSharp, and HarfBuzz deployment was verified.
+- Real WPF acceptance passed all administrator and trainee destinations, both themes, window controls/resizing, keyboard focus, dialogs, loading/empty states, repeated navigation/refresh, close during refresh, DataGrid interaction, both quiz sizes, Result/history previews, logout, and shutdown. No clipping, crash, freeze, binding failure, raw database error, sensitive message, or unexpected diagnostic dialog occurred.
+- Removed the controlled session and six answers with zero residual rows, then removed all temporary probes, configs, executables, `TestResults`, and architecture-specific test output. Final production scope review found no unrelated source, secret, local configuration, log, export, or generated binary.
+
 ## 2026-07-28
 
 ### Issue #15.1 - Material Design UI and Analytics Overhaul
