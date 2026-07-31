@@ -2,7 +2,7 @@
 
 using System;
 using System.Windows;
-using MahApps.Metro.Controls;
+using Wpf.Ui.Controls;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Services;
 using VisualInspectionTrainingSystem.ViewModels;
@@ -12,10 +12,10 @@ using VisualInspectionTrainingSystem.ViewModels;
 namespace VisualInspectionTrainingSystem.Views.Login
 {
     /// <summary>
-    /// Hosts Login in MahApps chrome and owns the single registration-window
+    /// Hosts Login in Fluent window chrome and owns the single registration-window
     /// and authenticated-shell lifecycles without database logic.
     /// </summary>
-    public partial class LoginWindow : MetroWindow
+    public partial class LoginWindow : FluentWindow
     {
         #region Fields
 

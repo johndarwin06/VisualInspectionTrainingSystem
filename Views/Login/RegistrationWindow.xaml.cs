@@ -1,18 +1,18 @@
 #region Namespaces
 
 using System;
-using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.ViewModels;
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
 
 #endregion
 
 namespace VisualInspectionTrainingSystem.Views.Login
 {
     /// <summary>
-    /// Hosts the registration ViewModel in MahApps chrome and forwards only
+    /// Hosts the registration ViewModel in Fluent chrome and forwards only
     /// window lifecycle events.
     /// </summary>
-    public partial class RegistrationWindow : MetroWindow
+    public partial class RegistrationWindow : FluentWindow
     {
         #region Fields
 

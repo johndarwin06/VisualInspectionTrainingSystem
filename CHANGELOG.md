@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Fluent UI Migration
+
+- Replaced the merged MahApps/Material Design presentation with a cohesive Windows 11 Fluent interface using WPF-UI 4.3.0 and WPF-UI.Violeta 4.3.0.3 across every production screen, dialog, loading state, empty state, validation state, and error state.
+- Preserved the role-aware shell, administrator and trainee authorization, MySQL behavior, MVVM command and lifecycle contracts, 10/20-question quizzes, exactly-one Result behavior, Training History, Review Workflow, User Management, Dashboard, Reports, exports, cancellation, and safe closing.
+- Retained LiveChartsCore 2.0.5 and rethemed shared Dashboard, Reports, and personal analytics charts for Fluent light/dark surfaces with system-aware motion, replace-not-append refresh behavior, explicit empty states, and unchanged reviewed-only analytics meanings.
+- Preserved native DataGrid sorting, filtering, virtualization, selection, scrolling, and commands while applying shared Fluent controls, cards, inputs, semantic status chips, accessible names, visible focus, responsive layouts, and native window chrome.
+- Removed MahApps.Metro, MaterialDesignThemes, MaterialDesignColors, MaterialDesignThemes.MahApps, and ControlzEx along with obsolete references, imports, dictionaries, namespaces, attached properties, and production dependencies.
+- Passed 147 focused assertions, controlled MySQL verification with zero residual rows, AnyCPU and supported x86/x64 Debug/Release builds, native WPF-UI/LiveCharts/SkiaSharp/HarfBuzz deployment checks, `git diff --check`, and complete real WPF administrator/trainee acceptance without a crash, freeze, clipping, binding failure, or sensitive diagnostic.
+
 ### Material Design UI and Analytics Overhaul
 
 - Added one role-aware MahApps application shell for authenticated administrator and trainee navigation, with fail-closed destination commands, single-workspace ownership, safe logout handoff, and stable close/minimize/restore behavior.

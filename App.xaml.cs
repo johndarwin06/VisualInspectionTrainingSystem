@@ -43,6 +43,7 @@ namespace VisualInspectionTrainingSystem
         protected override void OnStartup(StartupEventArgs e)
         {
             RegisterGlobalExceptionHandlers();
+            ApplicationThemeService.Current.UseLightTheme();
 
             base.OnStartup(e);
         }

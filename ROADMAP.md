@@ -70,4 +70,8 @@
 
 - [x] Material Design UI and analytics overhaul (Issue #15.1 / GitHub issue #53; implemented, tested, and manually accepted)
 
+# Sprint 15
+
+- [x] Fluent UI migration (Issue #15.2 / GitHub issue #55; follow-up to Issue #53 and PR #54; implemented, tested, and manually accepted)
+
 No subsequent project issue has started.

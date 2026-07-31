@@ -1,272 +1,305 @@
-<mah:MetroWindow
+<ui:FluentWindow
     x:Class="VisualInspectionTrainingSystem.Views.Login.LoginWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:helpers="clr-namespace:VisualInspectionTrainingSystem.Helpers"
-    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-    xmlns:progress="clr-namespace:VisualInspectionTrainingSystem.Controls.Progress"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:vio="http://schemas.lepo.co/wpfui/2022/xaml/violeta"
     Title="Visual Inspection Training System"
     Width="1080"
-    Height="680"
+    Height="700"
     MinWidth="780"
-    MinHeight="580"
+    MinHeight="590"
     AutomationProperties.Name="Visual Inspection Training System login"
-    Background="{DynamicResource App.BackgroundBrush}"
+    ExtendsContentIntoTitleBar="True"
     KeyboardNavigation.TabNavigation="Cycle"
     ResizeMode="CanResize"
-    ShowIconOnTitleBar="False"
-    ShowSystemMenuOnRightClick="True"
-    WindowStartupLocation="CenterScreen"
-    WindowTransitionsEnabled="True">
+    Style="{StaticResource FluentAppWindowStyle}"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
+    WindowStartupLocation="CenterScreen">
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1.15*" MinWidth="350" />
-            <ColumnDefinition Width="*" MinWidth="410" />
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <!-- Branded vector panel -->
-        <Grid Grid.Column="0" Background="{DynamicResource App.NavigationBrush}" ClipToBounds="True">
-            <Ellipse
-                Width="420"
-                Height="420"
-                Margin="-180,-210,0,0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Fill="{DynamicResource App.NavigationRaisedBrush}"
-                Opacity="0.72" />
-            <Ellipse
-                Width="360"
-                Height="360"
-                Margin="0,0,-170,-180"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Fill="{DynamicResource App.SecondaryBrush}"
-                Opacity="0.2" />
-            <Path
-                Width="260"
-                Height="260"
-                Margin="0,80,-250,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Data="M 0,130 L 130,0 260,130 130,260 Z"
-                Fill="{DynamicResource App.SecondaryBrush}"
-                Opacity="0.1"
-                Stretch="Uniform" />
+        <ui:TitleBar
+            Grid.Row="0"
+            Panel.ZIndex="20"
+            Icon="{ui:SymbolIcon ImageSearch24}"
+            Style="{StaticResource FluentAppTitleBarStyle}"
+            Title="Visual Inspection Training System" />
 
-            <StackPanel
-                MaxWidth="470"
-                Margin="48"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center">
-                <Border
-                    Width="92"
-                    Height="92"
-                    HorizontalAlignment="Left"
-                    Background="{DynamicResource App.NavigationRaisedBrush}"
-                    CornerRadius="28"
-                    materialDesign:ElevationAssist.Elevation="Dp6">
-                    <materialDesign:PackIcon
-                        Width="52"
-                        Height="52"
+        <vio:BusyMask
+            Grid.Row="1"
+            BusyContent="Signing in securely..."
+            BusyContentMargin="0,16,0,0"
+            FocusAfterBusy="{Binding ElementName=EmployeeInput}"
+            IsBusy="{Binding IsBusy}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.12*" MinWidth="340" />
+                    <ColumnDefinition Width="*" MinWidth="400" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Brand panel remains decorative and never participates in keyboard focus. -->
+                <Grid Grid.Column="0" Background="{DynamicResource App.NavigationBrush}" ClipToBounds="True">
+                    <Ellipse
+                        Width="430"
+                        Height="430"
+                        Margin="-210,-230,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        Fill="{DynamicResource App.NavigationRaisedBrush}"
+                        IsHitTestVisible="False"
+                        Opacity="0.78" />
+                    <Ellipse
+                        Width="390"
+                        Height="390"
+                        Margin="0,0,-210,-220"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Fill="{DynamicResource App.SecondaryBrush}"
+                        IsHitTestVisible="False"
+                        Opacity="0.16" />
+                    <Path
+                        Width="250"
+                        Height="250"
+                        Margin="0,80,-235,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Data="M 0,125 L 125,0 250,125 125,250 Z"
+                        Fill="{DynamicResource App.SecondaryBrush}"
+                        IsHitTestVisible="False"
+                        Opacity="0.08"
+                        Stretch="Uniform" />
+
+                    <StackPanel
+                        MaxWidth="470"
+                        Margin="48,38"
                         HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        AutomationProperties.Name="Visual inspection training"
-                        Foreground="{DynamicResource App.SecondaryBrush}"
-                        Kind="ImageSearchOutline" />
-                </Border>
-                <TextBlock
-                    Margin="0,28,0,0"
-                    AutomationProperties.HeadingLevel="Level1"
-                    FontFamily="Segoe UI Variable Display, Segoe UI"
-                    FontSize="38"
-                    FontWeight="Bold"
-                    Foreground="{DynamicResource App.DarkTextBrush}"
-                    Text="Train the eye.&#x0a;Improve the decision."
-                    TextWrapping="Wrap" />
-                <TextBlock
-                    Margin="0,18,0,0"
-                    MaxWidth="430"
-                    FontSize="16"
-                    Foreground="{DynamicResource App.DarkSecondaryTextBrush}"
-                    LineHeight="25"
-                    Text="A focused visual-inspection workspace for consistent GOOD and NG classification, administrator review, and measurable training progress."
-                    TextWrapping="Wrap" />
-
-                <StackPanel Margin="0,34,0,0" Orientation="Horizontal">
-                    <Border Margin="0,0,10,0" Padding="12,7" Background="{DynamicResource App.NavigationRaisedBrush}" CornerRadius="100">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Width="17" Height="17" Margin="0,0,7,0" Foreground="{DynamicResource App.SuccessBrush}" Kind="ShieldCheckOutline" />
-                            <TextBlock Foreground="{DynamicResource App.DarkTextBrush}" Text="Secure access" />
-                        </StackPanel>
-                    </Border>
-                    <Border Padding="12,7" Background="{DynamicResource App.NavigationRaisedBrush}" CornerRadius="100">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Width="17" Height="17" Margin="0,0,7,0" Foreground="{DynamicResource App.SecondaryBrush}" Kind="ChartTimelineVariant" />
-                            <TextBlock Foreground="{DynamicResource App.DarkTextBrush}" Text="Reviewed progress" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </StackPanel>
-        </Grid>
-
-        <!-- Authentication card -->
-        <Grid Grid.Column="1" Margin="42,32">
-            <Border
-                MaxWidth="440"
-                Padding="38,34"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Style="{StaticResource SurfaceCardStyle}"
-                materialDesign:ElevationAssist.Elevation="Dp4">
-                <ScrollViewer
-                    HorizontalScrollBarVisibility="Disabled"
-                    VerticalScrollBarVisibility="Auto">
-                    <Grid Style="{StaticResource ContentEntranceGridStyle}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="28" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="18" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="26" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="14" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="16" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="28" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <StackPanel>
-                            <Border
-                                Width="46"
-                                Height="46"
-                                HorizontalAlignment="Left"
-                                Background="{DynamicResource App.SecondarySurfaceBrush}"
-                                CornerRadius="14">
-                                <materialDesign:PackIcon
-                                    Width="25"
-                                    Height="25"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Foreground="{DynamicResource App.PrimaryBrush}"
-                                    Kind="AccountLockOutline" />
-                            </Border>
-                            <TextBlock
-                                Margin="0,18,0,0"
-                                AutomationProperties.HeadingLevel="Level1"
-                                Style="{StaticResource PageTitleTextStyle}"
-                                Text="Welcome back" />
-                            <TextBlock
-                                Margin="0,6,0,0"
-                                Style="{StaticResource SupportingTextStyle}"
-                                Text="Sign in with your employee account to continue." />
-                        </StackPanel>
-
-                        <TextBox
-                            x:Name="EmployeeInput"
-                            Grid.Row="2"
-                            TabIndex="0"
-                            AutomationProperties.Name="Employee Number"
-                            MaxLength="20"
-                            materialDesign:HintAssist.Hint="Employee Number"
-                            Text="{Binding EmployeeNo, UpdateSourceTrigger=PropertyChanged}"
-                            ToolTip="Enter your employee number" />
-
-                        <PasswordBox
-                            x:Name="PasswordInput"
-                            Grid.Row="4"
-                            TabIndex="1"
-                            AutomationProperties.Name="Password"
-                            MaxLength="72"
-                            helpers:PasswordBoxHelper.BindPassword="True"
-                            helpers:PasswordBoxHelper.BoundPassword="{Binding Password, Mode=TwoWay}"
-                            materialDesign:HintAssist.Hint="Password"
-                            ToolTip="Enter your password" />
-
-                        <Grid Grid.Row="6">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.35*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Button
-                                Grid.Column="0"
-                                TabIndex="2"
-                                AutomationProperties.Name="Log in"
-                                Command="{Binding LoginCommand}"
-                                IsDefault="True"
-                                Style="{StaticResource PrimaryActionButtonStyle}"
-                                ToolTip="Sign in to the application">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Login" Style="{StaticResource AppIconStyle}" />
-                                    <TextBlock VerticalAlignment="Center" Text="Sign In" />
-                                </StackPanel>
-                            </Button>
-                            <Button
-                                Grid.Column="2"
-                                TabIndex="3"
-                                AutomationProperties.Name="Exit application"
-                                Command="{Binding ExitCommand}"
-                                IsCancel="True"
-                                Style="{StaticResource SecondaryActionButtonStyle}"
-                                ToolTip="Close the application">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Close" Style="{StaticResource AppIconStyle}" />
-                                    <TextBlock VerticalAlignment="Center" Text="Exit" />
-                                </StackPanel>
-                            </Button>
-                        </Grid>
-
-                        <Button
-                            Grid.Row="8"
-                            TabIndex="4"
-                            AutomationProperties.Name="Create a trainee account"
-                            Command="{Binding RegisterCommand}"
-                            Style="{StaticResource SecondaryActionButtonStyle}"
-                            ToolTip="Open trainee registration">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="AccountPlusOutline" Style="{StaticResource AppIconStyle}" />
-                                <TextBlock VerticalAlignment="Center" Text="Create Trainee Account" />
-                            </StackPanel>
-                        </Button>
+                        VerticalAlignment="Center">
+                        <Border
+                            Width="80"
+                            Height="80"
+                            HorizontalAlignment="Left"
+                            Background="{DynamicResource App.NavigationRaisedBrush}"
+                            CornerRadius="18">
+                            <ui:SymbolIcon
+                                Width="42"
+                                Height="42"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                AutomationProperties.Name="Visual inspection training"
+                                Foreground="{DynamicResource App.SecondaryBrush}"
+                                Symbol="ImageSearch24" />
+                        </Border>
 
                         <TextBlock
-                            Grid.Row="10"
-                            MinHeight="38"
-                            AutomationProperties.LiveSetting="Assertive"
-                            Style="{StaticResource StatusMessageTextStyle}"
-                            Text="{Binding StatusMessage}"
-                            ToolTip="{Binding StatusMessage}" />
+                            Margin="0,26,0,0"
+                            AutomationProperties.HeadingLevel="Level1"
+                            FontFamily="Segoe UI Variable Display, Segoe UI"
+                            FontSize="36"
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource App.DarkTextBrush}"
+                            LineHeight="43"
+                            Text="Train the eye.&#x0a;Improve the decision."
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            Margin="0,16,0,0"
+                            MaxWidth="430"
+                            FontSize="15"
+                            Foreground="{DynamicResource App.DarkSecondaryTextBrush}"
+                            LineHeight="24"
+                            Text="A focused workspace for consistent GOOD and NG classification, administrator review, and measurable training progress."
+                            TextWrapping="Wrap" />
 
-                        <Grid Grid.Row="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock
-                                Foreground="{DynamicResource App.TextMutedBrush}"
-                                Text="Samsung Electro-Mechanics Philippines"
-                                TextTrimming="CharacterEllipsis"
-                                ToolTip="Samsung Electro-Mechanics Philippines" />
-                            <TextBlock
-                                Grid.Column="1"
-                                Margin="14,0,0,0"
-                                Foreground="{DynamicResource App.TextMutedBrush}"
-                                Text="{Binding Version}" />
-                        </Grid>
-                    </Grid>
-                </ScrollViewer>
-            </Border>
-        </Grid>
+                        <WrapPanel Margin="0,30,0,0">
+                            <Border
+                                Margin="0,0,10,8"
+                                Padding="12,7"
+                                Background="{DynamicResource App.NavigationRaisedBrush}"
+                                CornerRadius="14">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Width="17"
+                                        Height="17"
+                                        Margin="0,0,7,0"
+                                        Foreground="{DynamicResource App.SuccessBrush}"
+                                        Symbol="ShieldCheckmark24" />
+                                    <TextBlock Foreground="{DynamicResource App.DarkTextBrush}" Text="Secure access" />
+                                </StackPanel>
+                            </Border>
+                            <Border
+                                Margin="0,0,0,8"
+                                Padding="12,7"
+                                Background="{DynamicResource App.NavigationRaisedBrush}"
+                                CornerRadius="14">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon
+                                        Width="17"
+                                        Height="17"
+                                        Margin="0,0,7,0"
+                                        Foreground="{DynamicResource App.SecondaryBrush}"
+                                        Symbol="DataTrending24" />
+                                    <TextBlock Foreground="{DynamicResource App.DarkTextBrush}" Text="Reviewed progress" />
+                                </StackPanel>
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+                </Grid>
 
-        <progress:ModernProgressBar
-            Grid.ColumnSpan="2"
-            Panel.ZIndex="100"
-            IsActive="{Binding IsBusy}"
-            Message="Signing in securely..." />
+                <!-- Focused authentication surface uses WPF-UI controls throughout. -->
+                <Grid Grid.Column="1" Margin="38,26">
+                    <ui:Card
+                        MaxWidth="440"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource FluentSurfaceCardStyle}">
+                        <ScrollViewer
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="24" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="14" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="22" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="12" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="14" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="24" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel>
+                                    <Border
+                                        Width="46"
+                                        Height="46"
+                                        HorizontalAlignment="Left"
+                                        Background="{DynamicResource App.SecondarySurfaceBrush}"
+                                        CornerRadius="10">
+                                        <ui:SymbolIcon
+                                            Width="24"
+                                            Height="24"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource App.PrimaryBrush}"
+                                            Symbol="LockClosed24" />
+                                    </Border>
+                                    <TextBlock
+                                        Margin="0,17,0,0"
+                                        AutomationProperties.HeadingLevel="Level1"
+                                        FontFamily="Segoe UI Variable Display, Segoe UI"
+                                        FontSize="28"
+                                        FontWeight="SemiBold"
+                                        Foreground="{DynamicResource App.TextPrimaryBrush}"
+                                        Text="Welcome back" />
+                                    <TextBlock
+                                        Margin="0,6,0,0"
+                                        Foreground="{DynamicResource App.TextSecondaryBrush}"
+                                        Text="Sign in with your employee account to continue."
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <ui:TextBox
+                                    x:Name="EmployeeInput"
+                                    Grid.Row="2"
+                                    TabIndex="0"
+                                    AutomationProperties.Name="Employee Number"
+                                    ClearButtonEnabled="True"
+                                    Icon="{ui:SymbolIcon Person24}"
+                                    MaxLength="20"
+                                    PlaceholderText="Employee number"
+                                    Style="{StaticResource FluentTextBoxStyle}"
+                                    Text="{Binding EmployeeNo, UpdateSourceTrigger=PropertyChanged}"
+                                    ToolTip="Enter your employee number" />
+
+                                <ui:PasswordBox
+                                    x:Name="PasswordInput"
+                                    Grid.Row="4"
+                                    TabIndex="1"
+                                    AutomationProperties.Name="Password"
+                                    MaxLength="72"
+                                    Password="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    PasswordChar="●"
+                                    PlaceholderText="Password"
+                                    Style="{StaticResource FluentPasswordBoxStyle}"
+                                    ToolTip="Enter your password" />
+
+                                <Grid Grid.Row="6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.35*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <ui:Button
+                                        Grid.Column="0"
+                                        TabIndex="2"
+                                        AutomationProperties.Name="Log in"
+                                        Command="{Binding LoginCommand}"
+                                        Content="Sign in"
+                                        Icon="{ui:SymbolIcon ArrowEnter20}"
+                                        IsDefault="True"
+                                        Style="{StaticResource FluentPrimaryButtonStyle}"
+                                        ToolTip="Sign in to the application" />
+                                    <ui:Button
+                                        Grid.Column="2"
+                                        TabIndex="3"
+                                        AutomationProperties.Name="Exit application"
+                                        Command="{Binding ExitCommand}"
+                                        Content="Exit"
+                                        Icon="{ui:SymbolIcon Dismiss20}"
+                                        IsCancel="True"
+                                        Style="{StaticResource FluentSecondaryButtonStyle}"
+                                        ToolTip="Close the application" />
+                                </Grid>
+
+                                <ui:Button
+                                    Grid.Row="8"
+                                    TabIndex="4"
+                                    AutomationProperties.Name="Create a trainee account"
+                                    Command="{Binding RegisterCommand}"
+                                    Content="Create trainee account"
+                                    Icon="{ui:SymbolIcon PersonAdd24}"
+                                    Style="{StaticResource FluentSecondaryButtonStyle}"
+                                    ToolTip="Open trainee registration" />
+
+                                <TextBlock
+                                    Grid.Row="10"
+                                    MinHeight="38"
+                                    AutomationProperties.LiveSetting="Assertive"
+                                    Foreground="{DynamicResource App.DangerBrush}"
+                                    Text="{Binding StatusMessage}"
+                                    TextWrapping="Wrap"
+                                    ToolTip="{Binding StatusMessage}" />
+
+                                <Grid Grid.Row="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        Foreground="{DynamicResource App.TextMutedBrush}"
+                                        Text="Samsung Electro-Mechanics Philippines"
+                                        TextTrimming="CharacterEllipsis"
+                                        ToolTip="Samsung Electro-Mechanics Philippines" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="14,0,0,0"
+                                        Foreground="{DynamicResource App.TextMutedBrush}"
+                                        Text="{Binding Version}" />
+                                </Grid>
+                            </Grid>
+                        </ScrollViewer>
+                    </ui:Card>
+                </Grid>
+            </Grid>
+        </vio:BusyMask>
     </Grid>
-</mah:MetroWindow>
+</ui:FluentWindow>

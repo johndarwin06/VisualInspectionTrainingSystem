@@ -2,8 +2,8 @@
 
 using System;
 using System.Windows;
-using MahApps.Metro.Controls;
 using VisualInspectionTrainingSystem.ViewModels;
+using FluentWindow = Wpf.Ui.Controls.FluentWindow;
 
 #endregion
 
@@ -12,7 +12,7 @@ namespace VisualInspectionTrainingSystem.Views.History
     /// <summary>
     /// Hosts one authorized read-only trainee result and disposes active background work on close.
     /// </summary>
-    public partial class TrainingHistoryDetailWindow : MetroWindow
+    public partial class TrainingHistoryDetailWindow : FluentWindow
     {
         #region Fields
 
