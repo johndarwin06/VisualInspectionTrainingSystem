@@ -80,4 +80,11 @@
 - [ ] Qualify deployment on an isolated machine or VM containing only the .NET Framework 4.6.2 runtime; currently Not Run
 - [ ] Plan migration to a supported runtime before .NET Framework 4.6.2 support ends on January 12, 2027
 
-No subsequent project issue has started.
+# Sprint 17
+
+- [x] Permanent regression-testing system (Issue #17 / GitHub issue #21; implemented, tested, and manually accepted)
+- [x] Production-composition WPF coverage for administrator and trainee workspaces, authorization, ownership, resources, and safe closing
+- [x] Debug/Release AnyCPU and supported x86/x64 native-deployment regression gates
+- [ ] Run the database category only after planned database-testing Issue #23 provisions an isolated test-only schema; the eight current Debug/Release skips must never be redirected to production data
+
+No subsequent implementation issue has started.

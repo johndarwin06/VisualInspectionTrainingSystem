@@ -12,6 +12,7 @@
     AutomationProperties.Name="My training history"
     Background="{DynamicResource App.BackgroundBrush}"
     KeyboardNavigation.TabNavigation="Cycle"
+    PreviewKeyDown="OnPreviewKeyDown"
     ResizeMode="CanResize"
     Style="{StaticResource FluentAppWindowStyle}"
     WindowBackdropType="Mica"
@@ -74,18 +75,34 @@
                     </StackPanel>
                 </StackPanel>
 
-                <Button
-                    Grid.Column="1"
-                    MinWidth="126"
-                    VerticalAlignment="Center"
-                    AutomationProperties.Name="Refresh training history and progress"
-                    Command="{Binding RefreshCommand}"
-                    Style="{StaticResource DarkActionButtonStyle}">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="ArrowSync24" Style="{StaticResource AppIconStyle}" />
-                        <TextBlock Text="Refresh" />
-                    </StackPanel>
-                </Button>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal">
+                    <Button
+                        x:Name="BackButton"
+                        MinWidth="142"
+                        Margin="0,0,10,0"
+                        AutomationProperties.HelpText="Close training history and return to the trainee workspace."
+                        AutomationProperties.Name="Back to trainee home"
+                        Click="OnBackRequested"
+                        Style="{StaticResource DarkActionButtonStyle}"
+                        TabIndex="0"
+                        ToolTip="Back to Home (Esc)">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ArrowLeft24" Style="{StaticResource AppIconStyle}" />
+                            <TextBlock Text="Back to Home" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        MinWidth="126"
+                        AutomationProperties.Name="Refresh training history and progress"
+                        Command="{Binding RefreshCommand}"
+                        Style="{StaticResource DarkActionButtonStyle}"
+                        TabIndex="1">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ArrowSync24" Style="{StaticResource AppIconStyle}" />
+                            <TextBlock Text="Refresh" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Border>
 

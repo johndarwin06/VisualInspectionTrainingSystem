@@ -58,6 +58,9 @@ packages/
 
 TestResults/
 coverage/
+*.trx
+*.coverage
+*.coveragexml
 
 #################################################
 # Local Configuration

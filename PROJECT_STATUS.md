@@ -4,7 +4,7 @@ Project: Visual Inspection Training System
 
 Current Version: 0.9 Beta
 
-Current Module: Issue #15.3 .NET Framework 4.6.2 Compatibility Migration - implemented and locally accepted
+Current Module: Issue #17 Regression Testing - implemented, tested, and manually accepted
 
 Build Status: Debug and Release successful
 
@@ -44,9 +44,19 @@ Completed:
 - Material Design UI and analytics overhaul (Issue #15.1 / GitHub issue #53)
 - Fluent UI migration (Issue #15.2 / GitHub issue #55)
 - .NET Framework 4.6.2 compatibility migration (Issue #15.3 / GitHub issue #57)
+- Permanent .NET Framework 4.6.2 regression testing (Issue #17 / GitHub issue #21)
 
 In Progress:
-- None. Issue #15.3 is implemented and locally accepted. No subsequent project issue has started.
+- None. Issue #17 is implemented, tested, and manually accepted. No subsequent project issue has started.
+
+Issue #17 Verification:
+- Added one permanent NUnit 4.4.0 regression project with NUnit3TestAdapter 5.2.0 for the .NET Framework 4.6.2 and C# 7.3 baseline. Unit, integration, WPF, export, native-deployment, database, and manual-runtime gates remain explicitly separated.
+- The production-composition WPF suite loads the real application resources on an STA dispatcher, constructs authorized administrator and trainee workspaces through production composition paths, verifies role boundaries and duplicate-window prevention, and closes every created window.
+- Corrected the shared Fluent window backdrop contract that caused authorized workspaces to show `Workspace unavailable`, added keyboard-accessible Back/Escape navigation for Training Setup and Training History, and completed the Fluent Quiz presentation without changing quiz persistence, 10/20-question behavior, or exactly-one Result presentation.
+- Final Debug and Release AnyCPU rebuilds completed with zero errors and one existing `MVVMTKCFG0002` warning each. Across both configurations, 262 tests passed, 8 database tests were skipped, and 0 failed; supported x86 and x64 native-deployment checks passed.
+- The eight skips are the four `Database` tests repeated in Debug and Release. No dedicated test-only MySQL schema was configured, so they correctly failed closed instead of touching production data. This integration coverage belongs to planned database-testing Issue #23 and must not run against an operational schema.
+- Real WPF acceptance passed administrator Dashboard and Reports data, trainee Training Setup and History Back/Escape behavior, repeated navigation, both quiz sizes, light/dark themes, GOOD/NG mouse and keyboard input, resizing, answer persistence, exactly-one Result presentation, logout, and normal shutdown. No authorized destination showed `Workspace unavailable`, and no crash, freeze, raw database error, sensitive message, or unexpected diagnostic dialog appeared.
+- Dashboard and Reports were compared with independent read-only SQL against the normal configured database; the rebuilt production application displayed the matching actual values. Automated tests created no database records, and no production data was deleted or altered for test setup.
 
 Issue #15.3 Verification:
 - Retargeted the complete WPF application from .NET Framework 4.8.1 to the official .NET Framework 4.6.2 reference assemblies while keeping C# 7.3, MVVM, MySQL behavior, Fluent presentation, authorization, analytics, exports, error handling, and public application workflows unchanged.

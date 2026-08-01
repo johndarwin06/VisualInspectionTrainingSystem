@@ -12,6 +12,7 @@
     Background="{DynamicResource App.BackgroundBrush}"
     BorderBrush="{DynamicResource App.BorderBrush}"
     KeyboardNavigation.TabNavigation="Cycle"
+    PreviewKeyDown="OnPreviewKeyDown"
     ResizeMode="CanResize"
     SnapsToDevicePixels="True"
     Style="{StaticResource FluentAppWindowStyle}"
@@ -39,12 +40,31 @@
             <!-- Task identity and authenticated profile context. -->
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="18" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="18" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel VerticalAlignment="Center">
+                <Button
+                    x:Name="BackButton"
+                    Grid.Column="0"
+                    MinWidth="146"
+                    VerticalAlignment="Center"
+                    AutomationProperties.HelpText="Close training setup and return to the trainee workspace."
+                    AutomationProperties.Name="Back to trainee home"
+                    Click="OnBackRequested"
+                    Style="{StaticResource SecondaryActionButtonStyle}"
+                    TabIndex="0"
+                    ToolTip="Back to Home (Esc)">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="ArrowLeft24" Style="{StaticResource AppIconStyle}" />
+                        <TextBlock VerticalAlignment="Center" Text="Back to Home" />
+                    </StackPanel>
+                </Button>
+
+                <StackPanel Grid.Column="2" VerticalAlignment="Center">
                     <TextBlock
                         AutomationProperties.ItemType="Heading"
                         Style="{StaticResource DisplayTitleTextStyle}"
@@ -58,7 +78,7 @@
                 </StackPanel>
 
                 <Border
-                    Grid.Column="2"
+                    Grid.Column="4"
                     MinWidth="250"
                     Padding="16,12"
                     VerticalAlignment="Center"
@@ -177,7 +197,7 @@
                                 Text="SESSION SIZE" />
                             <WrapPanel>
                                 <RadioButton
-                                    TabIndex="0"
+                                    TabIndex="1"
                                     Margin="0,0,10,10"
                                     AutomationProperties.HelpText="Select a short ten-question training session."
                                     AutomationProperties.Name="10 question quiz"
@@ -187,7 +207,7 @@
                                     IsChecked="{Binding IsTenQuestionQuizSelected, Mode=TwoWay}"
                                     Style="{StaticResource QuizSizeChoiceChipStyle}" />
                                 <RadioButton
-                                    TabIndex="1"
+                                    TabIndex="2"
                                     Margin="0,0,0,10"
                                     AutomationProperties.HelpText="Select an extended twenty-question training session."
                                     AutomationProperties.Name="20 question quiz"
@@ -222,7 +242,7 @@
 
                         <Button
                             Grid.Row="6"
-                            TabIndex="2"
+                            TabIndex="3"
                             MinWidth="210"
                             HorizontalAlignment="Right"
                             AutomationProperties.HelpText="Begin the selected inspection training session."
