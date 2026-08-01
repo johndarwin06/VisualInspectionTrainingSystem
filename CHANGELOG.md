@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Isolated Database Regression Testing
+
+- Added a permanent fail-closed MySQL integration boundary for Issue #19 / GitHub issue #23. User-scope configuration is accepted only after live authentication, exact schema-marker validation, restricted-grant inspection, operational/test identity separation, and production-fingerprint protection; values are never logged or printed.
+- Added versioned test-schema contracts and 24 database tests per configuration covering connection and parameter safety, rollback, cleanup, registration/authentication, administrator/trainee isolation, session and review transactions/concurrency, Dashboard, Reports, Training History, and normalized reviewed/pending analytics.
+- Synthetic rows use unique reserved `I19T` ownership and are removed in `finally`; explicit Debug and Release cleanup gates verify zero residual rows. The harness never creates or drops a database and cannot redirect to an ambiguous or production-looking schema.
+- Final Debug and Release builds completed with zero errors and one existing warning each. The complete run passed 382 tests with 0 failed and 0 skipped, the required-database rerun passed all 48 results, and x86/x64 native checks passed.
+- Approved visible WPF acceptance passed both roles against normal production configuration. Production schema and repeated row fingerprints remained stable after reconciling legitimate acceptance activity and one operator-authorized external Workbench user deletion; no synthetic production row or unrelated delta remained.
+
 ### Centralized Logging Framework
 
 - Standardized production diagnostics through the existing `ApplicationErrorLogger` and Apache-2.0 `log4net` 3.3.2 provider without adding packages or native dependencies.

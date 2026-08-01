@@ -42,9 +42,18 @@ namespace VisualInspectionTrainingSystem.Repositories
         /// Initializes the session repository.
         /// </summary>
         public SessionRepository()
+            : this(new MySqlService())
         {
-            _database = new MySqlService();
+        }
 
+        /// <summary>
+        /// Initializes session and answer persistence with one explicit database service.
+        /// </summary>
+        /// <param name="database">Validated service shared by the atomic session transaction.</param>
+        internal SessionRepository(MySqlService database)
+        {
+            _database = database
+                ?? throw new ArgumentNullException(nameof(database));
             _answerRepository = new AnswerRepository(_database);
         }
 

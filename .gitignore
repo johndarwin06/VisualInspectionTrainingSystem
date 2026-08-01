@@ -73,6 +73,7 @@ DatabaseSettings.local.json
 appsettings.local.json
 secrets.json
 secrets.config
+DatabaseTesting/Provision-TestDatabase.sql
 
 #################################################
 # Rider / VS Code

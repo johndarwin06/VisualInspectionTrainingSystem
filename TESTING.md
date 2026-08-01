@@ -71,14 +71,14 @@ Use one of the category names from the table. `ManualRuntime` is intentionally m
 
 ## Safe MySQL test configuration
 
-Database tests are skipped unless both variables are present:
+Database tests fail closed unless both variables are present:
 
 - `VITS_TEST_MYSQL_CONNECTION_STRING`
 - `VITS_TEST_MYSQL_SCHEMA`
 
-Never commit either value. The declared schema must exactly match the database in the connection string, contain `test` in its name, and differ from the known production schema. The boundary disables pooling, caps connection establishment at five seconds, never prints the connection string, never creates or drops a database, and skips closed when any safety check fails.
+Never commit either value. The runner reads Process scope first and Windows User scope second without printing values. The declared schema must exactly match the live database and identity marker, contain `test` in its name, use the dedicated restricted account, and remain distinct from the production endpoint/schema/account identity. The boundary inspects grants, disables pooling and persisted security information, caps connection establishment at five seconds, never creates or drops a database, and stops before tests when any safety check fails.
 
-Provision the application tables in a dedicated schema before running the category. The tests use unique identifiers or connection-scoped temporary tables, parameterize payloads, roll changes back, and verify cleanup. They must never point to an operational schema.
+Use `DatabaseTesting/Provision-TestDatabase.sql.example` to prepare the retained dedicated schema locally; keep the populated `DatabaseTesting/Provision-TestDatabase.sql` ignored. The tests use unique `I19T` run identifiers, parameterized payloads, repository-owned transactions, rollback checks, and `finally` cleanup. Explicit cleanup gates verify zero synthetic rows. They must never point to an operational schema or receive global privileges.
 
 ```powershell
 $env:VITS_TEST_MYSQL_CONNECTION_STRING = '<untracked test-only connection string>'
@@ -88,13 +88,21 @@ Remove-Item Env:VITS_TEST_MYSQL_CONNECTION_STRING
 Remove-Item Env:VITS_TEST_MYSQL_SCHEMA
 ```
 
+Use the runner modes to prove the boundary before functional execution and to reject database skips:
+
+```powershell
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\Run-RegressionTests.ps1 -Configuration All -DatabaseMode Preflight -SkipRestore -SkipBuild
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\Run-RegressionTests.ps1 -Configuration All -DatabaseMode Required -SkipRestore -SkipBuild
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\Run-RegressionTests.ps1 -Configuration All -DatabaseMode Cleanup -SkipRestore -SkipBuild
+```
+
 ## Continuous integration
 
 `.github/workflows/regression-tests.yml` uses pinned `actions/checkout` and `microsoft/setup-msbuild` commits on `windows-2022`. It restores and rebuilds Debug and Release, then runs `Unit`, `Integration`, `Export`, and `NativeDeployment` without credentials.
 
 Database tests are excluded from CI because no test database secret is supplied. WPF construction and real visible acceptance remain local gates because a hosted runner is not evidence of an interactive desktop session. The workflow never reads local image configuration, uploads private images, or publishes database/build artifacts.
 
-The accepted Issue #17 baseline runs four database tests in each configuration. With no dedicated test-only schema configured, the full Debug and Release run therefore reports eight intentional skips. Those tests belong to planned database-testing Issue #23; they must remain skipped rather than being redirected to the production schema.
+Issue #19 / GitHub issue #23 expands the category to 24 database tests per configuration. The accepted dedicated environment runs all 48 with zero skips, while `Required` mode rejects any skipped result. CI still excludes the category because no database secret is supplied; this omission must never be bypassed by redirecting CI or local tests to production.
 
 Issue #16 / GitHub issue #20 adds 17 permanent logging tests. They use isolated temporary directories and cover all five levels, UTF-8 output, bounded diagnostic fields, secrets redaction, duplicate exception suppression, 120 concurrent calls, rollover and retention, configured/fallback paths, read-only and locked destinations, simultaneous sink failure, bounded shutdown, task-observation behavior, and production integration contracts. The logger is disabled when each isolated test scope ends, and tests never read the local production configuration.
 

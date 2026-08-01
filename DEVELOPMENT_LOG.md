@@ -2,6 +2,16 @@
 
 ## 2026-08-02
 
+### Issue #19 / GitHub Issue #23 - Isolated Database Regression Testing
+
+- Expanded the permanent NUnit database category from four fail-closed contracts to 24 integration tests in each build configuration. Coverage now exercises schema/privilege safety, parameter redaction, registration and authentication, administrator/trainee boundaries, session and answer persistence, review propagation and concurrency, Dashboard, Reports, Training History, rollback, and deterministic cleanup.
+- Added a versioned dedicated-schema contract with an exact identity marker and a restricted test account. The runner reads `VITS_TEST_MYSQL_CONNECTION_STRING` and `VITS_TEST_MYSQL_SCHEMA` from Process or Windows User scope without displaying their values, disables pooling, bounds connection attempts, compares the live test identity with production, and refuses missing, ambiguous, production-looking, or over-privileged configurations.
+- Synthetic fixtures use unique `I19T` identifiers and repository-compatible rows. Each fixture owns cleanup in `finally`, and separate Debug/Release cleanup gates independently require zero remaining synthetic users, sessions, answers, or review-truth rows. The harness never creates or drops a database and never deletes unrelated records.
+- Added a safe provisioning example while ignoring the populated local provisioning file. The dedicated schema, marker, restricted account, and User-scope variables remain available for future regression runs; no credentials, connection strings, local configuration, or database data are tracked.
+- Final clean Debug and Release AnyCPU rebuilds completed with zero errors and one existing `MVVMTKCFG0002` warning each. The complete two-configuration run passed 382 tests with 0 failures and 0 skips; the explicit required-database rerun passed 48/48, the two cleanup gates passed, and supported x86/x64 native-deployment checks passed.
+- Approved visible WPF acceptance passed administrator Dashboard, Reports, User Management, and Review Workflow plus trainee authorization, Training Setup, Result, History, detail, logout, and shutdown. No test rows or credentials appeared in production or the UI.
+- Read-only production reconciliation found the schema unchanged, repeated row fingerprints stable, no `I19T` rows, and acceptance-period session/answer/review activity consistent with the visible run. The operator confirmed exactly one external MySQL Workbench user deletion; it was accepted as an authorized non-application action, no personal details were recorded, and no other unexplained table change remained.
+
 ### Issue #16 / GitHub Issue #20 - Centralized Logging Framework
 
 - Kept the already-installed Apache-2.0 `log4net` 3.3.2 package and made `ApplicationErrorLogger` the single production logging boundary. A bounded asynchronous sink writes complete UTF-8 entries without blocking UI callers, rolls `application.log` at 5 MiB, and retains five backups.

@@ -85,13 +85,19 @@
 - [x] Permanent regression-testing system (Issue #17 / GitHub issue #21; implemented, tested, and manually accepted)
 - [x] Production-composition WPF coverage for administrator and trainee workspaces, authorization, ownership, resources, and safe closing
 - [x] Debug/Release AnyCPU and supported x86/x64 native-deployment regression gates
-- [ ] Run the database category only after planned database-testing Issue #23 provisions an isolated test-only schema; the eight current Debug/Release skips must never be redirected to production data
+- [x] Database category enabled only through the isolated, fail-closed schema delivered by Issue #19 / GitHub issue #23
 
 # Sprint 18
 
 - [x] Centralized safe logging for .NET Framework 4.6.2 (Issue #16 / GitHub issue #20; implemented, tested, and manually accepted)
 - [x] Bounded asynchronous UTF-8 file logging with configured-path preference, LocalAppData fallback, 5 MiB rollover, five-backup retention, concurrency serialization, bounded shutdown flush, and fail-safe provider behavior
 - [x] Sanitized lifecycle, global-handler, authentication, security-operation, persistence, export, cancellation, and feature-failure coverage with permanent regression tests
-- [ ] Provision the isolated schema under planned database-testing Issue #23 before enabling the eight currently skipped Debug/Release database tests
+- [x] Isolated database prerequisite completed by Issue #19 / GitHub issue #23; production remains outside the writable test boundary
 
-No subsequent implementation issue has started. Issue #23 remains planned only.
+# Sprint 19
+
+- [x] Isolated database testing (Issue #19 / GitHub issue #23; implemented, tested, and manually accepted)
+- [x] Dedicated schema identity marker, restricted test account, fail-closed production separation, versioned contracts, rollback, concurrency, and synthetic-row cleanup
+- [x] Debug and Release database suites enabled with zero failures and zero skips; production schema and stable fingerprint protection verified
+
+No subsequent implementation issue has started.
