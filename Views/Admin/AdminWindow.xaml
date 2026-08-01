@@ -71,7 +71,7 @@
                                     Foreground="{DynamicResource App.SecondaryBrush}"
                                     Symbol="ClipboardTask24" />
                                 <TextBlock
-                                    AutomationProperties.HeadingLevel="Level1"
+                                    AutomationProperties.ItemType="Heading"
                                     VerticalAlignment="Center"
                                     FontFamily="Segoe UI Variable Display, Segoe UI"
                                     FontSize="24"
@@ -222,7 +222,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock
-                                    AutomationProperties.HeadingLevel="Level2"
+                                    AutomationProperties.ItemType="Heading"
                                     VerticalAlignment="Center"
                                     FontSize="18"
                                     FontWeight="SemiBold"
@@ -344,7 +344,7 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <TextBlock
-                                    AutomationProperties.HeadingLevel="Level2"
+                                    AutomationProperties.ItemType="Heading"
                                     FontSize="18"
                                     FontWeight="SemiBold"
                                     Text="{Binding SelectedImageCaption}"
@@ -401,7 +401,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock
-                                AutomationProperties.LiveSetting="Polite"
+                                AutomationProperties.ItemType="Status"
                                 FontSize="13"
                                 Text="{Binding StatusMessage}"
                                 TextTrimming="CharacterEllipsis"

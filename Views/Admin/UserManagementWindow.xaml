@@ -49,7 +49,7 @@
                     <ui:SymbolIcon Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Symbol="PeopleTeam24" />
                 </Border>
                 <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
-                    <TextBlock AutomationProperties.HeadingLevel="Level1" FontSize="22" FontWeight="SemiBold" Foreground="White" Text="User Management" />
+                    <TextBlock AutomationProperties.ItemType="Heading" FontSize="22" FontWeight="SemiBold" Foreground="White" Text="User Management" />
                     <TextBlock Margin="0,2,0,0" FontSize="12" Foreground="#C7D2FE" Text="Accounts, activation, access roles, and credential resets" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
@@ -153,7 +153,7 @@
             </Grid>
 
             <Border Grid.Row="4" Padding="15,11" Background="{DynamicResource App.SurfaceVariantBrush}" CornerRadius="12">
-                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Orientation="Horizontal"><ui:SymbolIcon Margin="0,0,10,0" VerticalAlignment="Center" Foreground="{DynamicResource App.PrimaryBrush}" Symbol="Info24" /><TextBlock VerticalAlignment="Center" AutomationProperties.LiveSetting="Assertive" Foreground="{DynamicResource App.TextPrimaryBrush}" Style="{StaticResource TrimmedTextWithToolTipStyle}" Text="{Binding StatusMessage}" /></StackPanel><TextBlock Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource SupportingTextStyle}" Text="Passwords are hashed with BCrypt and are never displayed." /></Grid>
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Orientation="Horizontal"><ui:SymbolIcon Margin="0,0,10,0" VerticalAlignment="Center" Foreground="{DynamicResource App.PrimaryBrush}" Symbol="Info24" /><TextBlock VerticalAlignment="Center" AutomationProperties.ItemType="Status" Foreground="{DynamicResource App.TextPrimaryBrush}" Style="{StaticResource TrimmedTextWithToolTipStyle}" Text="{Binding StatusMessage}" /></StackPanel><TextBlock Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource SupportingTextStyle}" Text="Passwords are hashed with BCrypt and are never displayed." /></Grid>
             </Border>
         </Grid>
 

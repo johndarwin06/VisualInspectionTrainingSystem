@@ -255,7 +255,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock
-                                AutomationProperties.HeadingLevel="Level1"
+                                AutomationProperties.ItemType="Heading"
                                 FontFamily="Segoe UI Variable Display, Segoe UI"
                                 FontSize="26"
                                 FontWeight="SemiBold"

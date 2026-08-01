@@ -4,11 +4,11 @@ Project: Visual Inspection Training System
 
 Current Version: 0.9 Beta
 
-Current Module: Issue #15.2 Fluent UI Migration - implemented, tested, and manually accepted
+Current Module: Issue #15.3 .NET Framework 4.6.2 Compatibility Migration - implemented and locally accepted
 
 Build Status: Debug and Release successful
 
-Last Build: 2026-07-29
+Last Build: 2026-08-01
 
 Build Warnings: 1 existing `MVVMTKCFG0002` warning in each configuration
 
@@ -43,9 +43,18 @@ Completed:
 - UI Polish and secure trainee training history (Issue #15 / GitHub issue #19)
 - Material Design UI and analytics overhaul (Issue #15.1 / GitHub issue #53)
 - Fluent UI migration (Issue #15.2 / GitHub issue #55)
+- .NET Framework 4.6.2 compatibility migration (Issue #15.3 / GitHub issue #57)
 
 In Progress:
-- None. Issue #15.2 is implemented, tested, and manually accepted. No subsequent project issue has started.
+- None. Issue #15.3 is implemented and locally accepted. No subsequent project issue has started.
+
+Issue #15.3 Verification:
+- Retargeted the complete WPF application from .NET Framework 4.8.1 to the official .NET Framework 4.6.2 reference assemblies while keeping C# 7.3, MVVM, MySQL behavior, Fluent presentation, authorization, analytics, exports, error handling, and public application workflows unchanged.
+- Audited all 53 declared packages and selected compatible `net462`, `net461`, `net46`, `net452`, `net45`, `net20`, or verified `netstandard2.0` assets. No package was downgraded; `System.ValueTuple` moved from 4.5.0 to 4.6.2 so its supported `net462` assembly and 4.0.5 binding identity are used consistently.
+- Final Debug and Release AnyCPU rebuilds and supported x86/x64 native-deployment checks passed with zero errors and one existing `MVVMTKCFG0002` warning per build. Clean NuGet restore, vulnerability audit, binding-redirect inspection, assembly/output inspection, MySQL report queries, password/statistics/quiz regressions, and real CSV/XLSX/PDF generation passed.
+- Local visible acceptance passed Splash, Login, Registration, existing BCrypt authentication, inactive-account rejection, administrator and trainee authorization/navigation, Review Workflow, User Management, Dashboard, Reports and exports, both quiz sizes, exactly-one Result presentation, Training History/detail, both themes, charts, dialogs, DataGrids, resizing, keyboard focus, logout, and shutdown.
+- The development machine uses a newer in-place .NET Framework 4.x CLR. Execution on an isolated machine or VM containing only the .NET Framework 4.6.2 runtime was not available and remains **Not Run**; this is a deployment qualification limitation and must not be represented as passed.
+- Microsoft support for .NET Framework 4.6.2 ends January 12, 2027. A future supported-runtime migration should be planned before that date.
 
 Issue #15.2 Verification:
 - Replaced the merged MahApps and Material Design presentation with one cohesive Windows 11 Fluent system built on WPF-UI 4.3.0 and WPF-UI.Violeta 4.3.0.3. Existing LiveChartsCore 2.0.5 analytics, MVVM behavior, authorization, MySQL semantics, exports, cancellation, and safe window ownership remain unchanged.

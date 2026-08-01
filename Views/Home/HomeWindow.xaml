@@ -46,7 +46,7 @@
 
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock
-                        AutomationProperties.HeadingLevel="Level1"
+                        AutomationProperties.ItemType="Heading"
                         Style="{StaticResource DisplayTitleTextStyle}"
                         Text="Training setup" />
                     <TextBlock
@@ -139,7 +139,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel>
                                 <TextBlock
-                                    AutomationProperties.HeadingLevel="Level2"
+                                    AutomationProperties.ItemType="Heading"
                                     FontSize="25"
                                     FontWeight="SemiBold"
                                     Foreground="{DynamicResource App.DarkTextBrush}"
@@ -258,7 +258,7 @@
                             </Border>
                             <TextBlock
                                 Margin="0,16,0,0"
-                                AutomationProperties.HeadingLevel="Level2"
+                                AutomationProperties.ItemType="Heading"
                                 Style="{StaticResource SectionTitleTextStyle}"
                                 Text="Before you start" />
                             <TextBlock

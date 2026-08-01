@@ -46,7 +46,7 @@
                 <TextBlock
                     Margin="0,18,0,0"
                     HorizontalAlignment="Center"
-                    AutomationProperties.LiveSetting="Polite"
+                    AutomationProperties.ItemType="Status"
                     FontSize="16"
                     FontWeight="SemiBold"
                     Foreground="{DynamicResource App.TextPrimaryBrush}"

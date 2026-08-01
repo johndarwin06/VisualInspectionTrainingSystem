@@ -88,7 +88,7 @@
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock
-                            AutomationProperties.HeadingLevel="Level1"
+                            AutomationProperties.ItemType="Heading"
                             FontFamily="Segoe UI Variable Display, Segoe UI"
                             FontSize="27"
                             FontWeight="SemiBold"
@@ -105,7 +105,7 @@
                         </StackPanel>
                         <TextBlock
                             Margin="0,4,0,0"
-                            AutomationProperties.LiveSetting="Polite"
+                            AutomationProperties.ItemType="Status"
                             Foreground="{DynamicResource App.SecondaryBrush}"
                             Text="{Binding QuizNotice}" />
                     </StackPanel>
@@ -205,7 +205,7 @@
                                 Text="INSPECTION IMAGE" />
                             <TextBlock
                                 Margin="0,2,0,0"
-                                AutomationProperties.LiveSetting="Polite"
+                                AutomationProperties.ItemType="Status"
                                 FontSize="12"
                                 Foreground="{DynamicResource App.DarkSecondaryTextBrush}"
                                 Text="{Binding ImageStatus}" />

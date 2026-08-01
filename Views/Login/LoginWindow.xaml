@@ -98,7 +98,7 @@
 
                         <TextBlock
                             Margin="0,26,0,0"
-                            AutomationProperties.HeadingLevel="Level1"
+                            AutomationProperties.ItemType="Heading"
                             FontFamily="Segoe UI Variable Display, Segoe UI"
                             FontSize="36"
                             FontWeight="SemiBold"
@@ -194,7 +194,7 @@
                                     </Border>
                                     <TextBlock
                                         Margin="0,17,0,0"
-                                        AutomationProperties.HeadingLevel="Level1"
+                                        AutomationProperties.ItemType="Heading"
                                         FontFamily="Segoe UI Variable Display, Segoe UI"
                                         FontSize="28"
                                         FontWeight="SemiBold"
@@ -273,7 +273,7 @@
                                 <TextBlock
                                     Grid.Row="10"
                                     MinHeight="38"
-                                    AutomationProperties.LiveSetting="Assertive"
+                                    AutomationProperties.ItemType="Status"
                                     Foreground="{DynamicResource App.DangerBrush}"
                                     Text="{Binding StatusMessage}"
                                     TextWrapping="Wrap"

@@ -1,5 +1,17 @@
 # ARCHITECTURE
 
+## Runtime and Language Compatibility
+
+The application targets .NET Framework 4.6.2 and explicitly compiles with C# 7.3. Development builds require the official .NET Framework 4.6.2 Developer/Targeting Pack and reference assemblies; runtime computers require .NET Framework 4.6.2 or a compatible newer in-place .NET Framework 4.x runtime.
+
+The `packages.config` dependency set is resolved only to audited `net462`, `net461`, `net46`, `net452`, `net45`, `net20`, or verified `netstandard2.0` assets. The project does not reference `net48` or `net481` assemblies. Package-provided support assemblies and generated binding redirects are copied and validated with each clean restore, including the NuGet `System.ValueTuple` 4.0.5 assembly required by the Fluent dependency graph.
+
+WPF accessibility metadata uses properties available in 4.6.2. Heading and live-status intent is retained through supported automation item types where newer heading-level and live-setting attached properties are unavailable. This is a compatibility adaptation only; MVVM ownership, public APIs, authorization, database behavior, analytics meanings, and UI workflows remain unchanged.
+
+Local acceptance compiles against genuine 4.6.2 reference assemblies but executes on the development machine's newer in-place CLR. An isolated machine or VM containing only the .NET Framework 4.6.2 runtime has not been available, so genuine 4.6.2-only runtime qualification remains **Not Run** and is an explicit deployment limitation.
+
+Microsoft support for .NET Framework 4.6.2 ends January 12, 2027. Deployment planning must include migration to a supported runtime before that date.
+
 ## Configuration System
 
 The application uses a single local XML configuration file for machine-specific settings:

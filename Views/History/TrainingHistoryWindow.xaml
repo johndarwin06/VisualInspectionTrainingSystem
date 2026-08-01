@@ -62,7 +62,7 @@
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock
-                            AutomationProperties.HeadingLevel="Level1"
+                            AutomationProperties.ItemType="Heading"
                             FontSize="25"
                             FontWeight="SemiBold"
                             Foreground="{DynamicResource App.DarkTextBrush}"
@@ -203,7 +203,7 @@
                                 Symbol="Info24" />
                             <TextBlock
                                 VerticalAlignment="Center"
-                                AutomationProperties.LiveSetting="Polite"
+                                AutomationProperties.ItemType="Status"
                                 Foreground="{DynamicResource App.TextSecondaryBrush}"
                                 Text="{Binding StatusMessage}"
                                 TextWrapping="Wrap" />

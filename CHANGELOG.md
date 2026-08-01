@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### .NET Framework 4.6.2 Compatibility
+
+- Retargeted the complete application and runtime declaration from .NET Framework 4.8.1 to 4.6.2 while preserving C# 7.3, WPF, MVVM, MySQL, Fluent UI, security rules, analytics definitions, exports, and all existing workflows.
+- Audited all 53 NuGet packages and selected compatible framework assets without downgrades. Updated `System.ValueTuple` from 4.5.0 to 4.6.2 for its supported `net462` assembly and validated generated binding redirects and output dependencies.
+- Replaced only WPF accessibility properties unavailable on 4.6.2 with supported semantic equivalents. No production C# business logic, public API, database schema, or stored password hash changed.
+- Passed Debug/Release AnyCPU and supported x86/x64 builds, clean restore and vulnerability audit, native WPF-UI/LiveCharts/SkiaSharp/HarfBuzz deployment inspection, 50 critical compatibility assertions, MySQL report checks, and real CSV/XLSX/PDF generation with exact cleanup.
+- Local visible acceptance passed the complete administrator and trainee application on the development machine's newer in-place CLR. Testing on an isolated machine or VM containing only the 4.6.2 runtime remains **Not Run** and is a documented deployment limitation.
+- .NET Framework 4.6.2 support ends January 12, 2027; migrate to a supported runtime before that date.
+
 ### Fluent UI Migration
 
 - Replaced the merged MahApps/Material Design presentation with a cohesive Windows 11 Fluent interface using WPF-UI 4.3.0 and WPF-UI.Violeta 4.3.0.3 across every production screen, dialog, loading state, empty state, validation state, and error state.

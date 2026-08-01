@@ -52,7 +52,7 @@
                         <Border Width="70" Height="70" HorizontalAlignment="Left" Background="{DynamicResource App.NavigationRaisedBrush}" CornerRadius="22">
                             <ui:SymbolIcon Width="38" Height="38" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource App.SecondaryBrush}" Symbol="PersonAdd24" />
                         </Border>
-                        <TextBlock Margin="0,24,0,0" AutomationProperties.HeadingLevel="Level1" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="31" FontWeight="Bold" Foreground="{DynamicResource App.DarkTextBrush}" Text="Create your trainee account" TextWrapping="Wrap" />
+                        <TextBlock Margin="0,24,0,0" AutomationProperties.ItemType="Heading" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="31" FontWeight="Bold" Foreground="{DynamicResource App.DarkTextBrush}" Text="Create your trainee account" TextWrapping="Wrap" />
                         <TextBlock Margin="0,15,0,0" FontSize="15" Foreground="{DynamicResource App.DarkSecondaryTextBrush}" LineHeight="23" Text="Registration creates a secure inactive trainee profile. An administrator must verify and activate the account before the first sign-in." TextWrapping="Wrap" />
 
                         <StackPanel Margin="0,30,0,0">
@@ -76,7 +76,7 @@
                     <ui:Card MaxWidth="570" Padding="34,28" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource FluentElevatedCardStyle}">
                         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                             <StackPanel>
-                                <TextBlock AutomationProperties.HeadingLevel="Level1" Style="{StaticResource PageTitleTextStyle}" Text="Trainee registration" />
+                                <TextBlock AutomationProperties.ItemType="Heading" Style="{StaticResource PageTitleTextStyle}" Text="Trainee registration" />
                                 <TextBlock Margin="0,6,0,20" Style="{StaticResource SupportingTextStyle}" Text="Enter your work profile and choose a strong password." TextWrapping="Wrap" />
 
                                 <ui:TextBox x:Name="EmployeeInput" TabIndex="0" Margin="0,0,0,14" AutomationProperties.Name="Employee Number" ClearButtonEnabled="True" Icon="{ui:SymbolIcon Person24}" MaxLength="20" PlaceholderText="Employee number" Style="{StaticResource FluentTextBoxStyle}" Text="{Binding EmployeeNo, UpdateSourceTrigger=PropertyChanged}" ToolTip="Enter a unique employee number" />
@@ -93,7 +93,7 @@
                                     </StackPanel>
                                 </Border>
 
-                                <TextBlock Margin="0,13,0,0" MinHeight="36" AutomationProperties.LiveSetting="Assertive" Style="{StaticResource StatusMessageTextStyle}" Text="{Binding StatusMessage}" ToolTip="{Binding StatusMessage}" />
+                                <TextBlock Margin="0,13,0,0" MinHeight="36" AutomationProperties.ItemType="Status" Style="{StaticResource StatusMessageTextStyle}" Text="{Binding StatusMessage}" ToolTip="{Binding StatusMessage}" />
 
                                 <Grid Margin="0,14,0,0">
                                     <Grid.ColumnDefinitions>

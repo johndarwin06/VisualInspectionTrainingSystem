@@ -32,7 +32,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock AutomationProperties.HeadingLevel="Level1" Style="{StaticResource PageTitleTextStyle}" Text="{Binding SessionTitle}" />
+                <TextBlock AutomationProperties.ItemType="Heading" Style="{StaticResource PageTitleTextStyle}" Text="{Binding SessionTitle}" />
                 <TextBlock Margin="0,5,0,0" Style="{StaticResource SupportingTextStyle}" Text="Read-only answer details and reviewed outcomes for your completed session." TextWrapping="Wrap" />
             </StackPanel>
             <Button Grid.Column="1" MinWidth="120" AutomationProperties.Name="Refresh training result" Command="{Binding RefreshCommand}" Style="{StaticResource PrimaryActionButtonStyle}">
@@ -135,7 +135,7 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <StackPanel>
-                        <TextBlock AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionTitleTextStyle}" Text="Selected Image" />
+                        <TextBlock AutomationProperties.ItemType="Heading" Style="{StaticResource SectionTitleTextStyle}" Text="Selected Image" />
                         <TextBlock Margin="0,4,0,0" Foreground="{DynamicResource App.TextSecondaryBrush}" Style="{StaticResource TrimmedTextWithToolTipStyle}" Text="{Binding SelectedAnswer.ImageDisplayText, TargetNullValue=Select an answer}" />
                     </StackPanel>
                     <Border Grid.Row="2" Background="{DynamicResource App.DarkBackgroundBrush}" BorderBrush="{DynamicResource App.BorderBrush}" BorderThickness="1" CornerRadius="14">
