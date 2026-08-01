@@ -611,8 +611,13 @@ namespace VisualInspectionTrainingSystem.ViewModels
             {
                 // Selection changes and window close are expected cancellation paths.
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                ApplicationErrorLogger.LogWarning(
+                    "Result Image Preview",
+                    "An optional result image preview could not be loaded.",
+                    ex);
+
                 if (CanPublishPreview(
                     answer,
                     generation,

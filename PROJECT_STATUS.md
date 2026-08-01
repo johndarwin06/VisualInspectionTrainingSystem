@@ -4,11 +4,11 @@ Project: Visual Inspection Training System
 
 Current Version: 0.9 Beta
 
-Current Module: Issue #17 Regression Testing - implemented, tested, and manually accepted
+Current Module: Issue #16 Centralized Logging / GitHub issue #20 - implemented, tested, and manually accepted
 
 Build Status: Debug and Release successful
 
-Last Build: 2026-08-01
+Last Build: 2026-08-02
 
 Build Warnings: 1 existing `MVVMTKCFG0002` warning in each configuration
 
@@ -45,9 +45,19 @@ Completed:
 - Fluent UI migration (Issue #15.2 / GitHub issue #55)
 - .NET Framework 4.6.2 compatibility migration (Issue #15.3 / GitHub issue #57)
 - Permanent .NET Framework 4.6.2 regression testing (Issue #17 / GitHub issue #21)
+- Centralized safe logging for .NET Framework 4.6.2 (Issue #16 / GitHub issue #20)
 
 In Progress:
-- None. Issue #17 is implemented, tested, and manually accepted. No subsequent project issue has started.
+- None. Issue #16 / GitHub issue #20 is implemented, tested, and manually accepted. Database-testing Issue #23 has not started.
+
+Issue #16 / GitHub Issue #20 Verification:
+- Retained the existing Apache-2.0 `log4net` 3.3.2 provider and added one application-owned asynchronous file sink. No logging package version or native dependency changed.
+- Normal entries include UTC time, unique event ID, level, component, managed thread, termination classification, and sanitized bounded exception diagnostics. Passwords, hashes, tokens, connection strings, raw SQL values, sensitive configuration, and unnecessary personal identifiers are excluded or redacted.
+- Logging prefers the already-loaded `PathSettings.LogFolder` and safely falls back to `%LocalAppData%\VisualInspectionTrainingSystem\Logs`. UTF-8 `application.log` rolls at 5 MiB, retains five backups, serializes concurrent writes through a bounded queue, and uses bounded flush/shutdown waits without allowing provider failure to crash or recurse into global handling.
+- Startup, configuration, database availability, authentication/session lifecycle, security-sensitive account actions, quiz persistence, exports, feature failures, cancellation, global exception handlers, and normal shutdown use meaningful levels and components. Fixed non-sensitive production messages remain unchanged.
+- Final Debug and Release AnyCPU rebuilds completed with zero errors and one existing `MVVMTKCFG0002` warning each. Across both configurations, 296 tests passed, 8 database tests were skipped, and 0 failed; supported x86 and x64 native-deployment checks passed.
+- The eight skips are the four `Database` tests repeated in Debug and Release. No dedicated test-only MySQL schema was configured, so the tests correctly failed closed instead of touching production data. Their execution belongs to planned database-testing Issue #23.
+- Approved real WPF acceptance passed both roles, Dashboard, Reports, User Management, Review Workflow, Training Setup, Training History, Result/detail navigation, refresh, logout, and normal shutdown. A read-only inspection of the resulting log found complete startup-to-shutdown records, unique IDs, meaningful sources, no logging errors or duplicate exception records, and no sensitive-data matches.
 
 Issue #17 Verification:
 - Added one permanent NUnit 4.4.0 regression project with NUnit3TestAdapter 5.2.0 for the .NET Framework 4.6.2 and C# 7.3 baseline. Unit, integration, WPF, export, native-deployment, database, and manual-runtime gates remain explicitly separated.

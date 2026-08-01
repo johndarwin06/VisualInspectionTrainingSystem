@@ -97,13 +97,21 @@ namespace VisualInspectionTrainingSystem.Services
             string passwordHash = _passwordHashService.HashPassword(
                 validatedPassword);
 
-            return _repository.CreateUser(
+            User createdUser = _repository.CreateUser(
                 GetCurrentAdministratorEmployeeNo(),
                 validatedEmployeeNo,
                 validatedFullName,
                 validatedDepartment,
                 canonicalRole,
                 passwordHash);
+
+            ApplicationErrorLogger.LogInformation(
+                "User Management",
+                "An administrator created an account with role " +
+                canonicalRole +
+                ".");
+
+            return createdUser;
         }
 
         /// <summary>
@@ -119,6 +127,12 @@ namespace VisualInspectionTrainingSystem.Services
                 userId,
                 expectedIsActive,
                 newIsActive);
+
+            ApplicationErrorLogger.LogInformation(
+                "User Management",
+                newIsActive
+                    ? "An administrator activated an account."
+                    : "An administrator deactivated an account.");
         }
 
         /// <summary>
@@ -134,6 +148,12 @@ namespace VisualInspectionTrainingSystem.Services
                 userId,
                 ValidateRole(expectedRole),
                 ValidateRole(newRole));
+
+            ApplicationErrorLogger.LogInformation(
+                "User Management",
+                "An administrator changed an account role to " +
+                ValidateRole(newRole) +
+                ".");
         }
 
         /// <summary>
@@ -154,6 +174,13 @@ namespace VisualInspectionTrainingSystem.Services
                 GetCurrentAdministratorEmployeeNo(),
                 userId,
                 passwordHash);
+
+            passwordHash = null;
+            validatedPassword = null;
+
+            ApplicationErrorLogger.LogInformation(
+                "User Management",
+                "An administrator reset an account password.");
         }
 
         #endregion
@@ -175,6 +202,10 @@ namespace VisualInspectionTrainingSystem.Services
                 SessionService.CurrentUser == null ||
                 string.IsNullOrWhiteSpace(SessionService.CurrentUser.EmployeeNo))
             {
+                ApplicationErrorLogger.LogWarning(
+                    "Authorization",
+                    "A User Management request was rejected by the authorization boundary.");
+
                 throw new UserManagementException(
                     UserManagementErrorCode.Unauthorized,
                     AuthorizationMessage);

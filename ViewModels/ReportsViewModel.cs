@@ -843,6 +843,13 @@ namespace VisualInspectionTrainingSystem.ViewModels
                     token);
                 await AwaitWithCancellation(exportWorker, token);
 
+                ApplicationErrorLogger.LogInformation(
+                    "Reports Export",
+                    GetExportLabel(exportKind) +
+                    " report export completed for " +
+                    snapshot.Sessions.Count +
+                    " session row(s).");
+
                 if (CanPublish(version))
                 {
                     StatusMessage = GetExportLabel(exportKind) +
@@ -851,6 +858,10 @@ namespace VisualInspectionTrainingSystem.ViewModels
             }
             catch (OperationCanceledException)
             {
+                ApplicationErrorLogger.LogDebug(
+                    "Reports Export",
+                    "Report export was cancelled before completion.");
+
                 if (CanPublish(version))
                 {
                     StatusMessage = "Report export was cancelled.";

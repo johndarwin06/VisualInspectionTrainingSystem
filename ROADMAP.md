@@ -87,4 +87,11 @@
 - [x] Debug/Release AnyCPU and supported x86/x64 native-deployment regression gates
 - [ ] Run the database category only after planned database-testing Issue #23 provisions an isolated test-only schema; the eight current Debug/Release skips must never be redirected to production data
 
-No subsequent implementation issue has started.
+# Sprint 18
+
+- [x] Centralized safe logging for .NET Framework 4.6.2 (Issue #16 / GitHub issue #20; implemented, tested, and manually accepted)
+- [x] Bounded asynchronous UTF-8 file logging with configured-path preference, LocalAppData fallback, 5 MiB rollover, five-backup retention, concurrency serialization, bounded shutdown flush, and fail-safe provider behavior
+- [x] Sanitized lifecycle, global-handler, authentication, security-operation, persistence, export, cancellation, and feature-failure coverage with permanent regression tests
+- [ ] Provision the isolated schema under planned database-testing Issue #23 before enabling the eight currently skipped Debug/Release database tests
+
+No subsequent implementation issue has started. Issue #23 remains planned only.

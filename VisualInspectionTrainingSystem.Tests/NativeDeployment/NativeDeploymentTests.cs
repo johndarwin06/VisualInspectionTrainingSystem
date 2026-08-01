@@ -39,6 +39,7 @@ namespace VisualInspectionTrainingSystem.Tests.NativeDeployment
             "DocumentFormat.OpenXml.dll",
             "DocumentFormat.OpenXml.Framework.dll",
             "BCrypt-Net-Next.dll",
+            "log4net.dll",
             "netstandard.dll"
         };
 
@@ -170,7 +171,9 @@ namespace VisualInspectionTrainingSystem.Tests.NativeDeployment
 
             // Act and Assert
             Assert.That(content, Does.Contain("<TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>"));
+            Assert.That(content, Does.Contain("<LangVersion>7.3</LangVersion>"));
             Assert.That(content, Does.Contain("<PlatformTarget>AnyCPU</PlatformTarget>"));
+            Assert.That(content, Does.Contain("packages\\log4net.3.3.2\\lib\\net462\\log4net.dll"));
             Assert.That(content, Does.Not.Contain("C:\\Users\\"));
             Assert.That(content, Does.Not.Contain("D:\\"));
         }

@@ -1,5 +1,19 @@
 # DEVELOPMENT LOG
 
+## 2026-08-02
+
+### Issue #16 / GitHub Issue #20 - Centralized Logging Framework
+
+- Kept the already-installed Apache-2.0 `log4net` 3.3.2 package and made `ApplicationErrorLogger` the single production logging boundary. A bounded asynchronous sink writes complete UTF-8 entries without blocking UI callers, rolls `application.log` at 5 MiB, and retains five backups.
+- The logger uses `PathSettings.LogFolder` only after successful configuration loading and otherwise falls back to `%LocalAppData%\VisualInspectionTrainingSystem\Logs`; fatal handlers perform no configuration discovery. Invalid, read-only, locked, and unavailable paths fail over safely, and simultaneous primary/fallback failure cannot escape or recursively trigger global handling.
+- Added Debug, Information, Warning, Error, and Fatal levels with UTC timestamp, unique event ID, meaningful component, thread metadata, termination classification, bounded sanitized exception details, inner chain, and flattened aggregate types. Central redaction covers credentials, BCrypt hashes, tokens, connection strings, configuration secrets, paths in diagnostics, and oversized messages/stacks.
+- Integrated safe logging across startup and shutdown, global dispatcher/task/AppDomain handlers, configuration and database initialization, authentication/session lifecycle, registration and administrator security actions, quiz persistence, export success/cancellation/failure, preview failure, and existing feature boundaries. User-facing errors remain fixed and non-sensitive.
+- Added 17 permanent logging tests for formatting, level filtering, UTF-8, exception chains, redaction, duplicate suppression, 120-call concurrency, rollover/retention, configured and fallback paths, provider failure, bounded shutdown, task-observation behavior, and production integration contracts. Native-deployment tests now verify the managed `log4net.dll` output and the `net462` reference contract.
+- Final Debug and Release AnyCPU rebuilds each completed with zero errors and one existing `MVVMTKCFG0002` warning. The complete two-configuration run passed 296 tests, skipped 8, and failed 0; x86 and x64 native-deployment checks passed.
+- The eight skipped results are four database tests in each configuration. They were intentionally not run because no dedicated test-only schema was configured; planned database-testing Issue #23 owns that isolated environment, and these tests must never target production data.
+- Approved real WPF acceptance passed administrator and trainee startup, navigation, data loading/refresh, logout, and shutdown. Read-only log inspection found complete structured entries through the final shutdown flush, meaningful levels/components, unique event IDs, no provider errors or unintended duplicates, and no passwords, hashes, tokens, connection strings, SQL values, sensitive configuration, or unnecessary personal data.
+- Temporary logs, test results, build output, and generated artifacts were removed after verification. Automated verification did not modify local configuration or the production database.
+
 ## 2026-08-01
 
 ### Issue #17 - Permanent Regression Testing

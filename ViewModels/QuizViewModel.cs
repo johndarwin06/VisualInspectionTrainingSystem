@@ -1270,6 +1270,12 @@ namespace VisualInspectionTrainingSystem.ViewModels
             try
             {
                 _sessionRepository.Save(session);
+
+                ApplicationErrorLogger.LogInformation(
+                    "Quiz Session Persistence",
+                    "A completed training session was saved with " +
+                    session.TotalQuestions +
+                    " answer row(s).");
             }
             catch (Exception ex)
             {

@@ -12,7 +12,7 @@ using VisualInspectionTrainingSystem.Services;
 namespace VisualInspectionTrainingSystem
 {
     /// <summary>
-    /// Provides application-wide WPF exception handling.
+    /// Provides application lifecycle coordination and process-wide WPF exception handling.
     /// </summary>
     public partial class App : Application
     {
@@ -23,6 +23,12 @@ namespace VisualInspectionTrainingSystem
             "Please restart the application. Contact support if the problem continues.";
 
         private const string FatalErrorTitle = "Application Error";
+
+        private static readonly TimeSpan FatalLogFlushTimeout =
+            TimeSpan.FromMilliseconds(750);
+
+        private static readonly TimeSpan NormalLogShutdownTimeout =
+            TimeSpan.FromSeconds(1);
 
         #endregion
 
@@ -37,24 +43,35 @@ namespace VisualInspectionTrainingSystem
         #region Application Lifecycle
 
         /// <summary>
-        /// Registers process-wide error handlers before the application opens its first window.
+        /// Initializes logging and registers process-wide handlers before the first window opens.
         /// </summary>
         /// <param name="e">The startup event arguments.</param>
         protected override void OnStartup(StartupEventArgs e)
         {
+            ApplicationErrorLogger.Initialize();
             RegisterGlobalExceptionHandlers();
             ApplicationThemeService.Current.UseLightTheme();
+
+            ApplicationErrorLogger.LogInformation(
+                "Application Lifecycle",
+                "Application startup began.");
 
             base.OnStartup(e);
         }
 
         /// <summary>
-        /// Releases process-wide handler subscriptions during normal shutdown.
+        /// Records normal shutdown, flushes within a fixed bound, and releases global handlers.
         /// </summary>
         /// <param name="e">The exit event arguments.</param>
         protected override void OnExit(ExitEventArgs e)
         {
+            ApplicationErrorLogger.LogInformation(
+                "Application Lifecycle",
+                "Application shutdown completed normally.");
+
+            ApplicationErrorLogger.Flush(NormalLogShutdownTimeout);
             UnregisterGlobalExceptionHandlers();
+            ApplicationErrorLogger.Shutdown(NormalLogShutdownTimeout);
 
             base.OnExit(e);
         }
@@ -64,7 +81,7 @@ namespace VisualInspectionTrainingSystem
         #region Exception Handlers
 
         /// <summary>
-        /// Logs a UI-thread exception, notifies the user without disclosing diagnostics, and shuts down cleanly.
+        /// Logs one UI-thread exception, shows one non-sensitive notification, and requests controlled shutdown.
         /// </summary>
         /// <param name="sender">The dispatcher that raised the event.</param>
         /// <param name="e">The unhandled dispatcher exception information.</param>
@@ -91,6 +108,7 @@ namespace VisualInspectionTrainingSystem
                         : e.Exception,
                     true);
 
+                ApplicationErrorLogger.Flush(FatalLogFlushTimeout);
                 ShowFatalErrorMessage();
             }
             finally
@@ -146,6 +164,11 @@ namespace VisualInspectionTrainingSystem
                     ? null
                     : e.ExceptionObject as Exception,
                 isTerminating);
+
+            if (isTerminating)
+            {
+                ApplicationErrorLogger.Flush(FatalLogFlushTimeout);
+            }
         }
 
         #endregion
@@ -253,7 +276,7 @@ namespace VisualInspectionTrainingSystem
             }
             catch
             {
-                // Exception handlers must not throw while an application is terminating.
+                // Exception handlers must not throw while the application is terminating.
             }
         }
 

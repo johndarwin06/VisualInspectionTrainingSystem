@@ -63,21 +63,22 @@ namespace VisualInspectionTrainingSystem.Services
             if (string.IsNullOrWhiteSpace(employeeNo) ||
                 password == null)
             {
-                return null;
+                return RejectLogin();
             }
 
             User user = _repository.GetByEmployeeNo(employeeNo);
 
-            if (user == null ||
-                !user.IsActive)
+            if (user == null || !user.IsActive)
             {
-                return null;
+                return RejectLogin();
             }
 
             string canonicalRole = UserRoles.Normalize(user.Role);
 
             if (canonicalRole == null)
-                return null;
+            {
+                return RejectLogin();
+            }
 
             user.Role = canonicalRole;
 
@@ -89,7 +90,7 @@ namespace VisualInspectionTrainingSystem.Services
                     password,
                     storedPassword))
                 {
-                    return null;
+                    return RejectLogin();
                 }
 
                 SessionService.Login(user);
@@ -102,7 +103,7 @@ namespace VisualInspectionTrainingSystem.Services
                 password,
                 StringComparison.Ordinal))
             {
-                return null;
+                return RejectLogin();
             }
 
             string upgradedHash = _passwordHashService.HashPassword(password);
@@ -113,13 +114,32 @@ namespace VisualInspectionTrainingSystem.Services
                 upgradedHash);
 
             if (!upgraded)
-                return null;
+            {
+                return RejectLogin();
+            }
 
             user.PasswordHash = upgradedHash;
+
+            ApplicationErrorLogger.LogInformation(
+                "Authentication",
+                "A legacy credential was upgraded to the current password-hash format.");
 
             SessionService.Login(user);
 
             return user;
+        }
+
+        /// <summary>
+        /// Records one generic rejection without identifying an account or credential condition.
+        /// </summary>
+        /// <returns>Always null.</returns>
+        private static User RejectLogin()
+        {
+            ApplicationErrorLogger.LogWarning(
+                "Authentication",
+                "An authentication attempt was rejected.");
+
+            return null;
         }
 
         #endregion
