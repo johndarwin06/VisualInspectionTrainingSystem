@@ -101,6 +101,11 @@ namespace VisualInspectionTrainingSystem.Services
             }
 
             registered.PasswordHash = string.Empty;
+
+            ApplicationErrorLogger.LogInformation(
+                "Registration",
+                "An inactive trainee registration was created for administrator review.");
+
             return registered;
         }
 

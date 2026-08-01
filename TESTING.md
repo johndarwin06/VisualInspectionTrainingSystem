@@ -39,7 +39,7 @@ Every test-host invocation has a five-minute outer timeout. Asynchronous tests a
 | Category | Purpose | External state |
 | --- | --- | --- |
 | `Unit` | Authentication, validation, authorization, quiz/result calculations, analytics models, periods, filters, and presentation state | None |
-| `Integration` | Repository SQL contracts, image behavior, repeated refresh, cancellation, safe closing, and non-sensitive failure behavior | Temporary local files only |
+| `Integration` | Repository SQL contracts, image behavior, repeated refresh, cancellation, safe closing, non-sensitive failure behavior, and centralized logging/redaction/rollover/concurrency contracts | Temporary local files only |
 | `WPF` | STA resource construction, Fluent/Violeta resources, theme switching, XAML contracts, charts, resizing, keyboard metadata, and DataGrid virtualization | Interactive desktop libraries; no MySQL |
 | `Database` | Fail-closed schema validation, required schema contracts, parameter behavior, and rollback cleanup | Explicit test-only MySQL schema |
 | `Export` | CSV, XLSX, PDF validation, cancellation cleanup, and export limits | Unique temporary directory removed in teardown |
@@ -96,6 +96,8 @@ Database tests are excluded from CI because no test database secret is supplied.
 
 The accepted Issue #17 baseline runs four database tests in each configuration. With no dedicated test-only schema configured, the full Debug and Release run therefore reports eight intentional skips. Those tests belong to planned database-testing Issue #23; they must remain skipped rather than being redirected to the production schema.
 
+Issue #16 / GitHub issue #20 adds 17 permanent logging tests. They use isolated temporary directories and cover all five levels, UTF-8 output, bounded diagnostic fields, secrets redaction, duplicate exception suppression, 120 concurrent calls, rollover and retention, configured/fallback paths, read-only and locked destinations, simultaneous sink failure, bounded shutdown, task-observation behavior, and production integration contracts. The logger is disabled when each isolated test scope ends, and tests never read the local production configuration.
+
 ## Visible WPF acceptance
 
 After automated tests pass:
@@ -108,6 +110,8 @@ After automated tests pass:
 6. Record separately whether there was any crash, freeze, raw database error, sensitive message, unexpected diagnostic dialog, or binding failure.
 
 This is a manual test. Automated WPF construction is not reported as visible acceptance.
+
+For centralized logging acceptance, inspect the newly generated normal-session log read-only after shutdown. Verify structured startup, configuration, authenticated-session, feature activity, logout, and final shutdown records; meaningful severity/component values; unique event IDs; complete entry boundaries; and absence of credentials, hashes, tokens, connection strings, SQL values, sensitive configuration, unnecessary personal data, provider errors, or unintended duplicate exception entries. Delete only the generated acceptance log during final artifact cleanup.
 
 ## Genuine .NET Framework 4.6.2-only qualification
 
@@ -125,7 +129,7 @@ Until that external run occurs, report `ManualRuntime` as **Not Run**. Local exe
 
 Tests remove their own temporary files in teardown or `finally` blocks. After an interrupted run:
 
-1. Verify the dedicated test schema contains no `I17-` or other run-specific rows before removing anything.
+1. Verify the dedicated test schema contains no `I17-`, `I16-`, or other run-specific rows before removing anything.
 2. Delete only known test-created rows; never truncate or delete operational data.
 3. Remove temporary exports, rendered pages, logs, probes, `TestResults`, coverage output, `bin`, and `obj`.
 4. Clear the two test-database environment variables.

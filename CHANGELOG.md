@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Centralized Logging Framework
+
+- Standardized production diagnostics through the existing `ApplicationErrorLogger` and Apache-2.0 `log4net` 3.3.2 provider without adding packages or native dependencies.
+- Added a bounded asynchronous UTF-8 file sink with 5 MiB rollover, five retained backups, serialized concurrent entries, bounded flush/shutdown, configured `PathSettings.LogFolder` preference, and `%LocalAppData%\VisualInspectionTrainingSystem\Logs` fallback.
+- Added Debug through Fatal severity, UTC timestamps, unique event IDs, components, thread and termination metadata, bounded exception/inner/aggregate diagnostics, duplicate-exception suppression, and centralized redaction of credentials, hashes, tokens, connection strings, configuration secrets, diagnostic paths, and oversized text.
+- Integrated safe technical logging into application lifecycle and global handlers, initialization, authentication/session events, security-sensitive account operations, quiz persistence, exports, cancellation, and feature failure boundaries while preserving fixed non-sensitive user messages.
+- Added 17 permanent logging tests and native deployment contracts. Final Debug/Release verification passed 296 tests, skipped the 8 database results that require Issue #23's dedicated test-only schema, and failed 0; approved visible WPF acceptance and the read-only normal-log audit passed.
+
 ### Permanent Regression Testing
 
 - Added a permanent NUnit regression project for the .NET Framework 4.6.2/C# 7.3 baseline, with categorized Unit, Integration, WPF, Database, Export, NativeDeployment, and explicit ManualRuntime coverage plus a repeatable local runner and pinned secret-free Windows CI workflow.

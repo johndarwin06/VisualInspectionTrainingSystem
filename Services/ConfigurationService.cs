@@ -614,9 +614,7 @@ namespace VisualInspectionTrainingSystem.Services
                 settings.QuizImageFolder,
                 "quiz image folder");
 
-            EnsureOutputDirectoryExists(
-                settings.LogFolder,
-                "log folder");
+            TryPrepareOptionalLogDirectory(settings.LogFolder);
 
             EnsureOutputDirectoryExists(
                 settings.ExportFolder,
@@ -661,6 +659,26 @@ namespace VisualInspectionTrainingSystem.Services
                     " could not be created or opened. " +
                     ex.Message,
                     ex);
+            }
+        }
+
+        /// <summary>
+        /// Prepares the configured log directory when possible without making optional logging storage a required startup dependency.
+        /// </summary>
+        /// <param name="path">The configured log directory.</param>
+        private static void TryPrepareOptionalLogDirectory(string path)
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(path) &&
+                    !Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+            }
+            catch
+            {
+                // ApplicationErrorLogger will use its LocalApplicationData fallback.
             }
         }
 

@@ -122,6 +122,10 @@ namespace VisualInspectionTrainingSystem.Services
                     ApplicationErrorLogger.ConfigureLogFolder(
                         settings.Paths.LogFolder);
 
+                    ApplicationErrorLogger.LogInformation(
+                        "Startup",
+                        "Application configuration loaded and centralized logging initialized.");
+
                     startupTimeout.CancelAfter(
                         GetStartupTimeout(settings));
 
@@ -135,6 +139,10 @@ namespace VisualInspectionTrainingSystem.Services
 
                     if (!databaseResult.Succeeded)
                     {
+                        ApplicationErrorLogger.LogWarning(
+                            "Startup Database Check",
+                            "Required database initialization did not complete successfully.");
+
                         ReportProgress(
                             35,
                             databaseResult.StatusMessage);
@@ -152,6 +160,10 @@ namespace VisualInspectionTrainingSystem.Services
 
                     if (cancellationToken.IsCancellationRequested)
                     {
+                        ApplicationErrorLogger.LogInformation(
+                            "Startup",
+                            "Application startup was cancelled by the caller.");
+
                         return InitializationResult.CreateCancelled(
                             "Startup cancelled.",
                             "Initialization was cancelled before it completed.");
@@ -172,34 +184,55 @@ namespace VisualInspectionTrainingSystem.Services
 
                     RaiseInitializationCompletedOnce();
 
+                    ApplicationErrorLogger.LogInformation(
+                        "Startup",
+                        "Application initialization completed successfully in " +
+                        FormatSeconds(stopwatch.Elapsed) +
+                        " second(s).");
+
                     return result;
                 }
             }
             catch (ConfigurationErrorsException ex)
             {
-                string message = ex.Message;
+                const string message =
+                    "Required application configuration is missing or invalid.";
+
+                ApplicationErrorLogger.LogError(
+                    "Configuration",
+                    "Required application configuration failed to load.",
+                    ex);
 
                 SafeReportProgress(10, message);
 
                 return InitializationResult.Failed(
                     message,
-                    "Required application configuration is missing or invalid.");
+                    "Review the local application configuration and try again.");
             }
             catch (TimeoutException ex)
             {
                 const string message =
                     "Startup timed out while loading required configuration.";
 
+                ApplicationErrorLogger.LogError(
+                    "Configuration",
+                    "Required configuration loading exceeded its bounded timeout.",
+                    ex);
+
                 SafeReportProgress(10, message);
 
                 return InitializationResult.CreateTimedOut(
                     message,
-                    ex.Message);
+                    "Required configuration loading did not finish within the allowed time.");
             }
             catch (OperationCanceledException)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
+                    ApplicationErrorLogger.LogInformation(
+                        "Startup",
+                        "Application startup was cancelled by the caller.");
+
                     SafeReportProgress(0, "Startup cancelled.");
 
                     return InitializationResult.CreateCancelled(
@@ -207,16 +240,25 @@ namespace VisualInspectionTrainingSystem.Services
                         "Initialization was cancelled before it completed.");
                 }
 
+                ApplicationErrorLogger.LogWarning(
+                    "Startup",
+                    "Application initialization exceeded its bounded timeout.");
+
                 SafeReportProgress(35, "Startup timed out.");
 
                 return InitializationResult.CreateTimedOut(
                     "Startup timed out.",
                     "Initialization exceeded the bounded startup timeout.");
             }
-            catch
+            catch (Exception ex)
             {
                 const string message =
                     "Startup failed because an unexpected initialization error occurred.";
+
+                ApplicationErrorLogger.LogError(
+                    "Startup",
+                    "Application initialization failed unexpectedly.",
+                    ex);
 
                 SafeReportProgress(0, message);
 

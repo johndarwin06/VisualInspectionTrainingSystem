@@ -51,9 +51,20 @@ namespace VisualInspectionTrainingSystem.Services
         /// <summary>
         /// Stores one authenticated user for the current application session.
         /// </summary>
+        /// <param name="user">The authenticated active user.</param>
         public static void Login(User user)
         {
             CurrentUser = user;
+
+            string canonicalRole = user == null
+                ? null
+                : UserRoles.Normalize(user.Role);
+
+            ApplicationErrorLogger.LogInformation(
+                "Authentication",
+                "Authenticated session established for role " +
+                (canonicalRole ?? "Unknown") +
+                ".");
         }
 
         /// <summary>
@@ -61,7 +72,15 @@ namespace VisualInspectionTrainingSystem.Services
         /// </summary>
         public static void Logout()
         {
+            bool hadActiveSession = CurrentUser != null;
             CurrentUser = null;
+
+            if (hadActiveSession)
+            {
+                ApplicationErrorLogger.LogInformation(
+                    "Authentication",
+                    "Authenticated session ended normally.");
+            }
         }
 
         #endregion
