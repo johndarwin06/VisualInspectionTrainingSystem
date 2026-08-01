@@ -64,7 +64,7 @@
                     <StackPanel Grid.Column="2">
                         <TextBlock
                             x:Name="CaptionText"
-                            AutomationProperties.HeadingLevel="Level1"
+                            AutomationProperties.ItemType="Heading"
                             FontSize="21"
                             FontWeight="SemiBold"
                             Foreground="{DynamicResource App.TextPrimaryBrush}"
@@ -72,7 +72,7 @@
                         <ScrollViewer Margin="0,10,0,0" MaxHeight="320" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                             <TextBlock
                                 x:Name="MessageText"
-                                AutomationProperties.LiveSetting="Assertive"
+                                AutomationProperties.ItemType="Status"
                                 Foreground="{DynamicResource App.TextSecondaryBrush}"
                                 LineHeight="22"
                                 TextWrapping="Wrap" />

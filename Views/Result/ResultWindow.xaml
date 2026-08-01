@@ -101,7 +101,7 @@
 
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock
-                        AutomationProperties.HeadingLevel="Level1"
+                        AutomationProperties.ItemType="Heading"
                         FontSize="29"
                         FontWeight="SemiBold"
                         Foreground="#F8FAFC"
@@ -528,7 +528,7 @@
                                             Stretch="Uniform" />
                                         <TextBlock
                                             Margin="20"
-                                            AutomationProperties.LiveSetting="Polite"
+                                            AutomationProperties.ItemType="Status"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Bottom"
                                             FontSize="13"

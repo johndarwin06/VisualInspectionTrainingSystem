@@ -317,7 +317,7 @@
         <Setter Property="Foreground" Value="{DynamicResource App.DangerBrush}" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="TextWrapping" Value="Wrap" />
-        <Setter Property="AutomationProperties.LiveSetting" Value="Assertive" />
+        <Setter Property="AutomationProperties.ItemType" Value="Status" />
     </Style>
     <Style x:Key="TrimmedTextWithToolTipStyle" TargetType="{x:Type TextBlock}">
         <Setter Property="TextTrimming" Value="CharacterEllipsis" />

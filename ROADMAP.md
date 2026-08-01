@@ -74,4 +74,10 @@
 
 - [x] Fluent UI migration (Issue #15.2 / GitHub issue #55; follow-up to Issue #53 and PR #54; implemented, tested, and manually accepted)
 
+# Sprint 16
+
+- [x] .NET Framework 4.6.2 compatibility migration (Issue #15.3 / GitHub issue #57; follow-up to Issue #55 and PR #56; implemented and locally accepted)
+- [ ] Qualify deployment on an isolated machine or VM containing only the .NET Framework 4.6.2 runtime; currently Not Run
+- [ ] Plan migration to a supported runtime before .NET Framework 4.6.2 support ends on January 12, 2027
+
 No subsequent project issue has started.

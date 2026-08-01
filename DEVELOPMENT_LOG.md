@@ -1,5 +1,18 @@
 # DEVELOPMENT LOG
 
+## 2026-08-01
+
+### Issue #15.3 - .NET Framework 4.6.2 Compatibility Migration
+
+- Created GitHub issue #57 after merged PR #56 and retargeted from the verified `1552366` baseline without rewriting Fluent UI history or modifying `main` directly.
+- Changed the application target and runtime SKU from .NET Framework 4.8.1 to 4.6.2 while making C# 7.3 explicit. Replaced WPF accessibility properties unavailable in 4.6.2 with supported semantic item types without changing application behavior or visual presentation.
+- Verified the official .NET Framework 4.6.2 SDK, Developer/Targeting Pack, reference assemblies, facades, and framework list. Audited all 53 packages and selected their compatible assets; no downgrade was required. `System.ValueTuple` 4.6.2 replaced 4.5.0 to provide a compatible `net462` assembly, with a validated 4.0.5 binding redirect and project reference resolution.
+- Corrected the existing `System.Security.Cryptography.Pkcs` reference identity to match the restored signed assembly. Clean NuGet restore and vulnerability audit passed, and no `net48` or `net481` assembly asset remains referenced.
+- Final compatibility automation passed 50 assertions covering BCrypt hashing and verification, reviewed/pending Result semantics, 10/20 quiz sizes, report periods and consistent snapshots, ordering and safeguards, MySQL cleanup, and real CSV/XLSX/PDF generation. Generated exports, probes, platform outputs, and temporary database identifiers were removed.
+- Local visible WPF acceptance passed Splash, authentication and registration, inactive rejection, all administrator and trainee destinations, Dashboard and Reports periods/charts, real XLSX/PDF opening, 10- and 20-question quizzes, exactly one Result per quiz, Training History/detail, themes, dialogs, DataGrids, resizing, keyboard navigation, logout, and shutdown without a missing assembly, type/method/file load failure, XAML parse failure, crash, freeze, or sensitive diagnostic.
+- The application was compiled against genuine 4.6.2 reference assemblies and executed successfully on the development machine's newer in-place CLR. An isolated machine or VM containing only the 4.6.2 runtime was unavailable, so genuine 4.6.2-only runtime acceptance remains **Not Run** and is an explicit deployment limitation.
+- Microsoft support for .NET Framework 4.6.2 ends January 12, 2027; plan migration to a supported runtime before that date.
+
 ## 2026-07-29
 
 ### Issue #15.2 - Fluent UI Migration

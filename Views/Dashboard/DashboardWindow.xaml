@@ -55,7 +55,7 @@
 
                 <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
                     <TextBlock
-                        AutomationProperties.HeadingLevel="Level1"
+                        AutomationProperties.ItemType="Heading"
                         FontSize="22"
                         FontWeight="SemiBold"
                         Foreground="White"
@@ -232,7 +232,7 @@
                         <ui:SymbolIcon Margin="0,0,10,0" VerticalAlignment="Center" Foreground="{DynamicResource App.PrimaryBrush}" Symbol="Info24" />
                         <TextBlock
                             VerticalAlignment="Center"
-                            AutomationProperties.LiveSetting="Polite"
+                            AutomationProperties.ItemType="Status"
                             Foreground="{DynamicResource App.TextSecondaryBrush}"
                             Style="{StaticResource TrimmedTextWithToolTipStyle}"
                             Text="{Binding StatusMessage}" />
