@@ -24,6 +24,59 @@ namespace VisualInspectionTrainingSystem.Services
         private const string DefaultSettingsFile = "DatabaseSettings.local.config";
         private const string ExampleSettingsFile = "DatabaseSettings.example.config";
 
+        private static readonly object SettingsFileOverrideLock = new object();
+
+        private static string _testSettingsFileOverride;
+
+        #endregion
+
+        #region Internal Test Support
+
+        /// <summary>
+        /// Temporarily restricts configuration discovery to an isolated test file.
+        /// The override is intentionally internal, process-scoped, and limited to
+        /// the operating-system temporary directory so regression tests cannot
+        /// accidentally discover or modify workstation configuration.
+        /// </summary>
+        /// <param name="settingsFile">Absolute path to an existing test settings file.</param>
+        /// <returns>A scope that restores normal configuration discovery when disposed.</returns>
+        internal static IDisposable UseSettingsFileForTesting(string settingsFile)
+        {
+            if (string.IsNullOrWhiteSpace(settingsFile))
+            {
+                throw new ArgumentException(
+                    "A test settings file is required.",
+                    nameof(settingsFile));
+            }
+
+            string fullPath = Path.GetFullPath(settingsFile);
+            string temporaryRoot = Path.GetFullPath(Path.GetTempPath())
+                .TrimEnd(Path.DirectorySeparatorChar) +
+                Path.DirectorySeparatorChar;
+
+            if (!fullPath.StartsWith(
+                    temporaryRoot,
+                    StringComparison.OrdinalIgnoreCase) ||
+                !File.Exists(fullPath))
+            {
+                throw new InvalidOperationException(
+                    "Test configuration must be an existing file under the temporary directory.");
+            }
+
+            lock (SettingsFileOverrideLock)
+            {
+                if (!string.IsNullOrWhiteSpace(_testSettingsFileOverride))
+                {
+                    throw new InvalidOperationException(
+                        "A test configuration override is already active.");
+                }
+
+                _testSettingsFileOverride = fullPath;
+            }
+
+            return new SettingsFileOverrideScope(fullPath);
+        }
+
         #endregion
 
         #region Public Methods
@@ -71,6 +124,14 @@ namespace VisualInspectionTrainingSystem.Services
 
         private static string FindSettingsFile()
         {
+            lock (SettingsFileOverrideLock)
+            {
+                if (!string.IsNullOrWhiteSpace(_testSettingsFileOverride))
+                {
+                    return _testSettingsFileOverride;
+                }
+            }
+
             string configuredFile =
                 ConfigurationManager.AppSettings[SettingsFileKey];
 
@@ -202,6 +263,52 @@ namespace VisualInspectionTrainingSystem.Services
             if (!exists)
             {
                 paths.Add(fullPath);
+            }
+        }
+
+        #endregion
+
+        #region Nested Types
+
+        /// <summary>
+        /// Restores standard configuration discovery after an isolated test run.
+        /// </summary>
+        private sealed class SettingsFileOverrideScope : IDisposable
+        {
+            private readonly string _settingsFile;
+            private bool _isDisposed;
+
+            /// <summary>
+            /// Stores the active override identity for safe scoped cleanup.
+            /// </summary>
+            /// <param name="settingsFile">Absolute active override path.</param>
+            public SettingsFileOverrideScope(string settingsFile)
+            {
+                _settingsFile = settingsFile;
+            }
+
+            /// <summary>
+            /// Clears only the override installed by this scope.
+            /// </summary>
+            public void Dispose()
+            {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
+                lock (SettingsFileOverrideLock)
+                {
+                    if (string.Equals(
+                            _testSettingsFileOverride,
+                            _settingsFile,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        _testSettingsFileOverride = null;
+                    }
+                }
+
+                _isDisposed = true;
             }
         }
 

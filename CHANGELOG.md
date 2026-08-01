@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Permanent Regression Testing
+
+- Added a permanent NUnit regression project for the .NET Framework 4.6.2/C# 7.3 baseline, with categorized Unit, Integration, WPF, Database, Export, NativeDeployment, and explicit ManualRuntime coverage plus a repeatable local runner and pinned secret-free Windows CI workflow.
+- Added an STA production-composition test that loads actual WPF resources and validates authorized administrator and trainee workspaces, role boundaries, window construction, ownership, duplicate prevention, and safe closing.
+- Corrected the shared Fluent window backdrop/title-bar contract that prevented production workspaces from opening, added Back/Escape navigation to trainee Training Setup and History, and refreshed Quiz presentation while preserving functional and persistence contracts.
+- Final Debug and Release validation passed 262 tests with 0 failures and 8 intentional database skips. The skipped tests require a dedicated test-only schema, belong to planned database-testing Issue #23, and must never run against production data.
+- Approved visible acceptance passed real Dashboard/Reports data, both trainee Back/Escape flows, repeated navigation, 10/20-question quizzes, themes, mouse/keyboard input, persistence, exactly-one Result behavior, logout, and shutdown without a crash, freeze, sensitive error, diagnostic dialog, or `Workspace unavailable` state.
+
 ### .NET Framework 4.6.2 Compatibility
 
 - Retargeted the complete application and runtime declaration from .NET Framework 4.8.1 to 4.6.2 while preserving C# 7.3, WPF, MVVM, MySQL, Fluent UI, security rules, analytics definitions, exports, and all existing workflows.

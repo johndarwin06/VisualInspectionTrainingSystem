@@ -9,7 +9,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource App.BorderBrush}" />
         <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
         <Setter Property="Foreground" Value="{DynamicResource App.TextPrimaryBrush}" />
-        <Setter Property="ExtendsContentIntoTitleBar" Value="False" />
+        <Setter Property="ExtendsContentIntoTitleBar" Value="True" />
         <Setter Property="WindowBackdropType" Value="Mica" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="UseLayoutRounding" Value="True" />

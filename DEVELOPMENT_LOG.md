@@ -2,6 +2,17 @@
 
 ## 2026-08-01
 
+### Issue #17 - Permanent Regression Testing
+
+- Added a permanent NUnit 4.4.0 / NUnit3TestAdapter 5.2.0 test project targeting .NET Framework 4.6.2 and C# 7.3, a repeatable PowerShell runner, and a pinned Windows CI workflow for secret-free categories. Tests are organized as Unit, Integration, WPF, Database, Export, NativeDeployment, and explicit ManualRuntime gates.
+- Added a production-composition regression that loads actual application resources on an STA dispatcher, establishes controlled administrator and trainee sessions, constructs every authorized workspace, checks unauthorized routes, detects duplicate windows and `Workspace unavailable`, and closes all created windows without replacing the production composition path with broad mocks.
+- Diagnosed the visible workspace failure as an invalid shared WPF-UI window contract: the shared style requested a backdrop while `ExtendsContentIntoTitleBar` was false. Corrected the shared style, retained fixed non-sensitive UI errors, and kept technical exception logging at the existing boundary.
+- Added Fluent Back and Escape navigation to Training Setup and My Training History using the existing owner shell, with repeated-command and active-child safeguards. Reworked Quiz presentation into responsive Fluent cards and semantic GOOD/NG actions while preserving 10/20-question selection, keyboard behavior, persistence, pending review, and exactly-one Result opening.
+- Final Debug and Release AnyCPU rebuilds each completed with zero errors and one existing `MVVMTKCFG0002` warning. The complete two-configuration run passed 262 tests, skipped 8, and failed 0; x86 and x64 native-deployment checks passed.
+- The eight skipped results are four database tests in each build configuration. They were intentionally not run because no dedicated test-only schema was configured. They belong to planned database-testing Issue #23 and must not be pointed at production data.
+- Independent read-only SQL matched the administrator Dashboard and Reports values. Approved real WPF acceptance passed administrator reporting, trainee Back/Escape and repeated navigation, both quiz sizes, light/dark and keyboard interaction, persistence, one Result per quiz, logout, and shutdown without `Workspace unavailable`, a crash, freeze, binding failure, sensitive error, or diagnostic dialog.
+- Automated tests created no database rows. Temporary exports, logs, test results, build output, and workspace-composition configuration directories were removed; normal visible acceptance records were preserved as application data.
+
 ### Issue #15.3 - .NET Framework 4.6.2 Compatibility Migration
 
 - Created GitHub issue #57 after merged PR #56 and retargeted from the verified `1552366` baseline without rewriting Fluent UI history or modifying `main` directly.

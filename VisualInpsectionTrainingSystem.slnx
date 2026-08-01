@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="VisualInspectionTrainingSystem.csproj" Id="33da7061-116c-430b-8e37-b20639d5046a" />
+  <Project Path="VisualInspectionTrainingSystem.Tests/VisualInspectionTrainingSystem.Tests.csproj" Id="7b7de9cc-a1ba-45f1-a7cb-d00672181c42" />
 </Solution>
