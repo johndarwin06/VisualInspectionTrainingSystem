@@ -99,6 +99,11 @@ namespace VisualInspectionTrainingSystem.Services
                 "\\$2[aby]\\$\\d{2}\\$[./A-Za-z0-9]{40,80}",
                 RegexOptions.Compiled);
 
+        private static readonly Regex SqlParameterValuePattern =
+            new Regex(
+                "(?i)(@[A-Z_][A-Z0-9_]*)\\s*([=:])\\s*(?:\\\"[^\\\"]*\\\"|'[^']*'|[^;,\\s\\r\\n]+)",
+                RegexOptions.Compiled);
+
         private static readonly Regex WindowsPathPattern =
             new Regex(
                 "(?i)(?:[A-Z]:\\\\|\\\\\\\\)[^\\r\\n\\t]*",
@@ -669,6 +674,9 @@ namespace VisualInspectionTrainingSystem.Services
                 sanitized = PasswordHashPattern.Replace(
                     sanitized,
                     "<password hash redacted>");
+                sanitized = SqlParameterValuePattern.Replace(
+                    sanitized,
+                    "$1$2<redacted>");
                 sanitized = WindowsPathPattern.Replace(
                     sanitized,
                     "[path redacted]");

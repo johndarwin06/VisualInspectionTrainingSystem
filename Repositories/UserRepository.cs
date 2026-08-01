@@ -4,6 +4,7 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using VisualInspectionTrainingSystem.Models;
 using VisualInspectionTrainingSystem.Services;
@@ -63,14 +64,24 @@ namespace VisualInspectionTrainingSystem.Repositories
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
         /// Initializes database access using the configured MySQL service.
         /// </summary>
         public UserRepository()
+            : this(new MySqlService())
         {
-            _database = new MySqlService();
+        }
+
+        /// <summary>
+        /// Initializes user persistence with an explicit database service.
+        /// </summary>
+        /// <param name="database">Validated database service owned by this repository.</param>
+        internal UserRepository(MySqlService database)
+        {
+            _database = database
+                ?? throw new ArgumentNullException(nameof(database));
         }
 
         #endregion
@@ -1320,14 +1331,44 @@ LIMIT 1;";
                 : ConvertFailClosedBoolean(reader.GetValue(ordinal));
         }
 
-        private static bool ConvertFailClosedBoolean(object value)
+        /// <summary>
+        /// Converts only canonical Boolean or zero/one database values.
+        /// Null, out-of-range, and malformed values remain inactive.
+        /// </summary>
+        /// <param name="value">Raw value returned by the database provider.</param>
+        /// <returns>True only for canonical active values.</returns>
+        internal static bool ConvertFailClosedBoolean(object value)
         {
             if (value == null || value == DBNull.Value)
                 return false;
 
+            bool booleanValue;
+
+            if (value is bool)
+                return (bool)value;
+
+            string textValue = value as string;
+
+            if (textValue != null)
+            {
+                string normalized = textValue.Trim();
+
+                if (string.Equals(normalized, "1", StringComparison.Ordinal) ||
+                    bool.TryParse(normalized, out booleanValue) && booleanValue)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
             try
             {
-                return Convert.ToBoolean(value);
+                decimal numericValue = Convert.ToDecimal(
+                    value,
+                    CultureInfo.InvariantCulture);
+
+                return numericValue == decimal.One;
             }
             catch (FormatException)
             {

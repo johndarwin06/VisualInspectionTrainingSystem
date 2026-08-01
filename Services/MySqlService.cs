@@ -25,17 +25,39 @@ namespace VisualInspectionTrainingSystem.Services
 
         #endregion
 
-        #region Constructor
+        #region Constructors
 
         /// <summary>
         /// Initializes the database service.
         /// </summary>
         public MySqlService()
+            : this(
+                  ConfigurationService.GetApplicationSettings().Database,
+                  ConfigurationService.GetMySqlConnectionString())
         {
-            _settings = ConfigurationService.GetApplicationSettings().Database;
+        }
 
-            _connectionString = ConfigurationService.GetMySqlConnectionString();
+        /// <summary>
+        /// Initializes database access with an explicitly validated configuration.
+        /// This internal seam allows isolated callers to retain production connection,
+        /// retry, cancellation, and disposal behavior without replacing global settings.
+        /// </summary>
+        /// <param name="settings">Validated connection and retry settings.</param>
+        /// <param name="connectionString">Complete connection string retained only in memory.</param>
+        internal MySqlService(
+            DatabaseSettings settings,
+            string connectionString)
+        {
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
 
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new ArgumentException(
+                    "A database connection string is required.",
+                    nameof(connectionString));
+
+            _settings = settings;
+            _connectionString = connectionString;
             _connection = new MySqlConnection(_connectionString);
         }
 

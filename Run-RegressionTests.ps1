@@ -3,6 +3,9 @@ param(
     [ValidateSet('Debug', 'Release', 'All')]
     [string]$Configuration = 'All',
 
+    [ValidateSet('Safe', 'Required', 'Preflight', 'Cleanup')]
+    [string]$DatabaseMode = 'Safe',
+
     [switch]$ContinuousIntegration,
 
     [switch]$SkipRestore,
@@ -82,7 +85,9 @@ function Invoke-BoundedVsTest {
         [string]$Filter,
 
         [Parameter(Mandatory = $true)]
-        [string]$Description
+        [string]$Description,
+
+        [switch]$RejectSkipped
     )
 
     Write-Host "`n== $Description ==" -ForegroundColor Cyan
@@ -138,6 +143,11 @@ function Invoke-BoundedVsTest {
         if ($process.ExitCode -ne 0) {
             throw "$Description failed with exit code $($process.ExitCode)."
         }
+
+        if ($RejectSkipped -and
+            $standardOutput -match 'Skipped:\s+([1-9][0-9]*)') {
+            throw "$Description skipped database tests in a required database mode."
+        }
     }
     finally {
         $process.Dispose()
@@ -146,6 +156,46 @@ function Invoke-BoundedVsTest {
 
 $msbuildPath = Get-VisualStudioTool 'MSBuild\Current\Bin\MSBuild.exe'
 $script:VsTestPath = Get-VisualStudioTool 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe'
+
+if ($ContinuousIntegration -and $DatabaseMode -ne 'Safe') {
+    throw 'ContinuousIntegration may only use the fail-closed Safe database mode.'
+}
+
+function Get-TestDatabaseEnvironmentSetting {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+
+    $value = [Environment]::GetEnvironmentVariable(
+        $Name,
+        [EnvironmentVariableTarget]::Process)
+
+    if (-not [string]::IsNullOrWhiteSpace($value)) {
+        return $value
+    }
+
+    return [Environment]::GetEnvironmentVariable(
+        $Name,
+        [EnvironmentVariableTarget]::User)
+}
+
+$requiresDatabase = $DatabaseMode -ne 'Safe'
+
+if ($requiresDatabase) {
+    $connectionVariable = 'VITS_TEST_MYSQL_CONNECTION_STRING'
+    $schemaVariable = 'VITS_TEST_MYSQL_SCHEMA'
+    $connectionConfigured = -not [string]::IsNullOrWhiteSpace(
+        (Get-TestDatabaseEnvironmentSetting $connectionVariable))
+    $schemaConfigured = -not [string]::IsNullOrWhiteSpace(
+        (Get-TestDatabaseEnvironmentSetting $schemaVariable))
+
+    if (-not $connectionConfigured -or -not $schemaConfigured) {
+        throw "DatabaseMode $DatabaseMode requires both $connectionVariable and $schemaVariable. No database test was started."
+    }
+
+    Write-Host "Database mode: $DatabaseMode (isolated configuration present; values hidden)." -ForegroundColor Yellow
+}
 
 $packageRoot = Join-Path $repositoryRoot 'packages'
 $adapterPath = Join-Path $packageRoot 'nunit3testadapter\5.2.0\build\net462'
@@ -191,11 +241,18 @@ if (-not $SkipBuild) {
     }
 }
 
-$categories = if ($ContinuousIntegration) {
-    @('Unit', 'Integration', 'Export', 'NativeDeployment')
-}
-else {
-    @('Unit', 'Integration', 'WPF', 'Database', 'Export', 'NativeDeployment')
+$categories = switch ($DatabaseMode) {
+    'Required' { @('Database') }
+    'Preflight' { @('DatabasePreflight') }
+    'Cleanup' { @('DatabaseCleanup') }
+    default {
+        if ($ContinuousIntegration) {
+            @('Unit', 'Integration', 'Export', 'NativeDeployment')
+        }
+        else {
+            @('Unit', 'Integration', 'WPF', 'Database', 'Export', 'NativeDeployment')
+        }
+    }
 }
 
 foreach ($currentConfiguration in $configurations) {
@@ -211,15 +268,18 @@ foreach ($currentConfiguration in $configurations) {
             $adapterPath `
             'x86' `
             "TestCategory=$category" `
-            "$currentConfiguration $category tests (x86)"
+            "$currentConfiguration $category tests (x86)" `
+            -RejectSkipped:$requiresDatabase
     }
 
-    Invoke-BoundedVsTest `
-        $assemblyPath `
-        $adapterPath `
-        'x64' `
-        'TestCategory=NativeDeployment' `
-        "$currentConfiguration native deployment tests (x64)"
+    if ($DatabaseMode -eq 'Safe') {
+        Invoke-BoundedVsTest `
+            $assemblyPath `
+            $adapterPath `
+            'x64' `
+            'TestCategory=NativeDeployment' `
+            "$currentConfiguration native deployment tests (x64)"
+    }
 }
 
 Write-Host "`nRegression test run completed successfully." -ForegroundColor Green

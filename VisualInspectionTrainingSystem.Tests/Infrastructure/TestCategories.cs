@@ -25,6 +25,12 @@ namespace VisualInspectionTrainingSystem.Tests.Infrastructure
         /// <summary>Tests requiring an explicitly configured test-only MySQL schema.</summary>
         public const string Database = "Database";
 
+        /// <summary>Read-only identity, marker, and schema preflight for the dedicated database.</summary>
+        public const string DatabasePreflight = "DatabasePreflight";
+
+        /// <summary>Read-only verification that no Issue #19 synthetic rows remain.</summary>
+        public const string DatabaseCleanup = "DatabaseCleanup";
+
         /// <summary>Tests that validate report export content and cleanup.</summary>
         public const string Export = "Export";
 
@@ -49,6 +55,8 @@ namespace VisualInspectionTrainingSystem.Tests.Infrastructure
                    string.Equals(category, Integration, StringComparison.Ordinal) ||
                    string.Equals(category, Wpf, StringComparison.Ordinal) ||
                    string.Equals(category, Database, StringComparison.Ordinal) ||
+                   string.Equals(category, DatabasePreflight, StringComparison.Ordinal) ||
+                   string.Equals(category, DatabaseCleanup, StringComparison.Ordinal) ||
                    string.Equals(category, Export, StringComparison.Ordinal) ||
                    string.Equals(category, NativeDeployment, StringComparison.Ordinal) ||
                    string.Equals(category, ManualRuntime, StringComparison.Ordinal);

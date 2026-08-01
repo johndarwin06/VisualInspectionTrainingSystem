@@ -1,0 +1,49 @@
+-- Issue #19 / GitHub Issue #23 dedicated MySQL test-schema provisioning template.
+-- Copy this file to Provision-TestDatabase.sql, replace the placeholders locally,
+-- and never commit the populated copy or its credential values.
+
+SET @TestSchema = 'visual_inspection_training_test';
+
+SELECT COUNT(*) AS ExistingSchemaCount
+FROM information_schema.SCHEMATA
+WHERE SCHEMA_NAME = @TestSchema;
+
+CREATE DATABASE IF NOT EXISTS visual_inspection_training_test
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS 'vits_test_runner'@'localhost'
+    IDENTIFIED BY '<GENERATE-A-UNIQUE-TEST-ONLY-PASSWORD>';
+
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES
+ON visual_inspection_training_test.*
+TO 'vits_test_runner'@'localhost';
+
+USE visual_inspection_training_test;
+
+CREATE TABLE IF NOT EXISTS __vits_test_schema_identity
+(
+    MarkerName VARCHAR(64) CHARACTER SET utf8mb4 NOT NULL,
+    MarkerValue CHAR(64) CHARACTER SET ascii NOT NULL,
+    SchemaVersion INT NOT NULL DEFAULT 0,
+    CreatedUtc TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (MarkerName)
+) ENGINE=InnoDB;
+
+INSERT INTO __vits_test_schema_identity
+    (MarkerName, MarkerValue, SchemaVersion)
+VALUES
+    ('VisualInspectionTrainingSystem.DatabaseTests',
+     '8cb456d4629241fa930f59872fb47dbe88184a4caa754a9aadf70d491c42e612',
+     1)
+ON DUPLICATE KEY UPDATE
+    MarkerValue = VALUES(MarkerValue),
+    SchemaVersion = VALUES(SchemaVersion);
+
+-- Configure these values in Windows User scope without placing them in source:
+-- VITS_TEST_MYSQL_CONNECTION_STRING=<test-only connection string>
+-- VITS_TEST_MYSQL_SCHEMA=visual_inspection_training_test
+
+-- The permanent preflight validates the live schema marker, exact schema identity,
+-- restricted grants, a distinct production/test identity, and fail-closed settings
+-- before any synthetic row is created. It never creates or drops a database.
