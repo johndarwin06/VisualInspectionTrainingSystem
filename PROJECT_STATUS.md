@@ -2,9 +2,9 @@
 
 Project: Visual Inspection Training System
 
-Current Version: 0.9 Beta
+Current Version: 1.0.0
 
-Current Module: Issue #18 Performance Testing / GitHub issue #22 - implemented, tested, and manually accepted
+Current Module: Issue #20 Version 1.0 Portable Release / GitHub issue #24 - implemented, verified, and visibly accepted; draft delivery review pending
 
 Build Status: Debug and Release successful
 
@@ -48,9 +48,19 @@ Completed:
 - Centralized safe logging for .NET Framework 4.6.2 (Issue #16 / GitHub issue #20)
 - Isolated database regression testing for .NET Framework 4.6.2 (Issue #19 / GitHub issue #23)
 - Evidence-based performance testing for .NET Framework 4.6.2 (Issue #18 / GitHub issue #22)
+- Version 1.0 portable-release tooling and two-location visible acceptance (Issue #20 / GitHub issue #24)
 
 In Progress:
-- None. Issue #18 / GitHub issue #22 is implemented, tested, and manually accepted. No subsequent issue has started.
+- Version 1.0 delivery review for Issue #20 / GitHub issue #24. Implementation and portable acceptance are complete; the genuine .NET Framework 4.6.2-only host qualification remains Not Run and blocks the `v1.0.0` tag and GitHub Release.
+
+Issue #20 / GitHub Issue #24 Verification:
+- Standardized assembly, file, product, and informational metadata as Version 1.0.0 while retaining the established `VisualInpsectionTrainingSystem.exe` spelling and the .NET Framework 4.6.2/C# 7.3 runtime contract.
+- Added an explicit allowlisted portable builder and fail-closed validator for `VisualInspectionTrainingSystem-v1.0.0-win-portable.zip`. The package contains only the verified Release runtime, x86/x64 SkiaSharp and HarfBuzz native libraries, safe example configuration, portable directory markers, end-user/administrator documentation, and an internal SHA-256 file manifest.
+- Validation checks the exact payload, external ZIP and internal file checksums, framework/version metadata, native architectures, safe placeholders and relative paths, extraction safety, forbidden files, credentials, private development paths, local configuration, test output, source/build artifacts, production data, and tampering. Generated archives, checksums, staging, and extraction output remain ignored and uncommitted.
+- Final visible portable acceptance passed from two independent writable temporary extraction locations. Both roles, registration validation, Review Workflow, User Management, Dashboard refresh, Reports periods and exports, Training Setup, 10/20-question quizzes, pointer/keyboard GOOD/NG input, exactly-one Result behavior, filters, image preview, History/detail, themes, resizing, logout, shutdown, and portable Logs/Exports/Reports paths passed without repository, Visual Studio, or NuGet dependency.
+- Visible acceptance created only the operator-approved 10-question and 20-question production quiz sessions; no user-management or review-truth change was performed. Dedicated database gates retain stable schema and row-count fingerprint protection and verify zero reserved synthetic rows.
+- Final clean restore and Debug/Release AnyCPU rebuilds completed with zero errors and one unchanged `MVVMTKCFG0002` warning in each configuration. Functional regression passed 382/382, fail-closed database preflight 4/4, required Debug/Release database tests 48/48, Release x64 performance 28/28, and independent cleanup 2/2, with zero failures or skips. Supported x86/x64 native checks passed.
+- Execution on a clean machine or VM containing only the .NET Framework 4.6.2 runtime remains **Not Run**. It is required after merge and before creating `v1.0.0` or publishing the GitHub Release.
 
 Issue #18 / GitHub Issue #22 Verification:
 - Added a permanent `Performance` NUnit category and explicit `Baseline`, `Database`, and `All` runner modes. Release x64 timings use warm-up plus repeated samples and report minimum, median, p95, maximum, and sample count as evidence; timing values are not hardware-dependent CI pass/fail gates.
@@ -187,4 +197,4 @@ Issue #11 Verification:
 - Visible administrator navigation opened exactly one Dashboard. Its five values matched an independent SQL query (1 training session, 50.00% reviewed accuracy, 10 minutes, GOOD 3, NG 3), Refresh did not duplicate rows, Dashboard closed safely, and normal application shutdown succeeded.
 
 Next Task:
-- No subsequent project issue has started.
+- Complete the genuine .NET Framework 4.6.2-only machine qualification after the Issue #24 delivery is merged; no subsequent implementation issue has started.

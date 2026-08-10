@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Version 1.0 Portable Release
+
+- Added allowlisted PowerShell build and fail-closed validation tooling for `VisualInspectionTrainingSystem-v1.0.0-win-portable.zip`; no installer or installer dependency is included.
+- Set assembly/file metadata to 1.0.0.0 and product/informational metadata to 1.0.0 while retaining .NET Framework 4.6.2, C# 7.3, the existing executable spelling, package versions, MVVM behavior, and configuration architecture.
+- Packaged only the verified Release executable/configuration, required managed libraries, x86/x64 SkiaSharp and HarfBuzz native files, placeholder-only example configuration, portable directory markers, and Version 1.0 documentation. Local settings, credentials, production/test data, images, logs, exports, symbols, XML documentation, ARM64, tests, source, NuGet packages, repository metadata, and generated output are excluded.
+- Added internal per-file SHA-256 and external ZIP checksum generation plus exact payload, framework/version, native dependency, portable path, placeholder, private-path, forbidden-content, tamper, cleanup, and two-location extraction validation.
+- Visible acceptance passed all administrator and trainee workflows from two independent writable extracted locations, including both quiz sizes, exactly-one Result behavior, Dashboard, Reports and portable exports, History/detail, themes, keyboard/resizing, logout, shutdown, and output-path isolation.
+- Execution on a clean machine or VM containing only .NET Framework 4.6.2 remains Not Run and is required before the `v1.0.0` tag or GitHub Release is created.
+
 ### Performance Testing
 
 - Added permanent Issue #18 / GitHub issue #22 Release-oriented performance coverage for startup components, WPF workspace lifecycles, quiz interaction, image inventories through 5,000 files, 10/20-image sampling, CSV/XLSX/PDF exports through 5,000 rows, concurrent logging, memory/resource cleanup, and protected MySQL workloads through 501 users, 500 sessions, and 10,000 answers.

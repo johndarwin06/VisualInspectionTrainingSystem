@@ -10,12 +10,12 @@ using System.Windows;
 
 #region Assembly Information
 
-[assembly: AssemblyTitle("VisualInspectionTrainingSystem")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Visual Inspection Training System")]
+[assembly: AssemblyDescription("Industrial visual inspection training for GOOD and NG classification.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("VisualInspectionTrainingSystem")]
-[assembly: AssemblyCopyright("Copyright © 2026")]
+[assembly: AssemblyProduct("Visual Inspection Training System")]
+[assembly: AssemblyCopyright("Copyright (c) 2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -47,5 +47,6 @@ using System.Windows;
 
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyInformationalVersion("1.0.0")]
 
 #endregion

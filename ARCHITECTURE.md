@@ -12,6 +12,18 @@ Local acceptance compiles against genuine 4.6.2 reference assemblies but execute
 
 Microsoft support for .NET Framework 4.6.2 ends January 12, 2027. Deployment planning must include migration to a supported runtime before that date.
 
+## Portable Release Architecture
+
+Version 1.0 is delivered as `VisualInspectionTrainingSystem-v1.0.0-win-portable.zip`, not through an installer. The application is extracted as one self-contained Release payload into a user-writable directory. It creates no shortcuts, registry entries, uninstall records, or protected-directory installation state.
+
+`PortableReleaseFiles.psd1` is the authoritative explicit allowlist. `Build-PortableRelease.ps1` restores and rebuilds the production Release project, rejects unexpected root or native runtime files, constructs a clean staging tree, copies only approved runtime and documentation files, safely represents the four writable portable folders, creates an internal per-file `SHA256SUMS.txt`, and generates the external ZIP checksum. Generated staging, archives, and checksum output remain ignored.
+
+`Validate-PortableRelease.ps1` extracts into a unique temporary directory and validates the exact allowlisted set, internal and external SHA-256 values, executable target/version metadata, x86/x64 SkiaSharp and HarfBuzz native dependencies, safe configuration placeholders, relative portable paths, path traversal, and forbidden extensions, directories, tests, local configuration, private development paths, credentials, and key material. It repeats validation after copying the payload to a second independent location and removes validation output in `finally`.
+
+The tracked `DatabaseSettings.example.config` remains placeholder-only. Operators create the ignored `DatabaseSettings.local.config` beside the extracted executable. Relative `QuizImages`, `Logs`, `Exports`, and `Reports` resolve against the portable application directory; the existing LocalAppData log fallback remains available. The ZIP must be fully extracted to a writable directory and must not be run from inside the archive or beneath `Program Files`.
+
+Release assets are produced only after merge from the exact approved `main` commit. A clean machine or VM containing only the .NET Framework 4.6.2 runtime must pass before the `v1.0.0` tag and GitHub Release are created.
+
 ## Configuration System
 
 The application uses a single local XML configuration file for machine-specific settings:
