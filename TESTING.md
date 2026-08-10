@@ -9,7 +9,7 @@ This repository has one permanent regression project for the .NET Framework 4.6.
 - The official .NET Framework 4.6.2 Developer Pack and targeting reference assemblies.
 - PowerShell 5.1 or later.
 - NuGet access for the first restore.
-- MySQL only for the opt-in `Database` category.
+- MySQL only for the opt-in `Database` and protected database-performance categories.
 
 The development machine may run a newer in-place .NET Framework CLR. A successful local run proves that the assemblies were compiled against genuine 4.6.2 reference assemblies, but it does not prove execution on a machine containing only the 4.6.2 runtime.
 
@@ -44,6 +44,7 @@ Every test-host invocation has a five-minute outer timeout. Asynchronous tests a
 | `Database` | Fail-closed schema validation, required schema contracts, parameter behavior, and rollback cleanup | Explicit test-only MySQL schema |
 | `Export` | CSV, XLSX, PDF validation, cancellation cleanup, and export limits | Unique temporary directory removed in teardown |
 | `NativeDeployment` | Debug/Release managed files, AnyCPU contract, x86/x64 native files, and process-architecture native loads | Built output only |
+| `Performance` | Warm-up/repeated timing evidence plus functional, lifecycle, cleanup, and resource-safety assertions | Temporary local files; dedicated test schema only for database mode |
 | `ManualRuntime` | Genuine 4.6.2-only host qualification | External machine or VM; explicit and never inferred locally |
 
 The test project is organized under matching folders in `VisualInspectionTrainingSystem.Tests`. Tests do not depend on execution order. Permanent source-contract tests guard parameterized SQL, normalized GOOD/NG review semantics, deterministic ordering, half-open date boundaries, transactions, concurrency checks, and row safeguards without connecting to production data.
@@ -68,6 +69,25 @@ vstest.console.exe VisualInspectionTrainingSystem.Tests\bin\Debug\VisualInspecti
 ```
 
 Use one of the category names from the table. `ManualRuntime` is intentionally marked explicit.
+
+## Performance testing
+
+Performance workloads are excluded from normal functional and CI runs. Use Release x64 for authoritative local evidence; Debug and x86 are diagnostic configurations. Results report minimum, median, p95, maximum, and sample count after warm-up, but timing values are informational rather than universal pass/fail thresholds. Functional output, authorization, bounded resources, cancellation, cleanup, and database safety remain hard assertions.
+
+```powershell
+# Secret-free configuration, WPF, image, quiz, export, logging, and lifecycle workloads
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\Run-RegressionTests.ps1 -Configuration Release -PerformanceMode Baseline -PerformancePlatform x64 -SkipRestore -SkipBuild
+
+# Protected repository workloads; requires the validated dedicated test schema
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\Run-RegressionTests.ps1 -Configuration Release -PerformanceMode Database -PerformancePlatform x64 -SkipRestore -SkipBuild
+
+# Both groups in one process after the same fail-closed database preconditions
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\Run-RegressionTests.ps1 -Configuration Release -PerformanceMode All -PerformancePlatform x64 -SkipRestore -SkipBuild
+```
+
+Baseline coverage includes configuration, real application resources, administrator/trainee workspace construction, 10/20-question interaction, 100/1,000/5,000-image inventories and requested-image hashing, 100/1,000/5,000-row CSV/XLSX/PDF exports, concurrent logging, cache bounds, cancellation, and repeated close/disposal checks. Database mode covers authentication, 501 users, 500 sessions, 10,000 answers, Dashboard, Reports, review, and 120-session History through production repositories. It captures production fingerprints read-only, inspects query plans, uses unique test-run ownership, and cleans in `finally`.
+
+Machine-specific performance output, logs, exports, images, and result files are generated artifacts and must not be committed. Record only a safely generalized machine profile and reviewed aggregate evidence in project documentation.
 
 ## Safe MySQL test configuration
 
@@ -102,7 +122,7 @@ powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\Run-Regression
 
 Database tests are excluded from CI because no test database secret is supplied. WPF construction and real visible acceptance remain local gates because a hosted runner is not evidence of an interactive desktop session. The workflow never reads local image configuration, uploads private images, or publishes database/build artifacts.
 
-Issue #19 / GitHub issue #23 expands the category to 24 database tests per configuration. The accepted dedicated environment runs all 48 with zero skips, while `Required` mode rejects any skipped result. CI still excludes the category because no database secret is supplied; this omission must never be bypassed by redirecting CI or local tests to production.
+Issue #19 / GitHub issue #23 expands the category to 24 database tests per configuration. The accepted dedicated environment runs all 48 with zero skips, while `Required` mode rejects any skipped result. CI still excludes the category because no database secret is supplied; this omission must never be bypassed by redirecting CI or local tests to production. Performance modes are also rejected under `-ContinuousIntegration` so shared runners cannot become hardware-dependent timing gates.
 
 Issue #16 / GitHub issue #20 adds 17 permanent logging tests. They use isolated temporary directories and cover all five levels, UTF-8 output, bounded diagnostic fields, secrets redaction, duplicate exception suppression, 120 concurrent calls, rollover and retention, configured/fallback paths, read-only and locked destinations, simultaneous sink failure, bounded shutdown, task-observation behavior, and production integration contracts. The logger is disabled when each isolated test scope ends, and tests never read the local production configuration.
 
@@ -137,10 +157,10 @@ Until that external run occurs, report `ManualRuntime` as **Not Run**. Local exe
 
 Tests remove their own temporary files in teardown or `finally` blocks. After an interrupted run:
 
-1. Verify the dedicated test schema contains no `I17-`, `I16-`, or other run-specific rows before removing anything.
+1. Verify the dedicated test schema contains no reserved synthetic test or performance rows before removing anything.
 2. Delete only known test-created rows; never truncate or delete operational data.
 3. Remove temporary exports, rendered pages, logs, probes, `TestResults`, coverage output, `bin`, and `obj`.
-4. Clear the two test-database environment variables.
+4. Clear temporary Process-scope overrides. Preserve the intentionally retained User-scope test variables unless the dedicated environment is being deprovisioned.
 5. Run `git status --short` and `git diff --check`.
 
 The repository ignores build output, packages, local configuration, credentials, logs, test results, and coverage output. Permanent test source, this guide, and the CI workflow remain tracked.

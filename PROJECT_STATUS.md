@@ -4,11 +4,11 @@ Project: Visual Inspection Training System
 
 Current Version: 0.9 Beta
 
-Current Module: Issue #19 Database Testing / GitHub issue #23 - implemented, tested, and manually accepted
+Current Module: Issue #18 Performance Testing / GitHub issue #22 - implemented, tested, and manually accepted
 
 Build Status: Debug and Release successful
 
-Last Build: 2026-08-02
+Last Build: 2026-08-10
 
 Build Warnings: 1 existing `MVVMTKCFG0002` warning in each configuration
 
@@ -47,9 +47,18 @@ Completed:
 - Permanent .NET Framework 4.6.2 regression testing (Issue #17 / GitHub issue #21)
 - Centralized safe logging for .NET Framework 4.6.2 (Issue #16 / GitHub issue #20)
 - Isolated database regression testing for .NET Framework 4.6.2 (Issue #19 / GitHub issue #23)
+- Evidence-based performance testing for .NET Framework 4.6.2 (Issue #18 / GitHub issue #22)
 
 In Progress:
-- None. Issue #19 / GitHub issue #23 is implemented, tested, and manually accepted. No subsequent issue has started.
+- None. Issue #18 / GitHub issue #22 is implemented, tested, and manually accepted. No subsequent issue has started.
+
+Issue #18 / GitHub Issue #22 Verification:
+- Added a permanent `Performance` NUnit category and explicit `Baseline`, `Database`, and `All` runner modes. Release x64 timings use warm-up plus repeated samples and report minimum, median, p95, maximum, and sample count as evidence; timing values are not hardware-dependent CI pass/fail gates.
+- Covered configuration and WPF resource startup, authenticated window construction, quiz interaction, temporary 100/1,000/5,000-image inventories, 10/20-image selection and hashing, CSV/XLSX/PDF exports up to 5,000 rows, concurrent logging, repeated window lifecycles, and isolated MySQL workloads for 501 users, 500 sessions, 10,000 answers, review operations, Dashboard, Reports, and 120-session trainee History.
+- Measurement identified repeated filesystem metadata checks across every quiz candidate as the reproducible bottleneck. Selecting and hashing from 5,000 images improved from 1,375.733 ms median / 1,424.686 ms p95 to 31.370 ms / 36.779 ms for 10 questions, and from 1,325.052 ms / 1,354.804 ms to 34.016 ms / 41.133 ms for 20 questions. Sampling remains unbiased, only selected files are hashed, cancellation remains cooperative, and the hash cache is now a bounded 4,096-entry least-recently-used cache instead of unbounded process state.
+- Final clean Debug and Release AnyCPU rebuilds completed with zero errors and one unchanged `MVVMTKCFG0002` warning each. The complete functional gate passed 382 tests, the required database gate passed 48, the fail-closed preflight passed 4, Release x64 performance passed 28, and Debug/Release cleanup passed 2, with zero failures or skips. Supported x86 and x64 native checks passed.
+- The database performance run used only the protected dedicated schema, left zero synthetic rows, and observed unchanged stable production schema and row-count fingerprints. Query-plan inspection confirmed declared employee-number and image-hash indexes; the measured report range scan remained fast, so no speculative production index was added.
+- Approved real WPF acceptance passed Splash/Login responsiveness, administrator and trainee navigation, repeated refresh and close-during-refresh, both quiz sizes, GOOD/NG pointer and keyboard interaction, exactly-one Result presentation, History/detail, both themes, resizing, logout, and normal shutdown without freeze, duplicate windows/rows, crash, raw database errors, sensitive messages, diagnostics, or `Workspace unavailable`.
 
 Issue #19 / GitHub Issue #23 Verification:
 - Added a fail-closed MySQL test boundary requiring the User-scope `VITS_TEST_MYSQL_CONNECTION_STRING` and `VITS_TEST_MYSQL_SCHEMA` settings, an exact test-schema identity marker, a dedicated restricted account, and verified separation from the operational endpoint, schema, and account. Credential values remain untracked and are never printed.

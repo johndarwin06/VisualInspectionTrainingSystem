@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Performance Testing
+
+- Added permanent Issue #18 / GitHub issue #22 Release-oriented performance coverage for startup components, WPF workspace lifecycles, quiz interaction, image inventories through 5,000 files, 10/20-image sampling, CSV/XLSX/PDF exports through 5,000 rows, concurrent logging, memory/resource cleanup, and protected MySQL workloads through 501 users, 500 sessions, and 10,000 answers.
+- Extended the regression runner with explicit `Baseline`, `Database`, and `All` performance modes plus x86/x64 selection. Normal functional and CI runs exclude performance workloads; protected database performance fails closed unless the retained Issue #19 test boundary is valid.
+- Removed the proven 5,000-image selection bottleneck by sampling before cache metadata checks and hashing only selected files. Median/p95 improved from 1,375.733/1,424.686 ms to 31.370/36.779 ms for 10 images and from 1,325.052/1,354.804 ms to 34.016/41.133 ms for 20 images.
+- Replaced the unbounded image-hash cache with a thread-safe 4,096-entry least-recently-used bound while preserving SHA-256 duplicate identity, cancellation, unbiased sampling, supported quiz sizes, and public APIs.
+- Final verification passed clean Debug/Release builds, 382 functional tests, 48 required database tests, 4 database preflight checks, 28 Release x64 performance tests, two cleanup checks, and supported x86/x64 native checks with zero failures or skips. Production fingerprints remained stable, zero synthetic rows remained, and approved real WPF acceptance passed.
+
 ### Isolated Database Regression Testing
 
 - Added a permanent fail-closed MySQL integration boundary for Issue #19 / GitHub issue #23. User-scope configuration is accepted only after live authentication, exact schema-marker validation, restricted-grant inspection, operational/test identity separation, and production-fingerprint protection; values are never logged or printed.

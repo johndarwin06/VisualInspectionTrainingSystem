@@ -100,4 +100,11 @@
 - [x] Dedicated schema identity marker, restricted test account, fail-closed production separation, versioned contracts, rollback, concurrency, and synthetic-row cleanup
 - [x] Debug and Release database suites enabled with zero failures and zero skips; production schema and stable fingerprint protection verified
 
+# Sprint 20
+
+- [x] Evidence-based performance testing (Issue #18 / GitHub issue #22; implemented, tested, and manually accepted)
+- [x] Permanent Release-oriented baseline and protected-database performance categories with warm-up, repeated samples, percentile reporting, resource checks, and safe cleanup
+- [x] Bounded quiz image hashing optimization validated at 100, 1,000, and 5,000 images without changing quiz size, identity, persistence, or UI behavior
+- [x] Debug/Release functional, database, performance, x86/x64 native, production-fingerprint, and visible WPF acceptance gates completed
+
 No subsequent implementation issue has started.

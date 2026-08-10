@@ -33,6 +33,7 @@ namespace VisualInspectionTrainingSystem.Services
         public const int ExtendedQuizSize = 20;
 
         private const int HashBufferSize = 81920;
+        private const int HashCacheCapacity = 4096;
 
         #endregion
 
@@ -42,6 +43,9 @@ namespace VisualInspectionTrainingSystem.Services
 
         private static readonly Dictionary<string, HashCacheEntry> HashCache =
             new Dictionary<string, HashCacheEntry>(StringComparer.OrdinalIgnoreCase);
+
+        private static readonly LinkedList<string> HashCacheRecency =
+            new LinkedList<string>();
 
         #endregion
 
@@ -87,52 +91,10 @@ namespace VisualInspectionTrainingSystem.Services
             string folderPath,
             bool shuffle = true)
         {
-            if (string.IsNullOrWhiteSpace(folderPath))
-            {
-                throw new ArgumentException(
-                    "Folder path cannot be empty.",
-                    nameof(folderPath));
-            }
-
-            if (!Directory.Exists(folderPath))
-            {
-                throw new DirectoryNotFoundException(
-                    "The configured image folder was not found.");
-            }
-
-            string[] files = Directory.GetFiles(
+            List<QuizImage> images = LoadImageMetadata(
                 folderPath,
-                "*.bmp",
-                SearchOption.TopDirectoryOnly);
-
-            Array.Sort(
-                files,
-                StringComparer.OrdinalIgnoreCase);
-
-            List<QuizImage> images = new List<QuizImage>();
-            int imageId = 1;
-
-            foreach (string file in files)
-            {
-                QuizImage image = new QuizImage
-                {
-                    ImageID = imageId++,
-                    FileName = Path.GetFileName(file),
-                    FilePath = file,
-                    Category = "General",
-                    Remarks = string.Empty,
-                    IsActive = true
-                };
-
-                string cachedHash;
-
-                if (TryGetCachedHash(file, out cachedHash))
-                {
-                    image.ImageHash = cachedHash;
-                }
-
-                images.Add(image);
-            }
+                true,
+                CancellationToken.None);
 
             if (shuffle)
                 Shuffle(images);
@@ -150,15 +112,10 @@ namespace VisualInspectionTrainingSystem.Services
             string folderPath,
             int requestedCount)
         {
-            ValidateQuizSize(requestedCount);
-
-            List<QuizImage> candidates = LoadImages(
+            return LoadQuizImagesCore(
                 folderPath,
-                false);
-
-            return CreateUniqueQuizSample(
-                candidates,
-                requestedCount);
+                requestedCount,
+                CancellationToken.None);
         }
 
         /// <summary>
@@ -180,9 +137,10 @@ namespace VisualInspectionTrainingSystem.Services
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    List<QuizImage> images = LoadQuizImages(
+                    List<QuizImage> images = LoadQuizImagesCore(
                         folderPath,
-                        requestedCount);
+                        requestedCount,
+                        cancellationToken);
 
                     PopulateHashes(
                         images,
@@ -210,9 +168,13 @@ namespace VisualInspectionTrainingSystem.Services
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    List<QuizImage> images = LoadImages(
+                    List<QuizImage> images = LoadImageMetadata(
                         folderPath,
-                        shuffle);
+                        true,
+                        cancellationToken);
+
+                    if (shuffle)
+                        Shuffle(images);
 
                     PopulateHashes(
                         images,
@@ -327,6 +289,94 @@ namespace VisualInspectionTrainingSystem.Services
         #region Quiz Sampling
 
         /// <summary>
+        /// Enumerates deterministic image metadata and optionally applies valid
+        /// cached identities. Trainee selection skips cache metadata probes for
+        /// unselected candidates; selected files are validated while hashing.
+        /// </summary>
+        private static List<QuizImage> LoadImageMetadata(
+            string folderPath,
+            bool includeCachedHashes,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(folderPath))
+            {
+                throw new ArgumentException(
+                    "Folder path cannot be empty.",
+                    nameof(folderPath));
+            }
+
+            if (!Directory.Exists(folderPath))
+            {
+                throw new DirectoryNotFoundException(
+                    "The configured image folder was not found.");
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            string[] files = Directory.GetFiles(
+                folderPath,
+                "*.bmp",
+                SearchOption.TopDirectoryOnly);
+
+            Array.Sort(
+                files,
+                StringComparer.OrdinalIgnoreCase);
+
+            List<QuizImage> images = new List<QuizImage>(files.Length);
+
+            for (int index = 0; index < files.Length; index++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                string file = files[index];
+                QuizImage image = new QuizImage
+                {
+                    ImageID = index + 1,
+                    FileName = Path.GetFileName(file),
+                    FilePath = file,
+                    Category = "General",
+                    Remarks = string.Empty,
+                    IsActive = true
+                };
+
+                string cachedHash;
+
+                if (includeCachedHashes &&
+                    TryGetCachedHash(file, out cachedHash))
+                {
+                    image.ImageHash = cachedHash;
+                }
+
+                images.Add(image);
+            }
+
+            return images;
+        }
+
+        /// <summary>
+        /// Enumerates, de-duplicates, and samples trainee metadata without probing
+        /// filesystem metadata for candidates that will not enter the quiz.
+        /// </summary>
+        private List<QuizImage> LoadQuizImagesCore(
+            string folderPath,
+            int requestedCount,
+            CancellationToken cancellationToken)
+        {
+            ValidateQuizSize(requestedCount);
+
+            List<QuizImage> candidates = LoadImageMetadata(
+                folderPath,
+                false,
+                cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return CreateUniqueQuizSample(
+                candidates,
+                requestedCount);
+        }
+
+        /// <summary>
         /// Rejects unsupported quiz sizes before folder access or quiz execution.
         /// </summary>
         private static void ValidateQuizSize(int requestedCount)
@@ -432,8 +482,12 @@ namespace VisualInspectionTrainingSystem.Services
                 if (HashCache.TryGetValue(fullPath, out cachedEntry) &&
                     cachedEntry.Matches(fileInfo))
                 {
+                    TouchCacheEntry(cachedEntry);
                     return cachedEntry.Hash;
                 }
+
+                if (cachedEntry != null)
+                    RemoveCacheEntry(fullPath, cachedEntry);
             }
 
             string hash = ComputeFileHash(
@@ -449,7 +503,7 @@ namespace VisualInspectionTrainingSystem.Services
 
             lock (HashCacheSyncRoot)
             {
-                HashCache[fullPath] = currentEntry;
+                AddOrReplaceCacheEntry(fullPath, currentEntry);
             }
 
             return hash;
@@ -517,8 +571,13 @@ namespace VisualInspectionTrainingSystem.Services
                     if (!HashCache.TryGetValue(fullPath, out cachedEntry) ||
                         !cachedEntry.Matches(fileInfo))
                     {
+                        if (cachedEntry != null)
+                            RemoveCacheEntry(fullPath, cachedEntry);
+
                         return false;
                     }
+
+                    TouchCacheEntry(cachedEntry);
                 }
 
                 imageHash = cachedEntry.Hash;
@@ -546,6 +605,86 @@ namespace VisualInspectionTrainingSystem.Services
             }
 
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Adds or refreshes one entry and evicts least-recently-used paths so
+        /// long-running review sessions cannot retain an unbounded path history.
+        /// </summary>
+        private static void AddOrReplaceCacheEntry(
+            string fullPath,
+            HashCacheEntry entry)
+        {
+            HashCacheEntry existingEntry;
+
+            if (HashCache.TryGetValue(fullPath, out existingEntry))
+                RemoveCacheEntry(fullPath, existingEntry);
+
+            entry.RecencyNode = HashCacheRecency.AddFirst(fullPath);
+            HashCache[fullPath] = entry;
+
+            while (HashCache.Count > HashCacheCapacity)
+            {
+                LinkedListNode<string> oldestNode = HashCacheRecency.Last;
+
+                if (oldestNode == null)
+                    break;
+
+                HashCacheRecency.RemoveLast();
+                HashCache.Remove(oldestNode.Value);
+            }
+        }
+
+        /// <summary>Promotes a successful lookup to most-recently-used position.</summary>
+        private static void TouchCacheEntry(HashCacheEntry entry)
+        {
+            if (entry == null || entry.RecencyNode == null)
+                return;
+
+            HashCacheRecency.Remove(entry.RecencyNode);
+            HashCacheRecency.AddFirst(entry.RecencyNode);
+        }
+
+        /// <summary>Removes a stale or replaced cache entry from both indexes.</summary>
+        private static void RemoveCacheEntry(
+            string fullPath,
+            HashCacheEntry entry)
+        {
+            HashCache.Remove(fullPath);
+
+            if (entry != null && entry.RecencyNode != null)
+            {
+                HashCacheRecency.Remove(entry.RecencyNode);
+                entry.RecencyNode = null;
+            }
+        }
+
+        /// <summary>Gets the cache capacity for permanent regression verification.</summary>
+        internal static int MaximumHashCacheEntries
+        {
+            get { return HashCacheCapacity; }
+        }
+
+        /// <summary>Gets the current cache size without exposing cached paths or hashes.</summary>
+        internal static int HashCacheEntryCount
+        {
+            get
+            {
+                lock (HashCacheSyncRoot)
+                {
+                    return HashCache.Count;
+                }
+            }
+        }
+
+        /// <summary>Clears cache state for isolated deterministic performance tests.</summary>
+        internal static void ClearHashCacheForTesting()
+        {
+            lock (HashCacheSyncRoot)
+            {
+                HashCache.Clear();
+                HashCacheRecency.Clear();
+            }
         }
 
         #endregion
@@ -641,6 +780,8 @@ namespace VisualInspectionTrainingSystem.Services
             public long LastWriteTicks { get; private set; }
 
             public string Hash { get; private set; }
+
+            public LinkedListNode<string> RecencyNode { get; set; }
 
             public bool Matches(FileInfo fileInfo)
             {
