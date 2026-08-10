@@ -1,5 +1,19 @@
 # DEVELOPMENT LOG
 
+## 2026-08-10
+
+### Issue #18 / GitHub Issue #22 - Evidence-Based Performance Testing
+
+- Added an explicit permanent `Performance` category and PowerShell runner modes for secret-free baseline workloads, protected database workloads, or the complete suite. Measurements use warm-up runs, repeated samples, Release x64 as the authoritative local configuration, and informational minimum/median/p95/maximum reporting rather than arbitrary hardware-dependent gates.
+- The accepted local profile was a 64-bit Windows 10.0.26200 workstation with an AMD Ryzen 5 7600X-class processor, 12 logical cores, approximately 31.1 GiB RAM, and MySQL 8.0.45. Machine name, Windows account, private paths, connection values, and raw benchmark output are intentionally not recorded.
+- Added deterministic coverage for configuration loading, WPF resource/window construction, quiz interaction, image enumeration/sampling/hashing/decoding at 100, 1,000, and 5,000 files, CSV/XLSX/PDF export at 100, 1,000, and 5,000 sessions, concurrent logging/rollover, repeated role-window lifecycles, and resource cleanup. Temporary images, exports, logs, and isolated settings are removed by teardown.
+- Added protected MySQL performance coverage for administrator/trainee authentication, Dashboard and Reports over 500 sessions and 10,000 answers, a 10,000-answer review queue, 300 unique-image review propagation, 501-user management, and 120-session/2,400-answer History. The suite retains the Issue #19 marker/account/separation/grant checks, unique run ownership, production fingerprints, and deterministic cleanup.
+- The measured image-selection bottleneck was repeated cache-validation filesystem metadata work for all 5,000 candidates before sampling. The accepted optimization samples metadata first, hashes only the selected 10 or 20 files, preserves duplicate identity and unbiased selection, adds cancellation through enumeration, and bounds the process hash cache with a 4,096-entry least-recently-used policy.
+- Under identical 5,000-image workloads, 10-image selection improved from 1,375.733 ms median / 1,424.686 ms p95 to 31.370 ms / 36.779 ms; 20-image selection improved from 1,325.052 ms / 1,354.804 ms to 34.016 ms / 41.133 ms. The cache remained at its 4,096-entry bound after a 5,000-file workload. No database index or package change was made because measured repository timings were acceptable and query-plan evidence did not justify speculative changes.
+- Corrected the database-performance fixture to use the production Dashboard convention `trendStart = dayEnd.AddDays(-7)` rather than an invalid one-day trend, added a focused midnight/exact-seven-day assertion, and included the 300 intentionally created truth rows in run-owned cleanup accounting. Production `DashboardRepository.ValidateTrendRange` and Result/analytics semantics were not weakened.
+- Final clean restore and Debug/Release AnyCPU rebuilds passed with zero errors and one unchanged `MVVMTKCFG0002` warning each. Functional tests passed 382/382, explicit database tests 48/48, preflight 4/4, Release x64 performance 28/28, and cleanup 2/2, with zero skips. x86/x64 native checks, stable production fingerprints, and zero synthetic rows passed.
+- Approved visible acceptance exercised both roles, repeated navigation/refresh, close-during-refresh, Training Setup with the normal large inventory, 10/20-question Quiz and exactly-one Result behavior, History/detail, themes, resizing, keyboard/pointer interaction, logout, and shutdown without a freeze, duplicate, crash, sensitive error, diagnostic, or test-data exposure.
+
 ## 2026-08-02
 
 ### Issue #19 / GitHub Issue #23 - Isolated Database Regression Testing

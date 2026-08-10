@@ -6,6 +6,12 @@ param(
     [ValidateSet('Safe', 'Required', 'Preflight', 'Cleanup')]
     [string]$DatabaseMode = 'Safe',
 
+    [ValidateSet('None', 'Baseline', 'Database', 'All')]
+    [string]$PerformanceMode = 'None',
+
+    [ValidateSet('x86', 'x64')]
+    [string]$PerformancePlatform = 'x64',
+
     [switch]$ContinuousIntegration,
 
     [switch]$SkipRestore,
@@ -157,8 +163,13 @@ function Invoke-BoundedVsTest {
 $msbuildPath = Get-VisualStudioTool 'MSBuild\Current\Bin\MSBuild.exe'
 $script:VsTestPath = Get-VisualStudioTool 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe'
 
-if ($ContinuousIntegration -and $DatabaseMode -ne 'Safe') {
-    throw 'ContinuousIntegration may only use the fail-closed Safe database mode.'
+if ($ContinuousIntegration -and
+    ($DatabaseMode -ne 'Safe' -or $PerformanceMode -ne 'None')) {
+    throw 'ContinuousIntegration may only use the fail-closed Safe database mode without performance workloads.'
+}
+
+if ($PerformanceMode -ne 'None' -and $DatabaseMode -ne 'Safe') {
+    throw 'PerformanceMode is an explicit standalone mode and cannot be combined with a non-Safe DatabaseMode.'
 }
 
 function Get-TestDatabaseEnvironmentSetting {
@@ -180,7 +191,10 @@ function Get-TestDatabaseEnvironmentSetting {
         [EnvironmentVariableTarget]::User)
 }
 
-$requiresDatabase = $DatabaseMode -ne 'Safe'
+$requiresDatabase =
+    $DatabaseMode -ne 'Safe' -or
+    $PerformanceMode -eq 'Database' -or
+    $PerformanceMode -eq 'All'
 
 if ($requiresDatabase) {
     $connectionVariable = 'VITS_TEST_MYSQL_CONNECTION_STRING'
@@ -195,6 +209,10 @@ if ($requiresDatabase) {
     }
 
     Write-Host "Database mode: $DatabaseMode (isolated configuration present; values hidden)." -ForegroundColor Yellow
+}
+
+if ($PerformanceMode -ne 'None') {
+    Write-Host "Performance mode: $PerformanceMode ($PerformancePlatform process; timing results are informational)." -ForegroundColor Yellow
 }
 
 $packageRoot = Join-Path $repositoryRoot 'packages'
@@ -241,18 +259,49 @@ if (-not $SkipBuild) {
     }
 }
 
-$categories = switch ($DatabaseMode) {
-    'Required' { @('Database') }
-    'Preflight' { @('DatabasePreflight') }
-    'Cleanup' { @('DatabaseCleanup') }
-    default {
-        if ($ContinuousIntegration) {
-            @('Unit', 'Integration', 'Export', 'NativeDeployment')
+$testRuns = if ($PerformanceMode -ne 'None') {
+    switch ($PerformanceMode) {
+        'Baseline' {
+            @([pscustomobject]@{
+                Name = 'non-database performance'
+                Filter = 'TestCategory=Performance&TestCategory!=Database'
+            })
         }
-        else {
-            @('Unit', 'Integration', 'WPF', 'Database', 'Export', 'NativeDeployment')
+        'Database' {
+            @([pscustomobject]@{
+                Name = 'database performance'
+                Filter = 'TestCategory=Performance&TestCategory=Database'
+            })
+        }
+        default {
+            @([pscustomobject]@{
+                Name = 'complete performance'
+                Filter = 'TestCategory=Performance'
+            })
         }
     }
+}
+else {
+    $categories = switch ($DatabaseMode) {
+        'Required' { @('Database') }
+        'Preflight' { @('DatabasePreflight') }
+        'Cleanup' { @('DatabaseCleanup') }
+        default {
+            if ($ContinuousIntegration) {
+                @('Unit', 'Integration', 'Export', 'NativeDeployment')
+            }
+            else {
+                @('Unit', 'Integration', 'WPF', 'Database', 'Export', 'NativeDeployment')
+            }
+        }
+    }
+
+    @($categories | ForEach-Object {
+        [pscustomobject]@{
+            Name = "$_ tests"
+            Filter = "TestCategory=$_&TestCategory!=Performance"
+        }
+    })
 }
 
 foreach ($currentConfiguration in $configurations) {
@@ -262,17 +311,24 @@ foreach ($currentConfiguration in $configurations) {
         throw "The $currentConfiguration test assembly was not found."
     }
 
-    foreach ($category in $categories) {
+    foreach ($testRun in $testRuns) {
+        $platform = if ($PerformanceMode -eq 'None') {
+            'x86'
+        }
+        else {
+            $PerformancePlatform
+        }
+
         Invoke-BoundedVsTest `
             $assemblyPath `
             $adapterPath `
-            'x86' `
-            "TestCategory=$category" `
-            "$currentConfiguration $category tests (x86)" `
+            $platform `
+            $testRun.Filter `
+            "$currentConfiguration $($testRun.Name) ($platform)" `
             -RejectSkipped:$requiresDatabase
     }
 
-    if ($DatabaseMode -eq 'Safe') {
+    if ($PerformanceMode -eq 'None' -and $DatabaseMode -eq 'Safe') {
         Invoke-BoundedVsTest `
             $assemblyPath `
             $adapterPath `

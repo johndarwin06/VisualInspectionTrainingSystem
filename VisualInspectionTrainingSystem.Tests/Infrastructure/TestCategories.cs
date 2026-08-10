@@ -31,6 +31,9 @@ namespace VisualInspectionTrainingSystem.Tests.Infrastructure
         /// <summary>Read-only verification that no Issue #19 synthetic rows remain.</summary>
         public const string DatabaseCleanup = "DatabaseCleanup";
 
+        /// <summary>Evidence-oriented workloads with functional and resource-safety gates.</summary>
+        public const string Performance = "Performance";
+
         /// <summary>Tests that validate report export content and cleanup.</summary>
         public const string Export = "Export";
 
@@ -57,6 +60,7 @@ namespace VisualInspectionTrainingSystem.Tests.Infrastructure
                    string.Equals(category, Database, StringComparison.Ordinal) ||
                    string.Equals(category, DatabasePreflight, StringComparison.Ordinal) ||
                    string.Equals(category, DatabaseCleanup, StringComparison.Ordinal) ||
+                   string.Equals(category, Performance, StringComparison.Ordinal) ||
                    string.Equals(category, Export, StringComparison.Ordinal) ||
                    string.Equals(category, NativeDeployment, StringComparison.Ordinal) ||
                    string.Equals(category, ManualRuntime, StringComparison.Ordinal);
