@@ -2,6 +2,18 @@
 
 ## 2026-08-10
 
+### Issue #20 / GitHub Issue #24 - Version 1.0 Portable Release
+
+- Changed the Version 1.0 delivery design from an installer to `VisualInspectionTrainingSystem-v1.0.0-win-portable.zip`. No installer dependency, script, shortcut, registry entry, uninstall entry, protected-directory deployment, or `Program Files` behavior was added.
+- Set assembly/file versions to 1.0.0.0 and product/informational version to 1.0.0. Preserved the established executable spelling, .NET Framework 4.6.2 target, C# 7.3 language contract, MVVM architecture, package versions, and configuration loading behavior.
+- Added `PortableReleaseFiles.psd1` as the explicit runtime/documentation allowlist, `Build-PortableRelease.ps1` for clean Release restore/build/staging/ZIP/checksum generation, and `Validate-PortableRelease.ps1` for exact payload, framework, version, native x86/x64, path, placeholder, secret, forbidden-file, extraction, and SHA-256 verification.
+- The ZIP safely represents `QuizImages`, `Logs`, `Exports`, and `Reports`, retains relative paths beside the executable and the existing LocalAppData log fallback, and includes a placeholder-only configuration example, README, first-run guide, user manual, administrator guide, and Version 1.0 release notes. Local configuration, credentials, production/test data, images, logs, exports, reports, symbols, XML documentation, ARM64 assets, test assemblies, NuGet packages, source, repository metadata, and generated output are excluded.
+- Automated package acceptance validated the allowlisted payload in two independent extraction directories and proved that a forbidden file and a checksum-tampered ZIP are rejected. Generated archives, checksum files, staging, validation output, and acceptance extractions remain untracked and are removed before delivery.
+- Final verification started from a removed local package/build cache, restored production and test dependencies, and rebuilt Debug/Release AnyCPU with zero errors and one unchanged `MVVMTKCFG0002` warning per configuration. Functional regression passed 382/382, fail-closed preflight 4/4, required Debug/Release database tests 48/48, Release x64 performance 28/28, and cleanup verification 2/2, with zero failures or skips; supported x86/x64 native tests passed.
+- Real visible acceptance passed in two independent writable extraction locations with no repository, Visual Studio, or NuGet dependency. Both roles, registration validation, administrator workspaces, trainee workflows, 10/20-question quizzes, Result/History/detail, analytics, reports/exports, themes, resizing, keyboard interaction, logout, shutdown, and portable output paths passed without a crash, freeze, raw database error, sensitive message, diagnostic, or unexpected dialog.
+- Visible acceptance created only legitimate 10-question and 20-question quiz sessions. No user-management or review-truth action occurred. Protected database tests verify unchanged stable production schema/row fingerprints and zero synthetic rows.
+- A clean machine or VM containing only the .NET Framework 4.6.2 runtime remains unavailable, so that genuine runtime test is **Not Run**. This does not block the draft delivery PR, but it blocks the `v1.0.0` tag and GitHub Release.
+
 ### Issue #18 / GitHub Issue #22 - Evidence-Based Performance Testing
 
 - Added an explicit permanent `Performance` category and PowerShell runner modes for secret-free baseline workloads, protected database workloads, or the complete suite. Measurements use warm-up runs, repeated samples, Release x64 as the authoritative local configuration, and informational minimum/median/p95/maximum reporting rather than arbitrary hardware-dependent gates.

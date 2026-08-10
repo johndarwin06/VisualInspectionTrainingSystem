@@ -107,4 +107,12 @@
 - [x] Bounded quiz image hashing optimization validated at 100, 1,000, and 5,000 images without changing quiz size, identity, persistence, or UI behavior
 - [x] Debug/Release functional, database, performance, x86/x64 native, production-fingerprint, and visible WPF acceptance gates completed
 
-No subsequent implementation issue has started.
+# Sprint 21
+
+- [x] Version 1.0 portable-release tooling and documentation (Issue #20 / GitHub issue #24)
+- [x] Explicit Release allowlist, clean staging, portable ZIP, internal file hashes, external ZIP SHA-256, two-location extraction validation, and forbidden-content rejection
+- [x] Real administrator and trainee visible acceptance from two independent writable portable extraction locations
+- [ ] Qualify the exact merged release on a clean machine or VM containing only the .NET Framework 4.6.2 runtime
+- [ ] After separate approval, create `v1.0.0` from the exact merged `main` commit and publish the validated ZIP, checksum, and release notes
+
+No subsequent implementation issue has started. The genuine 4.6.2-only runtime gate must pass before tagging or publishing Version 1.0.

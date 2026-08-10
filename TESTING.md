@@ -34,6 +34,23 @@ powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\Run-Regression
 
 Every test-host invocation has a five-minute outer timeout. Asynchronous tests also use controlled task completion or bounded waits instead of arbitrary sleeps.
 
+## Portable release validation
+
+Build and validate the Version 1.0 portable candidate only after the normal Release build succeeds:
+
+```powershell
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\Build-PortableRelease.ps1
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File .\Validate-PortableRelease.ps1
+```
+
+The builder uses `PortableReleaseFiles.psd1` as an explicit allowlist, rebuilds the production Release project unless `-SkipBuild` is explicitly supplied, replaces its clean staging directory, creates the portable folder markers, writes internal per-file SHA-256 values, and writes the ZIP plus external checksum beneath ignored `artifacts/portable` output.
+
+The validator requires the exact allowlisted files; checks the external ZIP and internal payload hashes; confirms .NET Framework 4.6.2 and Version 1.0 metadata; requires x86/x64 SkiaSharp and HarfBuzz native files; verifies placeholder credentials and relative portable paths; rejects local configuration, symbols, XML documentation, ARM64, tests, source, repository/build/test output, private development paths, credential patterns, key material, and unsafe archive paths; validates two independent extraction locations; and removes temporary output in `finally`.
+
+Before delivery, also perform negative checks with disposable copies: a ZIP containing an additional forbidden file must fail, and a byte-modified ZIP with the original external checksum must fail. Generated ZIPs, checksums, staging, acceptance configuration, images, logs, exports, reports, and extraction directories must remain untracked and be removed after validation.
+
+Visible acceptance must run the extracted Release application—not `bin`, Visual Studio, or the repository—from two independent writable locations. It covers both roles, both quiz sizes, Result/History, administrator workspaces, themes, resizing, keyboard interaction, portable output paths, logout, and shutdown. A clean machine containing only the .NET Framework 4.6.2 runtime remains a separate explicit `ManualRuntime` gate and must pass before tagging or publishing Version 1.0.
+
 ## Test categories
 
 | Category | Purpose | External state |
